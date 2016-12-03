@@ -1,0 +1,43 @@
+{
+  "undef": true,
+  "unused": true,
+  "esversion": 6,
+  "predef": [ 
+    "director",
+    "define",
+  	"expect",
+  	"log",
+    "localStorage",
+    "g",
+    "game",
+    "layout",
+    "inspect",
+    "navigator",
+    "requirejs",
+    "XMLHttpRequest",
+    
+    "nextId",
+    "extend",
+    "applyCfg",
+    "onFirefox",
+
+    "AssetManager",
+    "Dictionary",
+    "GameDirector",
+    "MenuButton",
+    "ObjectSpawner",
+  	"Phaser",
+    "Random",
+    "Token",
+  	"TokenTray",
+    "TokenFactory",
+    "Tile",
+  	"World",
+  	"WordBuilder",
+    "WorldObject",
+    "UI",
+    "Monster",
+    "CONST",
+    "CFG"
+  ]
+}
