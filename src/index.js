@@ -7,18 +7,14 @@
 /* exported inspect */
 
 import log from 'loglevel';
-import expect from 'expect';
 
 import AssetManager from 'lib/AssetManager';
+import Injector from 'lib/Injector';
 
 import Play from 'states/Play';
 
 //====== Global objects accessible from all modules ======
 var game;         //Phaser.Game instance
-
-//var Phaser;       //Phaser library object
-/* globals -g */
-var g = {};       //display layers
 
 /* exported nextId */
 var idCounter = 0;
@@ -32,14 +28,11 @@ function nextId() { return ++idCounter; }
 
 game = new Phaser.Game(1024, 550, Phaser.AUTO, 'konkr');
 
-var env = {
-    log: log,
-    game: game,
-    debugMode: 1
-};
-window.env = env;
-
-env.assetManager = new AssetManager(env);
+var spec = new Injector({
+    log: () => log,
+    game: () => game,
+    assetManager: spec => new AssetManager(spec),
+});
 
 //default loglevel
 log.setDefaultLevel(log.levels.DEBUG);
@@ -131,8 +124,8 @@ PrepareLevel.prototype = {
 
     preload: function() {
         //Shared assets
-        env.assetManager.load('hex');
-        env.assetManager.load('pawn');
+        spec.assetManager.load('hex');
+        spec.assetManager.load('pawn');
     },
 
     create: function(game) {
@@ -144,7 +137,7 @@ PrepareLevel.prototype = {
 
     update: function() {
         this.lblLoadingPhase.destroy();
-        game.state.start("Play", true, false, env);
+        game.state.start("Play", true, false, spec);
     },
 
     render: function() {
@@ -185,6 +178,5 @@ GameOver.prototype = {
 game.state.add("Boot",Boot);
 game.state.add("PrepareLevel",PrepareLevel);
 game.state.add("Play",Play);
-console.log(Play);
 game.state.start("Boot");
 

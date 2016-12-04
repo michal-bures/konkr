@@ -25,12 +25,22 @@ function extend(base, child, stack) {
     }
 }
 
+function isFunction(obj) {
+    return typeof obj === 'function';
+}
+
+
+function isObject(obj) {
+    return typeof obj === 'object';
+}
+
+
 function onFirefox() {
     return (navigator.userAgent.toLowerCase().indexOf('firefox') !== -1 );
 }
 
 
-class OrderedHashMap {
+class OrderedMap {
     constructor() {
         this._keys = [];
         this._vals = {};
@@ -69,7 +79,7 @@ class OrderedHashMap {
     }
 };
 
-window.OrderedHashMap = OrderedHashMap;
+window.OrderedMap = OrderedMap;
 
 //==================
 // CHEATS
@@ -205,4 +215,4 @@ console.debug("TEST1:",a);
 */
 
 
-export { OrderedHashMap, Random };
+export { OrderedMap, Random, isFunction, isObject };

@@ -1,6 +1,6 @@
 import log from 'loglevel';
 import expect from 'expect';
-import { OrderedHashMap } from 'lib/util';
+import { OrderedMap } from 'lib/util';
 
 const HEX_WIDTH = 32;
 const HEX_HEIGHT = 37;
@@ -21,9 +21,6 @@ function convertToWorldCoordinates(x,y) {
 class Ground {
     constructor(env) {
         const {game, grid, regions} = env;
-        expect(game).toExist();
-        expect(grid).toExist();
-        expect(regions).toExist();
         this.grid = grid;
         this.game = game;
         this.group = game.add.group();
@@ -106,7 +103,7 @@ class PawnSprite extends Phaser.Sprite {
 class DebugInfo {
     constructor({game}) {
         this.game = game;
-        this.items = new OrderedHashMap();
+        this.items = new OrderedMap();
     }
 
     set(key,value) {

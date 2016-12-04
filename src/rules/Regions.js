@@ -25,6 +25,7 @@ class Region {
         this.capital = null;
         this.pickNewCapital();
         this.faction = regions.factionOf(this.hexes.pivot);
+        Object.seal(this);
     }
 
     get hexes() {
@@ -63,42 +64,44 @@ class Region {
 
 }
 
-class Regions {
-    constructor({grid, log, pawns}) {
-        expect(pawns).toExist();
-        this.grid = grid;
-        this.log = log;
-        this.pawns = pawns;
+function Regions (spec) {
+    let { grid } = spec;
+    
+    let regions = [],
+        hexFaction = [],
+        hexRegion = [];
 
-        this.regions = [];
-        this.hexFaction = [];
-        this.hexRegion = [];
-    }
+    return Object.freeze({
+        randomize,
+        factionOf,
+        regionOf,
+        init
+    });
 
-    randomize() {
-        this.grid.forEach((hex)=>{
-            this.hexFaction[hex.id] = Random.integer(1,NUMBER_OF_FACTIONS);
+    function randomize() {
+        grid.forEach((hex)=>{
+            hexFaction[hex.id] = Random.integer(1,NUMBER_OF_FACTIONS);
         });
-        this.init();
+        init();
     }
 
-    factionOf(hex) {
-        return this.hexFaction[hex.id];
+    function factionOf(hex) {
+        return hexFaction[hex.id];
     }
 
-    regionOf(hex) {
-        return this.hexRegion[hex.id];
+    function regionOf(hex) {
+        return hexRegion[hex.id];
     }
 
-    init() {
-        this.regions =
-            this.grid
-            .components((hex, prevHex) => this.factionOf(hex) === this.factionOf(prevHex))
-            .map(group=>new Region({regions:this, pawns:this.pawns},group));
+    function init() {
+        regions =
+            grid
+            .components((hex, prevHex) => factionOf(hex) === factionOf(prevHex))
+            .map(group=>new Region(spec,group));
 
-        this.regions.forEach(region=> {
+        regions.forEach(region=> {
             region.hexes.forEach( hex=> {
-                this.hexRegion[hex.id] = region;
+                hexRegion[hex.id] = region;
             });
         });
     }

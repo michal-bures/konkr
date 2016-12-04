@@ -1,53 +1,46 @@
-import expect from 'expect';
-
 import { HexGrid } from 'lib/HexGrid';
 import * as Renderer from 'ui/Renderer';
 import TileSelectionProxy from 'ui/TileSelectionProxy';
 import { worldGenPerlin, worldGenSolid } from 'rules/WorldGenerator';
 import Regions from 'rules/Regions';
 import { Pawns } from 'rules/Pawns';
+import Injector from 'lib/Injector';
 
 class Play {
     constructor(game) {
         this.game = game;
     }
 
-    init(env) {
-        const {game, log, debugMode} = env;
-        expect(game).toExist();
-        expect(log).toExist();
+    init(spec) {
+        const {game, log} = spec;
+        this.game = game;
+        this.log = log;
 
-        this.debugMode = debugMode;
-        this.debug = new Renderer.DebugInfo(env);
-        env.debug = this.debug;
-        this.grid = new HexGrid(30,18);
-        env.grid = this.grid;
-        this.pawns = new Pawns(env);
-        env.pawns = this.pawns;
-        this.regions = new Regions(env);
-        env.regions = this.regions;
+        let gameSpec = new Injector(spec);
 
-        worldGenPerlin(env);
-        this.regions.randomize();
+        gameSpec.registerAll({
+            debug: spec => new Renderer.DebugInfo(spec),
+            grid: () => new HexGrid(30,18),
+            pawns: spec => new Pawns(spec),
+            regions: spec => new Regions(spec),
+            groundSprites: spec => new Renderer.Ground(spec),
+            pawnSprites: spec => new Renderer.Pawns(spec),
+            generateWorld: () => worldGenPerlin,
+            tileSelectionProxy: spec => new TileSelectionProxy(spec)
+        });
 
-        const renderGround = new Renderer.Ground(env);
-        const renderPawns = new Renderer.Pawns(env);
-
-        env.render = {
-            ground: renderGround,
-            pawns: renderPawns,
-        };
+        gameSpec.generateWorld(gameSpec);
+        gameSpec.regions.randomize();
+        window.spec = gameSpec;
 
         let g = {};
         //display layers hierarchy
         g.root = game.add.group();                                  
             g.staticBackground = g.root.add(game.add.group());      // static background (does not move with the world)
             g.world = g.root.add(game.add.group());                 // the scrolling game world
-                g.terrain = renderGround.group;          // terrain tiles in the scrolling game world
-                g.pawns = renderPawns.group;     // elements displayed between terrain and objects in the scrolling game world
-                g.objects = g.world.add(game.add.group());          // objects placed on terrain in the game world
-                g.overObjects = g.world.add(game.add.group());      // elements overlayed over objects in the game world
-                g.tileSelectionProxy = g.world.add(new TileSelectionProxy(env)); // invisible sprite capturing mouseover/mousedown items on game world and translating them to events on individual hexagons
+                g.terrain = g.world.add(gameSpec.groundSprites.group);          // terrain tiles in the scrolling game world
+                g.pawns = g.world.add(gameSpec.pawnSprites.group);     // elements displayed between terrain and objects in the scrolling game world
+                g.tileSelectionProxy = g.world.add(gameSpec.tileSelectionProxy); // invisible sprite capturing mouseover/mousedown items on game world and translating them to events on individual hexagons
             g.UIbackground = g.root.add(game.add.group());
             g.UI = g.root.add(game.add.group());
   

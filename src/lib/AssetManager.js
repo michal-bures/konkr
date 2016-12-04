@@ -3,15 +3,10 @@
 
 import { HEX_WIDTH, HEX_HEIGHT } from 'ui/Renderer';
 
-class AssetManager {
-    constructor({game, log}) {
-        this.game = game;
-        this.log = log;
+function AssetManager(spec) {
+    let { game, log } = spec;
 
-    }
-
-    load(id) {
-        const game = this.game;
+    let load = (id) => {
         var args;
         if (AssetManager.images[id]) {
             args = [id].concat(AssetManager.images[id]);
@@ -22,7 +17,11 @@ class AssetManager {
         } else {
             log.error("Unknown asset requested:",id);
         }
-    }
+    };
+
+    return Object.freeze({
+        load
+    });
 }
 
 AssetManager.images = {

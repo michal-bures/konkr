@@ -11,6 +11,8 @@ class GridPoint {
     // rowSize = number of hexes per row in the array
     constructor({x,y,r,c,index,rowSize}) {
         expect(rowSize).toBeA('number');
+        this._index = undefined;
+        this._axial = undefined;
         if (x !== undefined && y !== undefined) {
             this._axial = { r: 2*(y-x), c: y};
         } else if (r !== undefined && c !== undefined) {
@@ -21,6 +23,7 @@ class GridPoint {
             log.error('Invalid coordinates specification for creating a GridPoint ',{x:x,y:y,r:r,c:c,index:index,rowSize:rowSize});
         }
         this._rowSize = rowSize;
+        Object.seal(this);
     }
 
     // Index in array of all gridpoints on map

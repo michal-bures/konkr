@@ -19,6 +19,7 @@ class Pawn {
         this._hex = hex;
         this.onMoved = new Phaser.Signal();
         this.onDestroyed = new Phaser.Signal();
+        Object.seal(this);
     }
 
     moveTo(toHex) {
@@ -49,42 +50,45 @@ class Pawn {
     }
 }
 
-class Pawns {
-    constructor({grid, log}) {
-        this.grid = grid;
-        this._hexPawn = [];
-        this._pawns = {};
-        this.log = log;
+function Pawns(spec) {
+    let {log} = spec;
+    let hexPawn = [];
+    let pawns = {};
+
+    function pawnAt(hex) {
+        return hexPawn[hex.id] || null;
     }
 
-    pawnAt(hex) {
-        return this._hexPawn[hex.id] || null;
+    function forEach(fn) {
+        Object.keys(pawns).forEach(key => fn(pawns[key]));
     }
 
-    forEach(fn) {
-        Object.keys(this._pawns).forEach(key => fn(this._pawns[key]));
-    }
-
-    placeAt(pawnType,hex) {
-        if (this.pawnAt(hex)) {
-            throw Error(`Tried to place ${pawnType} at ${hex}, but it's already occupied by ${this.pawnAt(hex)}`);
+    function placeAt(pawnType,hex) {
+        if (pawnAt(hex)) {
+            throw Error(`Tried to place ${pawnType} at ${hex}, but it's already occupied by ${pawnAt(hex)}`);
         }
         expect(pawnType instanceof PawnType).toBeTruthy("Invalid pawnType '"+pawnType+"' in Pawns.placeAt");
-        const newPawn = new Pawn({grid:this.grid, pawns:this},pawnType,hex);
-        this._hexPawn[hex.id] = newPawn;
-        this._pawns[newPawn.id] = newPawn;
+        const newPawn = new Pawn(spec,pawnType,hex);
+        hexPawn[hex.id] = newPawn;
+        pawns[newPawn.id] = newPawn;
         newPawn.onMoved.add((pawn, fromHex, toHex) => {
-            this.log.debug(`${pawn} moved from ${fromHex}, ${toHex}`);
-            this._hexPawn[fromHex.id] = undefined;
-            this._hexPawn[toHex.id] = pawn;
+            log.debug(`${pawn} moved from ${fromHex}, ${toHex}`);
+            hexPawn[fromHex.id] = undefined;
+            hexPawn[toHex.id] = pawn;
         });
         newPawn.onDestroyed.add(()=> {
-            this.log.debug(`${newPawn} destroyed`);
-            this._hexPawn[newPawn.hex.id] = undefined;
-            delete this._pawns[newPawn.id];
+            log.debug(`${newPawn} destroyed`);
+            hexPawn[newPawn.hex.id] = undefined;
+            delete pawns[newPawn.id];
         });
         return newPawn;
     }
+
+    return Object.freeze({
+        pawnAt,
+        forEach,
+        placeAt
+    });
 }
 
 export { Pawns, PawnType };

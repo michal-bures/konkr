@@ -1,13 +1,13 @@
 import { HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT } from 'ui/Renderer';
 
 class TileSelectionProxy extends Phaser.Image {
-    constructor({game,grid,debug,ground,log,regions,pawns}) {
+    constructor({game,grid,debug,groundSprites,log,regions,pawns}) {
         super(game,10,10);
 
         this.debug = debug;
         this.game = game;
         this.grid = grid;
-        this.ground = ground;
+        this.groundSprites = groundSprites;
         this.active = false;
         this.fixedToCamera = true;
         this.width = game.width - 2 * 10;
@@ -28,7 +28,7 @@ Pawn: ${pawns.pawnAt(hex)}`);
     update() {
         super.update(...arguments);
         if (this.active) {
-            this.ground.highlightTiles([this.getHexUnderCursor()]);
+            this.groundSprites.highlightTiles([this.getHexUnderCursor()]);
         }
     }
 

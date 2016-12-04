@@ -1,11 +1,11 @@
 import noisejs from 'noisejs';
 
 
-function worldGenSolid({grid,log,tileFactory}) {
+function worldGenSolid({grid,log}) {
     grid.fillWith((p)=> true);
 }
 
-function worldGenPerlin({grid,log,tileFactory}) {
+function worldGenPerlin({grid,log}) {
     const MIN_SIZE = 150;
     const SMOOTHNESS = 8;
 
