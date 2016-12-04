@@ -10,7 +10,12 @@ const OFFSET_LEFT = 10 + HEX_WIDTH/2;
 
 const LINE_HEIGHT = HEX_HEIGHT * 3/4;
 
-
+function convertToWorldCoordinates(x,y) {
+    return {
+        x: OFFSET_LEFT + x * HEX_WIDTH,
+        y: OFFSET_TOP + y * LINE_HEIGHT
+    };
+}
 
 
 class Ground {
@@ -33,17 +38,12 @@ class Ground {
         this.highlightedTiles = [];
     }
 
-    getGroup() {
-        return this.group;
-    }
-
     highlightTiles(tiles) {
         return;
-        var self = this;
         this.highlightedTiles.forEach((tileSprite) => {
             if (tileSprite) tileSprite.frame = 0;
         });
-        this.highlightedTiles = tiles.map((tile) => tile && self.tileToSprite[tile.id]);
+        this.highlightedTiles = tiles.map((tile) => tile && this.tileToSprite[tile.id]);
         this.highlightedTiles.forEach((tileSprite) => {
             if (tileSprite) tileSprite.frame = 1;
         });
@@ -52,21 +52,56 @@ class Ground {
 
 class GroundTileSprite extends Phaser.Sprite {
     constructor({game, log, regions},tile) {
-        const x = OFFSET_LEFT + tile.position.x * HEX_WIDTH;
-        const y = OFFSET_TOP + tile.position.y * LINE_HEIGHT;
+        const {x,y} = convertToWorldCoordinates(tile.position.x, tile.position.y);
         super(game, x, y, 'hex');
         this.frame=regions.factionOf(tile) || 0;
         //log.debug(`Hex sprite for ${tile} created at ${x}:${y}`);
-    
         /*
-        var style = { font: "10px Courier New", fill: "white", align: "center"};
-        this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,tile.id + "\n" + tile.position.r + "," + tile.position.c, style);
+        var style = { font: "12px Courier New", fill: "white", align: "center"};
+        this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,tile.id, style);
+        this.label.alpha=0.5;
         this.label.lineSpacing = -6;
         this.label.anchor.set(0.5,0.5);
-        this.addChild(this.label);
-        */
+        this.addChild(this.label);*/
+        
     }
 }
+
+const PAWN_OFFSET_TOP = -13;
+
+class Pawns {
+    constructor({game, log, pawns}) {
+        expect(game).toExist();
+        expect(pawns).toExist();    
+
+        this.game = game;
+        this.group = game.add.group();
+        this.pawns = pawns;
+        this.pawnToSprite = {};
+        this.pawns.forEach((pawn) => {
+            var sprite = new PawnSprite({game},pawn);
+            this.group.add(sprite);
+            this.pawnToSprite[pawn.id] = sprite;
+        });        
+    }
+}
+
+class PawnSprite extends Phaser.Sprite {
+    constructor({game},pawn) {
+        const {x,y} = convertToWorldCoordinates(pawn.hex.position.x, pawn.hex.position.y);
+        super(game, x, y+PAWN_OFFSET_TOP, 'pawn');
+        this.frame=pawn.pawnType.ordinal;
+        this.pawn=pawn;
+        
+/*        var style = { font: "10px Courier New", fill: "white", align: "center"};
+        this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,tile.id, style);
+        this.label.lineSpacing = -6;
+        this.label.anchor.set(0.5,0.5);
+        this.addChild(this.label);*/
+        
+    }
+}
+
 
 class DebugInfo {
     constructor({game}) {
@@ -87,4 +122,4 @@ class DebugInfo {
     }
 }
 
-export { Ground, DebugInfo, HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT };
+export { Ground, Pawns, DebugInfo, HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT };

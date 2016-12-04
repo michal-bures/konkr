@@ -29,6 +29,7 @@
     "yargs": "^4.6.0"
   },
   "dependencies": {
+    "enumify": "^1.0.4",
     "expect": "^1.20.2",
     "loglevel": "^1.4.1",
     "noisejs": "^2.1.0",

@@ -2184,629 +2184,216 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],6:[function(require,module,exports){
-if (typeof Object.create === 'function') {
-  // implementation from standard node.js 'util' module
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    ctor.prototype = Object.create(superCtor.prototype, {
-      constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
-      }
-    });
-  };
-} else {
-  // old school shim for old browsers
-  module.exports = function inherits(ctor, superCtor) {
-    ctor.super_ = superCtor
-    var TempCtor = function () {}
-    TempCtor.prototype = superCtor.prototype
-    ctor.prototype = new TempCtor()
-    ctor.prototype.constructor = ctor
-  }
-}
+'use strict';
 
-},{}],7:[function(require,module,exports){
-module.exports = function isBuffer(arg) {
-  return arg && typeof arg === 'object'
-    && typeof arg.copy === 'function'
-    && typeof arg.fill === 'function'
-    && typeof arg.readUInt8 === 'function';
-}
-},{}],8:[function(require,module,exports){
-(function (process,global){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
-var formatRegExp = /%[sdj%]/g;
-exports.format = function(f) {
-  if (!isString(f)) {
-    var objects = [];
-    for (var i = 0; i < arguments.length; i++) {
-      objects.push(inspect(arguments[i]));
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.copyProperties = copyProperties;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var INITIALIZED = Symbol();
+
+/**
+ * This is an abstract class that is not intended to be
+ * used directly. Extend it to turn your class into an enum
+ * (initialization is performed via `MyClass.initEnum()`).
+ */
+
+var Enum = exports.Enum = function () {
+    /**
+     * `initEnum()` closes the class. Then calling this constructor
+     * throws an exception.
+     * 
+     * If your subclass has a constructor then you can control
+     * what properties are added to `this` via the argument you
+     * pass to `super()`. No arguments are fine, too.
+     */
+
+    function Enum() {
+        var instanceProperties = arguments.length <= 0 || arguments[0] === undefined ? undefined : arguments[0];
+
+        _classCallCheck(this, Enum);
+
+        // new.target would be better than this.constructor,
+        // but isn’t supported by Babel
+        if ({}.hasOwnProperty.call(this.constructor, INITIALIZED)) {
+            throw new Error('Enum classes can’t be instantiated');
+        }
+        if ((typeof instanceProperties === 'undefined' ? 'undefined' : _typeof(instanceProperties)) === 'object' && instanceProperties !== null) {
+            copyProperties(this, instanceProperties);
+        }
     }
-    return objects.join(' ');
-  }
+    /**
+     * Set up the enum, close the class.
+     * 
+     * @param arg Either an object whose properties provide the names
+     * and values (which must be mutable objects) of the enum constants.
+     * Or an Array whose elements are used as the names of the enum constants
+     * The values are create by instantiating the current class.
+     */
 
-  var i = 1;
-  var args = arguments;
-  var len = args.length;
-  var str = String(f).replace(formatRegExp, function(x) {
-    if (x === '%%') return '%';
-    if (i >= len) return x;
-    switch (x) {
-      case '%s': return String(args[i++]);
-      case '%d': return Number(args[i++]);
-      case '%j':
+    _createClass(Enum, [{
+        key: 'toString',
+
+        /**
+         * Default `toString()` method for enum constant.
+         */
+        value: function toString() {
+            return this.constructor.name + '.' + this.name;
+        }
+    }], [{
+        key: 'initEnum',
+        value: function initEnum(arg) {
+            Object.defineProperty(this, 'enumValues', {
+                value: [],
+                configurable: false,
+                writable: false,
+                enumerable: true
+            });
+            if (Array.isArray(arg)) {
+                this._enumValuesFromArray(arg);
+            } else {
+                this._enumValuesFromObject(arg);
+            }
+            Object.freeze(this.enumValues);
+            this[INITIALIZED] = true;
+            return this;
+        }
+    }, {
+        key: '_enumValuesFromArray',
+        value: function _enumValuesFromArray(arr) {
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = arr[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var key = _step.value;
+
+                    this._pushEnumValue(new this(), key);
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+        }
+    }, {
+        key: '_enumValuesFromObject',
+        value: function _enumValuesFromObject(obj) {
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+                for (var _iterator2 = Object.keys(obj)[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var key = _step2.value;
+
+                    var value = new this(obj[key]);
+                    this._pushEnumValue(value, key);
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                        _iterator2.return();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
+            }
+        }
+    }, {
+        key: '_pushEnumValue',
+        value: function _pushEnumValue(enumValue, name) {
+            enumValue.name = name;
+            enumValue.ordinal = this.enumValues.length;
+            Object.defineProperty(this, name, {
+                value: enumValue,
+                configurable: false,
+                writable: false,
+                enumerable: true
+            });
+            this.enumValues.push(enumValue);
+        }
+
+        /**
+         * Given the name of an enum constant, return its value.
+         */
+
+    }, {
+        key: 'enumValueOf',
+        value: function enumValueOf(name) {
+            return this.enumValues.find(function (x) {
+                return x.name === name;
+            });
+        }
+
+        /**
+         * Make enum classes iterable
+         */
+
+    }, {
+        key: Symbol.iterator,
+        value: function value() {
+            return this.enumValues[Symbol.iterator]();
+        }
+    }]);
+
+    return Enum;
+}();
+
+function copyProperties(target, source) {
+    // Ideally, we’d use Reflect.ownKeys() here,
+    // but I don’t want to depend on a polyfill
+    var _iteratorNormalCompletion3 = true;
+    var _didIteratorError3 = false;
+    var _iteratorError3 = undefined;
+
+    try {
+        for (var _iterator3 = Object.getOwnPropertyNames(source)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var key = _step3.value;
+
+            var desc = Object.getOwnPropertyDescriptor(source, key);
+            Object.defineProperty(target, key, desc);
+        }
+    } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+    } finally {
         try {
-          return JSON.stringify(args[i++]);
-        } catch (_) {
-          return '[Circular]';
+            if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                _iterator3.return();
+            }
+        } finally {
+            if (_didIteratorError3) {
+                throw _iteratorError3;
+            }
         }
-      default:
-        return x;
     }
-  });
-  for (var x = args[i]; i < len; x = args[++i]) {
-    if (isNull(x) || !isObject(x)) {
-      str += ' ' + x;
-    } else {
-      str += ' ' + inspect(x);
-    }
-  }
-  return str;
-};
 
-
-// Mark that a method should not be used.
-// Returns a modified function which warns once by default.
-// If --no-deprecation is set, then it is a no-op.
-exports.deprecate = function(fn, msg) {
-  // Allow for deprecating things in the process of starting up.
-  if (isUndefined(global.process)) {
-    return function() {
-      return exports.deprecate(fn, msg).apply(this, arguments);
-    };
-  }
-
-  if (process.noDeprecation === true) {
-    return fn;
-  }
-
-  var warned = false;
-  function deprecated() {
-    if (!warned) {
-      if (process.throwDeprecation) {
-        throw new Error(msg);
-      } else if (process.traceDeprecation) {
-        console.trace(msg);
-      } else {
-        console.error(msg);
-      }
-      warned = true;
-    }
-    return fn.apply(this, arguments);
-  }
-
-  return deprecated;
-};
-
-
-var debugs = {};
-var debugEnviron;
-exports.debuglog = function(set) {
-  if (isUndefined(debugEnviron))
-    debugEnviron = process.env.NODE_DEBUG || '';
-  set = set.toUpperCase();
-  if (!debugs[set]) {
-    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
-      var pid = process.pid;
-      debugs[set] = function() {
-        var msg = exports.format.apply(exports, arguments);
-        console.error('%s %d: %s', set, pid, msg);
-      };
-    } else {
-      debugs[set] = function() {};
-    }
-  }
-  return debugs[set];
-};
-
-
-/**
- * Echos the value of a value. Trys to print the value out
- * in the best way possible given the different types.
- *
- * @param {Object} obj The object to print out.
- * @param {Object} opts Optional options object that alters the output.
- */
-/* legacy: obj, showHidden, depth, colors*/
-function inspect(obj, opts) {
-  // default options
-  var ctx = {
-    seen: [],
-    stylize: stylizeNoColor
-  };
-  // legacy...
-  if (arguments.length >= 3) ctx.depth = arguments[2];
-  if (arguments.length >= 4) ctx.colors = arguments[3];
-  if (isBoolean(opts)) {
-    // legacy...
-    ctx.showHidden = opts;
-  } else if (opts) {
-    // got an "options" object
-    exports._extend(ctx, opts);
-  }
-  // set default options
-  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
-  if (isUndefined(ctx.depth)) ctx.depth = 2;
-  if (isUndefined(ctx.colors)) ctx.colors = false;
-  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
-  if (ctx.colors) ctx.stylize = stylizeWithColor;
-  return formatValue(ctx, obj, ctx.depth);
+    return target;
 }
-exports.inspect = inspect;
-
-
-// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
-inspect.colors = {
-  'bold' : [1, 22],
-  'italic' : [3, 23],
-  'underline' : [4, 24],
-  'inverse' : [7, 27],
-  'white' : [37, 39],
-  'grey' : [90, 39],
-  'black' : [30, 39],
-  'blue' : [34, 39],
-  'cyan' : [36, 39],
-  'green' : [32, 39],
-  'magenta' : [35, 39],
-  'red' : [31, 39],
-  'yellow' : [33, 39]
-};
-
-// Don't use 'blue' not visible on cmd.exe
-inspect.styles = {
-  'special': 'cyan',
-  'number': 'yellow',
-  'boolean': 'yellow',
-  'undefined': 'grey',
-  'null': 'bold',
-  'string': 'green',
-  'date': 'magenta',
-  // "name": intentionally not styling
-  'regexp': 'red'
-};
-
-
-function stylizeWithColor(str, styleType) {
-  var style = inspect.styles[styleType];
-
-  if (style) {
-    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
-           '\u001b[' + inspect.colors[style][1] + 'm';
-  } else {
-    return str;
-  }
-}
-
-
-function stylizeNoColor(str, styleType) {
-  return str;
-}
-
-
-function arrayToHash(array) {
-  var hash = {};
-
-  array.forEach(function(val, idx) {
-    hash[val] = true;
-  });
-
-  return hash;
-}
-
-
-function formatValue(ctx, value, recurseTimes) {
-  // Provide a hook for user-specified inspect functions.
-  // Check that value is an object with an inspect function on it
-  if (ctx.customInspect &&
-      value &&
-      isFunction(value.inspect) &&
-      // Filter out the util module, it's inspect function is special
-      value.inspect !== exports.inspect &&
-      // Also filter out any prototype objects using the circular check.
-      !(value.constructor && value.constructor.prototype === value)) {
-    var ret = value.inspect(recurseTimes, ctx);
-    if (!isString(ret)) {
-      ret = formatValue(ctx, ret, recurseTimes);
-    }
-    return ret;
-  }
-
-  // Primitive types cannot have properties
-  var primitive = formatPrimitive(ctx, value);
-  if (primitive) {
-    return primitive;
-  }
-
-  // Look up the keys of the object.
-  var keys = Object.keys(value);
-  var visibleKeys = arrayToHash(keys);
-
-  if (ctx.showHidden) {
-    keys = Object.getOwnPropertyNames(value);
-  }
-
-  // IE doesn't make error fields non-enumerable
-  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
-  if (isError(value)
-      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
-    return formatError(value);
-  }
-
-  // Some type of object without properties can be shortcutted.
-  if (keys.length === 0) {
-    if (isFunction(value)) {
-      var name = value.name ? ': ' + value.name : '';
-      return ctx.stylize('[Function' + name + ']', 'special');
-    }
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    }
-    if (isDate(value)) {
-      return ctx.stylize(Date.prototype.toString.call(value), 'date');
-    }
-    if (isError(value)) {
-      return formatError(value);
-    }
-  }
-
-  var base = '', array = false, braces = ['{', '}'];
-
-  // Make Array say that they are Array
-  if (isArray(value)) {
-    array = true;
-    braces = ['[', ']'];
-  }
-
-  // Make functions say that they are functions
-  if (isFunction(value)) {
-    var n = value.name ? ': ' + value.name : '';
-    base = ' [Function' + n + ']';
-  }
-
-  // Make RegExps say that they are RegExps
-  if (isRegExp(value)) {
-    base = ' ' + RegExp.prototype.toString.call(value);
-  }
-
-  // Make dates with properties first say the date
-  if (isDate(value)) {
-    base = ' ' + Date.prototype.toUTCString.call(value);
-  }
-
-  // Make error with message first say the error
-  if (isError(value)) {
-    base = ' ' + formatError(value);
-  }
-
-  if (keys.length === 0 && (!array || value.length == 0)) {
-    return braces[0] + base + braces[1];
-  }
-
-  if (recurseTimes < 0) {
-    if (isRegExp(value)) {
-      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
-    } else {
-      return ctx.stylize('[Object]', 'special');
-    }
-  }
-
-  ctx.seen.push(value);
-
-  var output;
-  if (array) {
-    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
-  } else {
-    output = keys.map(function(key) {
-      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
-    });
-  }
-
-  ctx.seen.pop();
-
-  return reduceToSingleString(output, base, braces);
-}
-
-
-function formatPrimitive(ctx, value) {
-  if (isUndefined(value))
-    return ctx.stylize('undefined', 'undefined');
-  if (isString(value)) {
-    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
-                                             .replace(/'/g, "\\'")
-                                             .replace(/\\"/g, '"') + '\'';
-    return ctx.stylize(simple, 'string');
-  }
-  if (isNumber(value))
-    return ctx.stylize('' + value, 'number');
-  if (isBoolean(value))
-    return ctx.stylize('' + value, 'boolean');
-  // For some reason typeof null is "object", so special case here.
-  if (isNull(value))
-    return ctx.stylize('null', 'null');
-}
-
-
-function formatError(value) {
-  return '[' + Error.prototype.toString.call(value) + ']';
-}
-
-
-function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
-  var output = [];
-  for (var i = 0, l = value.length; i < l; ++i) {
-    if (hasOwnProperty(value, String(i))) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          String(i), true));
-    } else {
-      output.push('');
-    }
-  }
-  keys.forEach(function(key) {
-    if (!key.match(/^\d+$/)) {
-      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
-          key, true));
-    }
-  });
-  return output;
-}
-
-
-function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
-  var name, str, desc;
-  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
-  if (desc.get) {
-    if (desc.set) {
-      str = ctx.stylize('[Getter/Setter]', 'special');
-    } else {
-      str = ctx.stylize('[Getter]', 'special');
-    }
-  } else {
-    if (desc.set) {
-      str = ctx.stylize('[Setter]', 'special');
-    }
-  }
-  if (!hasOwnProperty(visibleKeys, key)) {
-    name = '[' + key + ']';
-  }
-  if (!str) {
-    if (ctx.seen.indexOf(desc.value) < 0) {
-      if (isNull(recurseTimes)) {
-        str = formatValue(ctx, desc.value, null);
-      } else {
-        str = formatValue(ctx, desc.value, recurseTimes - 1);
-      }
-      if (str.indexOf('\n') > -1) {
-        if (array) {
-          str = str.split('\n').map(function(line) {
-            return '  ' + line;
-          }).join('\n').substr(2);
-        } else {
-          str = '\n' + str.split('\n').map(function(line) {
-            return '   ' + line;
-          }).join('\n');
-        }
-      }
-    } else {
-      str = ctx.stylize('[Circular]', 'special');
-    }
-  }
-  if (isUndefined(name)) {
-    if (array && key.match(/^\d+$/)) {
-      return str;
-    }
-    name = JSON.stringify('' + key);
-    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
-      name = name.substr(1, name.length - 2);
-      name = ctx.stylize(name, 'name');
-    } else {
-      name = name.replace(/'/g, "\\'")
-                 .replace(/\\"/g, '"')
-                 .replace(/(^"|"$)/g, "'");
-      name = ctx.stylize(name, 'string');
-    }
-  }
-
-  return name + ': ' + str;
-}
-
-
-function reduceToSingleString(output, base, braces) {
-  var numLinesEst = 0;
-  var length = output.reduce(function(prev, cur) {
-    numLinesEst++;
-    if (cur.indexOf('\n') >= 0) numLinesEst++;
-    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
-  }, 0);
-
-  if (length > 60) {
-    return braces[0] +
-           (base === '' ? '' : base + '\n ') +
-           ' ' +
-           output.join(',\n  ') +
-           ' ' +
-           braces[1];
-  }
-
-  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
-}
-
-
-// NOTE: These type checking functions intentionally don't use `instanceof`
-// because it is fragile and can be easily faked with `Object.create()`.
-function isArray(ar) {
-  return Array.isArray(ar);
-}
-exports.isArray = isArray;
-
-function isBoolean(arg) {
-  return typeof arg === 'boolean';
-}
-exports.isBoolean = isBoolean;
-
-function isNull(arg) {
-  return arg === null;
-}
-exports.isNull = isNull;
-
-function isNullOrUndefined(arg) {
-  return arg == null;
-}
-exports.isNullOrUndefined = isNullOrUndefined;
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-exports.isNumber = isNumber;
-
-function isString(arg) {
-  return typeof arg === 'string';
-}
-exports.isString = isString;
-
-function isSymbol(arg) {
-  return typeof arg === 'symbol';
-}
-exports.isSymbol = isSymbol;
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-exports.isUndefined = isUndefined;
-
-function isRegExp(re) {
-  return isObject(re) && objectToString(re) === '[object RegExp]';
-}
-exports.isRegExp = isRegExp;
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-exports.isObject = isObject;
-
-function isDate(d) {
-  return isObject(d) && objectToString(d) === '[object Date]';
-}
-exports.isDate = isDate;
-
-function isError(e) {
-  return isObject(e) &&
-      (objectToString(e) === '[object Error]' || e instanceof Error);
-}
-exports.isError = isError;
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-exports.isFunction = isFunction;
-
-function isPrimitive(arg) {
-  return arg === null ||
-         typeof arg === 'boolean' ||
-         typeof arg === 'number' ||
-         typeof arg === 'string' ||
-         typeof arg === 'symbol' ||  // ES6 symbol
-         typeof arg === 'undefined';
-}
-exports.isPrimitive = isPrimitive;
-
-exports.isBuffer = require('./support/isBuffer');
-
-function objectToString(o) {
-  return Object.prototype.toString.call(o);
-}
-
-
-function pad(n) {
-  return n < 10 ? '0' + n.toString(10) : n.toString(10);
-}
-
-
-var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
-              'Oct', 'Nov', 'Dec'];
-
-// 26 Feb 16:19:34
-function timestamp() {
-  var d = new Date();
-  var time = [pad(d.getHours()),
-              pad(d.getMinutes()),
-              pad(d.getSeconds())].join(':');
-  return [d.getDate(), months[d.getMonth()], time].join(' ');
-}
-
-
-// log is just a thin wrapper to console.log that prepends a timestamp
-exports.log = function() {
-  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
-};
-
-
-/**
- * Inherit the prototype methods from one constructor into another.
- *
- * The Function.prototype.inherits from lang.js rewritten as a standalone
- * function (not on Function.prototype). NOTE: If this file is to be loaded
- * during bootstrapping this function needs to be rewritten using some native
- * functions as prototype setup using normal JavaScript does not work as
- * expected during bootstrapping (see mirror.js in r114903).
- *
- * @param {function} ctor Constructor function which needs to inherit the
- *     prototype.
- * @param {function} superCtor Constructor function to inherit prototype from.
- */
-exports.inherits = require('inherits');
-
-exports._extend = function(origin, add) {
-  // Don't do anything if add isn't an object
-  if (!add || !isObject(add)) return origin;
-
-  var keys = Object.keys(add);
-  var i = keys.length;
-  while (i--) {
-    origin[keys[i]] = add[keys[i]];
-  }
-  return origin;
-};
-
-function hasOwnProperty(obj, prop) {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
-}
-
-}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-
-},{"./support/isBuffer":7,"_process":5,"inherits":6}],9:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3217,7 +2804,7 @@ var aliases = {
 for (var alias in aliases) {
   if (aliases.hasOwnProperty(alias)) Expectation.prototype[alias] = Expectation.prototype[aliases[alias]];
 }exports.default = Expectation;
-},{"./SpyUtils":10,"./TestUtils":11,"./assert":12,"has":19,"tmatch":35}],10:[function(require,module,exports){
+},{"./SpyUtils":8,"./TestUtils":9,"./assert":10,"has":17,"tmatch":33}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3339,7 +2926,7 @@ var spyOn = exports.spyOn = function spyOn(object, methodName) {
 
   return object[methodName];
 };
-},{"./TestUtils":11,"./assert":12,"define-properties":15}],11:[function(require,module,exports){
+},{"./TestUtils":9,"./assert":10,"define-properties":13}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3486,7 +3073,7 @@ var objectContains = exports.objectContains = function objectContains(object, va
 var stringContains = exports.stringContains = function stringContains(string, value) {
   return string.indexOf(value) !== -1;
 };
-},{"is-equal/why":30,"is-regex":31,"object-keys":33}],12:[function(require,module,exports){
+},{"is-equal/why":28,"is-regex":29,"object-keys":31}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3519,7 +3106,7 @@ var assert = function assert(condition, createMessage) {
 };
 
 exports.default = assert;
-},{"object-inspect":32}],13:[function(require,module,exports){
+},{"object-inspect":30}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -3545,7 +3132,7 @@ function extend(extension) {
 }
 
 exports.default = extend;
-},{"./Expectation":9}],14:[function(require,module,exports){
+},{"./Expectation":7}],12:[function(require,module,exports){
 'use strict';
 
 var _Expectation = require('./Expectation');
@@ -3576,7 +3163,7 @@ expect.assert = _assert2.default;
 expect.extend = _extend2.default;
 
 module.exports = expect;
-},{"./Expectation":9,"./SpyUtils":10,"./assert":12,"./extend":13}],15:[function(require,module,exports){
+},{"./Expectation":7,"./SpyUtils":8,"./assert":10,"./extend":11}],13:[function(require,module,exports){
 'use strict';
 
 var keys = require('object-keys');
@@ -3634,7 +3221,7 @@ defineProperties.supportsDescriptors = !!supportsDescriptors;
 
 module.exports = defineProperties;
 
-},{"foreach":16,"object-keys":33}],16:[function(require,module,exports){
+},{"foreach":14,"object-keys":31}],14:[function(require,module,exports){
 
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
@@ -3658,7 +3245,7 @@ module.exports = function forEach (obj, fn, ctx) {
 };
 
 
-},{}],17:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var ERROR_MESSAGE = 'Function.prototype.bind called on incompatible ';
 var slice = Array.prototype.slice;
 var toStr = Object.prototype.toString;
@@ -3708,17 +3295,17 @@ module.exports = function bind(that) {
     return bound;
 };
 
-},{}],18:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var implementation = require('./implementation');
 
 module.exports = Function.prototype.bind || implementation;
 
-},{"./implementation":17}],19:[function(require,module,exports){
+},{"./implementation":15}],17:[function(require,module,exports){
 var bind = require('function-bind');
 
 module.exports = bind.call(Function.call, Object.prototype.hasOwnProperty);
 
-},{"function-bind":18}],20:[function(require,module,exports){
+},{"function-bind":16}],18:[function(require,module,exports){
 'use strict';
 
 module.exports = function () {
@@ -3745,7 +3332,7 @@ module.exports = function () {
 	return { Map: mapForEach, Set: setForEach };
 };
 
-},{}],21:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict';
 
 var isSymbol = require('is-symbol');
@@ -3764,7 +3351,7 @@ module.exports = function getSymbolIterator() {
 	return symbolIterator;
 };
 
-},{"is-symbol":29}],22:[function(require,module,exports){
+},{"is-symbol":27}],20:[function(require,module,exports){
 'use strict';
 
 var isCallable = require('is-callable');
@@ -3781,7 +3368,7 @@ module.exports = function isArrowFunction(fn) {
 		(isArrowFnWithParensRegex.test(fnStr) || isArrowFnWithoutParensRegex.test(fnStr));
 };
 
-},{"is-callable":24}],23:[function(require,module,exports){
+},{"is-callable":22}],21:[function(require,module,exports){
 'use strict';
 
 var boolToStr = Boolean.prototype.toString;
@@ -3804,7 +3391,7 @@ module.exports = function isBoolean(value) {
 	return hasToStringTag ? tryBooleanObject(value) : toStr.call(value) === boolClass;
 };
 
-},{}],24:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 'use strict';
 
 var fnToStr = Function.prototype.toString;
@@ -3845,7 +3432,7 @@ module.exports = function isCallable(value) {
 	return strClass === fnClass || strClass === genClass;
 };
 
-},{}],25:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 'use strict';
 
 var getDay = Date.prototype.getDay;
@@ -3867,7 +3454,7 @@ module.exports = function isDateObject(value) {
 	return hasToStringTag ? tryDateObject(value) : toStr.call(value) === dateClass;
 };
 
-},{}],26:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -3881,7 +3468,7 @@ module.exports = function isGeneratorFunction(fn) {
 };
 
 
-},{}],27:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 'use strict';
 
 var numToStr = Number.prototype.toString;
@@ -3903,7 +3490,7 @@ module.exports = function isNumberObject(value) {
 	return hasToStringTag ? tryNumberObject(value) : toStr.call(value) === numClass;
 };
 
-},{}],28:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 'use strict';
 
 var strValue = String.prototype.valueOf;
@@ -3925,7 +3512,7 @@ module.exports = function isString(value) {
 	return hasToStringTag ? tryStringObject(value) : toStr.call(value) === strClass;
 };
 
-},{}],29:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -3954,7 +3541,7 @@ if (hasSymbols) {
 	};
 }
 
-},{}],30:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 'use strict';
 
 var ObjectPrototype = Object.prototype;
@@ -4250,7 +3837,7 @@ module.exports = function whyNotEqual(value, other) {
 	return false;
 };
 
-},{"./getCollectionsForEach":20,"./getSymbolIterator":21,"has":19,"is-arrow-function":22,"is-boolean-object":23,"is-callable":24,"is-date-object":25,"is-generator-function":26,"is-number-object":27,"is-regex":31,"is-string":28,"is-symbol":29}],31:[function(require,module,exports){
+},{"./getCollectionsForEach":18,"./getSymbolIterator":19,"has":17,"is-arrow-function":20,"is-boolean-object":21,"is-callable":22,"is-date-object":23,"is-generator-function":24,"is-number-object":25,"is-regex":29,"is-string":26,"is-symbol":27}],29:[function(require,module,exports){
 'use strict';
 
 var regexExec = RegExp.prototype.exec;
@@ -4271,7 +3858,7 @@ module.exports = function isRegex(value) {
 	return hasToStringTag ? tryRegexExec(value) : toStr.call(value) === regexClass;
 };
 
-},{}],32:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 var hasMap = typeof Map === 'function' && Map.prototype;
 var mapSizeDescriptor = Object.getOwnPropertyDescriptor && hasMap ? Object.getOwnPropertyDescriptor(Map.prototype, 'size') : null;
 var mapSize = hasMap && mapSizeDescriptor && typeof mapSizeDescriptor.get === 'function' ? mapSizeDescriptor.get : null;
@@ -4480,7 +4067,7 @@ function inspectString (str) {
     }
 }
 
-},{}],33:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 'use strict';
 
 // modified from https://github.com/es-shims/es5-shim
@@ -4622,7 +4209,7 @@ keysShim.shim = function shimObjectKeys() {
 
 module.exports = keysShim;
 
-},{"./isArguments":34}],34:[function(require,module,exports){
+},{"./isArguments":32}],32:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -4641,7 +4228,7 @@ module.exports = function isArguments(value) {
 	return isArgs;
 };
 
-},{}],35:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 (function (process,Buffer){
 'use strict'
 
@@ -4800,7 +4387,7 @@ function match_ (obj, pattern, ca, cb) {
 
 }).call(this,require('_process'),require("buffer").Buffer)
 
-},{"_process":5,"buffer":1}],36:[function(require,module,exports){
+},{"_process":5,"buffer":1}],34:[function(require,module,exports){
 /*
 * loglevel - https://github.com/pimterry/loglevel
 *
@@ -5025,7 +4612,7 @@ function match_ (obj, pattern, ca, cb) {
     return defaultLogger;
 }));
 
-},{}],37:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 /*
  * A speed-improved perlin and simplex noise algorithms for 2D.
  *
@@ -5354,7 +4941,7 @@ function match_ (obj, pattern, ca, cb) {
 
 })(typeof module === "undefined" ? this : module.exports);
 
-},{}],38:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 'use strict';
 
 var _loglevel = require('loglevel');
@@ -5502,6 +5089,7 @@ PrepareLevel.prototype = {
     preload: function preload() {
         //Shared assets
         env.assetManager.load('hex');
+        env.assetManager.load('pawn');
     },
 
     create: function create(game) {
@@ -5556,7 +5144,7 @@ game.state.add("Play", _Play2.default);
 console.log(_Play2.default);
 game.state.start("Boot");
 
-},{"expect":14,"lib/AssetManager":39,"loglevel":36,"states/Play":44}],39:[function(require,module,exports){
+},{"expect":12,"lib/AssetManager":37,"loglevel":34,"states/Play":43}],37:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5619,12 +5207,13 @@ AssetManager.images = {
 };
 
 AssetManager.spritesheets = {
-    'hex': ['assets/hex.png', _Renderer.HEX_WIDTH, 41]
+    'hex': ['assets/hex.png', _Renderer.HEX_WIDTH, 41],
+    'pawn': ['assets/pawn.png', 32, 48]
 };
 
 exports.default = AssetManager;
 
-},{"ui/Renderer":45}],40:[function(require,module,exports){
+},{"ui/Renderer":44}],38:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5896,6 +5485,11 @@ var HexGroup = function () {
             }
         }
     }, {
+        key: 'filter',
+        value: function filter(fn) {
+            return new HexGroup(this.members.filter(fn));
+        }
+    }, {
         key: 'forEach',
         value: function forEach(fn) {
             return this.members.forEach(fn);
@@ -6147,7 +5741,7 @@ var HexGrid = function () {
 
 exports.HexGrid = HexGrid;
 
-},{"expect":14,"loglevel":36}],41:[function(require,module,exports){
+},{"expect":12,"loglevel":34}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6405,7 +5999,185 @@ console.debug("TEST1:",a);
 exports.OrderedHashMap = OrderedHashMap;
 exports.Random = Random;
 
-},{}],42:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.PawnType = exports.Pawns = undefined;
+
+var _createClass = function () {
+    function defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+        }
+    }return function (Constructor, protoProps, staticProps) {
+        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+    };
+}();
+
+var _enumify = require('enumify');
+
+var _expect = require('expect');
+
+var _expect2 = _interopRequireDefault(_expect);
+
+function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+}
+
+function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+    }
+}
+
+function _possibleConstructorReturn(self, call) {
+    if (!self) {
+        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }return call && (typeof call === "object" || typeof call === "function") ? call : self;
+}
+
+function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+        throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+}
+
+var PawnType = function (_Enum) {
+    _inherits(PawnType, _Enum);
+
+    function PawnType() {
+        _classCallCheck(this, PawnType);
+
+        return _possibleConstructorReturn(this, (PawnType.__proto__ || Object.getPrototypeOf(PawnType)).apply(this, arguments));
+    }
+
+    return PawnType;
+}(_enumify.Enum);
+
+PawnType.initEnum(['UNKNOWN', 'TOWN', 'TOWER', 'TROOP_1', 'TROOP_2', 'TROOP_3', 'TROOP_4', 'UNREST', 'RAIDERS', 'GRAVE']);
+
+var lastPawnId = 0;
+function generatePawnId() {
+    return ++lastPawnId;
+}
+
+var Pawn = function () {
+    function Pawn(_ref, pawnType, hex) {
+        var grid = _ref.grid,
+            pawns = _ref.pawns;
+
+        _classCallCheck(this, Pawn);
+
+        (0, _expect2.default)(pawnType instanceof PawnType).toBeTruthy();
+        (0, _expect2.default)(hex).toExist();
+        this._id = generatePawnId();
+        this.pawnType = pawnType;
+        this.pawns = pawns;
+        this._hex = hex;
+        this.onMoved = new Phaser.Signal();
+        this.onDestroyed = new Phaser.Signal();
+    }
+
+    _createClass(Pawn, [{
+        key: 'moveTo',
+        value: function moveTo(toHex) {
+            if (!this.pawns.pawnAt(toHex)) {
+                throw new Error('Tried to move ' + this + ' from ' + this._hex + ' to ' + toHex + ', but an existing pawn ' + this.pawns.pawnAt(toHex) + ' is in the way.');
+            } else if (!toHex.exists()) {
+                throw new Error('Tried to move ' + this + ' from ' + this._hex + ' to a nonexistent hex.');
+            }
+            var fromHex = this._hex;
+            this._hex = toHex;
+            this.onMoved.dispatch(this, fromHex, toHex);
+        }
+    }, {
+        key: 'destroy',
+        value: function destroy() {
+            this.onDestroyed.dispatch();
+        }
+    }, {
+        key: 'toString',
+        value: function toString() {
+            return '[' + this.pawnType + ' #' + this.id + ' at ' + this._hex + ']';
+        }
+    }, {
+        key: 'hex',
+        get: function get() {
+            return this._hex;
+        }
+    }, {
+        key: 'id',
+        get: function get() {
+            return this._id;
+        }
+    }]);
+
+    return Pawn;
+}();
+
+var Pawns = function () {
+    function Pawns(_ref2) {
+        var grid = _ref2.grid,
+            log = _ref2.log;
+
+        _classCallCheck(this, Pawns);
+
+        this.grid = grid;
+        this._hexPawn = [];
+        this._pawns = {};
+        this.log = log;
+    }
+
+    _createClass(Pawns, [{
+        key: 'pawnAt',
+        value: function pawnAt(hex) {
+            return this._hexPawn[hex.id] || null;
+        }
+    }, {
+        key: 'forEach',
+        value: function forEach(fn) {
+            var _this2 = this;
+
+            Object.keys(this._pawns).forEach(function (key) {
+                return fn(_this2._pawns[key]);
+            });
+        }
+    }, {
+        key: 'placeAt',
+        value: function placeAt(pawnType, hex) {
+            var _this3 = this;
+
+            if (this.pawnAt(hex)) {
+                throw Error('Tried to place ' + pawnType + ' at ' + hex + ', but it\'s already occupied by ' + this.pawnAt(hex));
+            }
+            (0, _expect2.default)(pawnType instanceof PawnType).toBeTruthy("Invalid pawnType '" + pawnType + "' in Pawns.placeAt");
+            var newPawn = new Pawn({ grid: this.grid, pawns: this }, pawnType, hex);
+            this._hexPawn[hex.id] = newPawn;
+            this._pawns[newPawn.id] = newPawn;
+            newPawn.onMoved.add(function (pawn, fromHex, toHex) {
+                _this3.log.debug(pawn + ' moved from ' + fromHex + ', ' + toHex);
+                _this3._hexPawn[fromHex.id] = undefined;
+                _this3._hexPawn[toHex.id] = pawn;
+            });
+            newPawn.onDestroyed.add(function () {
+                _this3.log.debug(newPawn + ' destroyed');
+                _this3._hexPawn[newPawn.hex.id] = undefined;
+                delete _this3._pawns[newPawn.id];
+            });
+            return newPawn;
+        }
+    }]);
+
+    return Pawns;
+}();
+
+exports.Pawns = Pawns;
+exports.PawnType = PawnType;
+
+},{"enumify":6,"expect":12}],41:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6428,6 +6200,8 @@ var _expect2 = _interopRequireDefault(_expect);
 
 var _util = require('lib/util');
 
+var _Pawns = require('rules/Pawns');
+
 function _interopRequireDefault(obj) {
     return obj && obj.__esModule ? obj : { default: obj };
 }
@@ -6439,6 +6213,7 @@ function _classCallCheck(instance, Constructor) {
 }
 
 var NUMBER_OF_FACTIONS = 4;
+var MIN_SIZE_FOR_CAPITAL = 2;
 
 var lastRegionId = 0;
 function generateRegionId() {
@@ -6447,29 +6222,56 @@ function generateRegionId() {
 
 var Region = function () {
     function Region(_ref, hexGroup) {
-        var regions = _ref.regions;
+        var regions = _ref.regions,
+            pawns = _ref.pawns;
 
         _classCallCheck(this, Region);
 
         (0, _expect2.default)(regions).toExist();
+        (0, _expect2.default)(pawns).toExist();
+        this.pawns = pawns;
+        this.regions = regions;
+
         this._id = generateRegionId();
         this._hexes = hexGroup;
         this.treasury = 0;
         this.capital = null;
-        this.regions = regions;
         this.pickNewCapital();
-        this.faction = regions.factionOf(this.capital);
+        this.faction = regions.factionOf(this.hexes.pivot);
     }
 
     _createClass(Region, [{
+        key: 'hasCapital',
+        value: function hasCapital() {
+            return !!this.capital;
+        }
+    }, {
         key: 'pickNewCapital',
         value: function pickNewCapital() {
-            this.capital = this._hexes.pivot;
+            var _this = this;
+
+            if (this.capital) this.capital.destroy();
+            if (this._hexes.size < MIN_SIZE_FOR_CAPITAL) {
+                //region too small to have capital
+                this.capital = null;
+                return;
+            }
+
+            var availableHexes = this._hexes.filter(function (hex) {
+                return !_this.pawns.pawnAt(hex);
+            });
+            if (availableHexes.size === 0) {
+                //TODO: clear some hex to make space for the new capital
+                this.capital = null;
+            } else {
+                this.capital = this.pawns.placeAt(_Pawns.PawnType.TOWN, availableHexes.pivot);
+            }
         }
     }, {
         key: 'toString',
         value: function toString() {
-            return '[Region #' + this.id + ' (' + this._hexes.size + ' hexes, capital at ' + this.capital + ')]';
+
+            return '[Region #' + this.id + ' (' + this._hexes.size + ' hexes,' + (this.hasCapital() ? 'capital at ' + this.capital.hex : "no capital") + ")]";
         }
     }, {
         key: 'hexes',
@@ -6489,12 +6291,16 @@ var Region = function () {
 var Regions = function () {
     function Regions(_ref2) {
         var grid = _ref2.grid,
-            log = _ref2.log;
+            log = _ref2.log,
+            pawns = _ref2.pawns;
 
         _classCallCheck(this, Regions);
 
+        (0, _expect2.default)(pawns).toExist();
         this.grid = grid;
         this.log = log;
+        this.pawns = pawns;
+
         this.regions = [];
         this.hexFaction = [];
         this.hexRegion = [];
@@ -6503,10 +6309,10 @@ var Regions = function () {
     _createClass(Regions, [{
         key: 'randomize',
         value: function randomize() {
-            var _this = this;
+            var _this2 = this;
 
             this.grid.forEach(function (hex) {
-                _this.hexFaction[hex.id] = _util.Random.integer(1, NUMBER_OF_FACTIONS);
+                _this2.hexFaction[hex.id] = _util.Random.integer(1, NUMBER_OF_FACTIONS);
             });
             this.init();
         }
@@ -6523,17 +6329,17 @@ var Regions = function () {
     }, {
         key: 'init',
         value: function init() {
-            var _this2 = this;
+            var _this3 = this;
 
             this.regions = this.grid.components(function (hex, prevHex) {
-                return _this2.factionOf(hex) === _this2.factionOf(prevHex);
+                return _this3.factionOf(hex) === _this3.factionOf(prevHex);
             }).map(function (group) {
-                return new Region({ regions: _this2 }, group);
+                return new Region({ regions: _this3, pawns: _this3.pawns }, group);
             });
 
             this.regions.forEach(function (region) {
                 region.hexes.forEach(function (hex) {
-                    _this2.hexRegion[hex.id] = region;
+                    _this3.hexRegion[hex.id] = region;
                 });
             });
         }
@@ -6544,7 +6350,7 @@ var Regions = function () {
 
 exports.default = Regions;
 
-},{"expect":14,"lib/util":41}],43:[function(require,module,exports){
+},{"expect":12,"lib/util":39,"rules/Pawns":40}],42:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6617,7 +6423,7 @@ window.avoidEdges = avoidEdges;
 exports.worldGenPerlin = worldGenPerlin;
 exports.worldGenSolid = worldGenSolid;
 
-},{"noisejs":37}],44:[function(require,module,exports){
+},{"noisejs":35}],43:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6638,13 +6444,11 @@ var _expect = require('expect');
 
 var _expect2 = _interopRequireDefault(_expect);
 
-var _util = require('util');
-
-var _util2 = _interopRequireDefault(_util);
-
 var _HexGrid = require('lib/HexGrid');
 
 var _Renderer = require('ui/Renderer');
+
+var Renderer = _interopRequireWildcard(_Renderer);
 
 var _TileSelectionProxy = require('ui/TileSelectionProxy');
 
@@ -6655,6 +6459,20 @@ var _WorldGenerator = require('rules/WorldGenerator');
 var _Regions = require('rules/Regions');
 
 var _Regions2 = _interopRequireDefault(_Regions);
+
+var _Pawns = require('rules/Pawns');
+
+function _interopRequireWildcard(obj) {
+    if (obj && obj.__esModule) {
+        return obj;
+    } else {
+        var newObj = {};if (obj != null) {
+            for (var key in obj) {
+                if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+            }
+        }newObj.default = obj;return newObj;
+    }
+}
 
 function _interopRequireDefault(obj) {
     return obj && obj.__esModule ? obj : { default: obj };
@@ -6684,26 +6502,33 @@ var Play = function () {
             (0, _expect2.default)(log).toExist();
 
             this.debugMode = debugMode;
-            this.debug = new _Renderer.DebugInfo(env);
+            this.debug = new Renderer.DebugInfo(env);
             env.debug = this.debug;
             this.grid = new _HexGrid.HexGrid(30, 18);
             env.grid = this.grid;
+            this.pawns = new _Pawns.Pawns(env);
+            env.pawns = this.pawns;
             this.regions = new _Regions2.default(env);
             env.regions = this.regions;
 
             (0, _WorldGenerator.worldGenPerlin)(env);
             this.regions.randomize();
 
-            this.ground = new _Renderer.Ground(env);
-            env.ground = this.ground;
+            var renderGround = new Renderer.Ground(env);
+            var renderPawns = new Renderer.Pawns(env);
+
+            env.render = {
+                ground: renderGround,
+                pawns: renderPawns
+            };
 
             var g = {};
             //display layers hierarchy
             g.root = game.add.group();
             g.staticBackground = g.root.add(game.add.group()); // static background (does not move with the world)
             g.world = g.root.add(game.add.group()); // the scrolling game world
-            g.terrain = this.ground.getGroup(); // terrain tiles in the scrolling game world
-            g.underObjects = g.world.add(game.add.group()); // elements displayed between terrain and objects in the scrolling game world
+            g.terrain = renderGround.group; // terrain tiles in the scrolling game world
+            g.pawns = renderPawns.group; // elements displayed between terrain and objects in the scrolling game world
             g.objects = g.world.add(game.add.group()); // objects placed on terrain in the game world
             g.overObjects = g.world.add(game.add.group()); // elements overlayed over objects in the game world
             g.tileSelectionProxy = g.world.add(new _TileSelectionProxy2.default(env)); // invisible sprite capturing mouseover/mousedown items on game world and translating them to events on individual hexagons
@@ -6754,13 +6579,13 @@ var Play = function () {
 
 exports.default = Play;
 
-},{"expect":14,"lib/HexGrid":40,"rules/Regions":42,"rules/WorldGenerator":43,"ui/Renderer":45,"ui/TileSelectionProxy":46,"util":8}],45:[function(require,module,exports){
+},{"expect":12,"lib/HexGrid":38,"rules/Pawns":40,"rules/Regions":41,"rules/WorldGenerator":42,"ui/Renderer":44,"ui/TileSelectionProxy":45}],44:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.LINE_HEIGHT = exports.HEX_HEIGHT = exports.HEX_WIDTH = exports.DebugInfo = exports.Ground = undefined;
+exports.LINE_HEIGHT = exports.HEX_HEIGHT = exports.HEX_WIDTH = exports.DebugInfo = exports.Pawns = exports.Ground = undefined;
 
 var _createClass = function () {
     function defineProperties(target, props) {
@@ -6812,6 +6637,13 @@ var OFFSET_LEFT = 10 + HEX_WIDTH / 2;
 
 var LINE_HEIGHT = HEX_HEIGHT * 3 / 4;
 
+function convertToWorldCoordinates(x, y) {
+    return {
+        x: OFFSET_LEFT + x * HEX_WIDTH,
+        y: OFFSET_TOP + y * LINE_HEIGHT
+    };
+}
+
 var Ground = function () {
     function Ground(env) {
         var _this = this;
@@ -6840,20 +6672,16 @@ var Ground = function () {
     }
 
     _createClass(Ground, [{
-        key: 'getGroup',
-        value: function getGroup() {
-            return this.group;
-        }
-    }, {
         key: 'highlightTiles',
         value: function highlightTiles(tiles) {
+            var _this2 = this;
+
             return;
-            var self = this;
             this.highlightedTiles.forEach(function (tileSprite) {
                 if (tileSprite) tileSprite.frame = 0;
             });
             this.highlightedTiles = tiles.map(function (tile) {
-                return tile && self.tileToSprite[tile.id];
+                return tile && _this2.tileToSprite[tile.id];
             });
             this.highlightedTiles.forEach(function (tileSprite) {
                 if (tileSprite) tileSprite.frame = 1;
@@ -6874,30 +6702,85 @@ var GroundTileSprite = function (_Phaser$Sprite) {
 
         _classCallCheck(this, GroundTileSprite);
 
-        var x = OFFSET_LEFT + tile.position.x * HEX_WIDTH;
-        var y = OFFSET_TOP + tile.position.y * LINE_HEIGHT;
+        var _convertToWorldCoordi = convertToWorldCoordinates(tile.position.x, tile.position.y),
+            x = _convertToWorldCoordi.x,
+            y = _convertToWorldCoordi.y;
 
-        var _this2 = _possibleConstructorReturn(this, (GroundTileSprite.__proto__ || Object.getPrototypeOf(GroundTileSprite)).call(this, game, x, y, 'hex'));
+        var _this3 = _possibleConstructorReturn(this, (GroundTileSprite.__proto__ || Object.getPrototypeOf(GroundTileSprite)).call(this, game, x, y, 'hex'));
 
-        _this2.frame = regions.factionOf(tile) || 0;
+        _this3.frame = regions.factionOf(tile) || 0;
         //log.debug(`Hex sprite for ${tile} created at ${x}:${y}`);
-
         /*
-        var style = { font: "10px Courier New", fill: "white", align: "center"};
-        this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,tile.id + "\n" + tile.position.r + "," + tile.position.c, style);
+        var style = { font: "12px Courier New", fill: "white", align: "center"};
+        this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,tile.id, style);
+        this.label.alpha=0.5;
         this.label.lineSpacing = -6;
         this.label.anchor.set(0.5,0.5);
-        this.addChild(this.label);
-        */
-        return _this2;
+        this.addChild(this.label);*/
+
+        return _this3;
     }
 
     return GroundTileSprite;
 }(Phaser.Sprite);
 
+var PAWN_OFFSET_TOP = -13;
+
+var Pawns = function Pawns(_ref2) {
+    var _this4 = this;
+
+    var game = _ref2.game,
+        log = _ref2.log,
+        pawns = _ref2.pawns;
+
+    _classCallCheck(this, Pawns);
+
+    (0, _expect2.default)(game).toExist();
+    (0, _expect2.default)(pawns).toExist();
+
+    this.game = game;
+    this.group = game.add.group();
+    this.pawns = pawns;
+    this.pawnToSprite = {};
+    this.pawns.forEach(function (pawn) {
+        var sprite = new PawnSprite({ game: game }, pawn);
+        _this4.group.add(sprite);
+        _this4.pawnToSprite[pawn.id] = sprite;
+    });
+};
+
+var PawnSprite = function (_Phaser$Sprite2) {
+    _inherits(PawnSprite, _Phaser$Sprite2);
+
+    function PawnSprite(_ref3, pawn) {
+        var game = _ref3.game;
+
+        _classCallCheck(this, PawnSprite);
+
+        var _convertToWorldCoordi2 = convertToWorldCoordinates(pawn.hex.position.x, pawn.hex.position.y),
+            x = _convertToWorldCoordi2.x,
+            y = _convertToWorldCoordi2.y;
+
+        var _this5 = _possibleConstructorReturn(this, (PawnSprite.__proto__ || Object.getPrototypeOf(PawnSprite)).call(this, game, x, y + PAWN_OFFSET_TOP, 'pawn'));
+
+        _this5.frame = pawn.pawnType.ordinal;
+        _this5.pawn = pawn;
+
+        /*        var style = { font: "10px Courier New", fill: "white", align: "center"};
+                this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,tile.id, style);
+                this.label.lineSpacing = -6;
+                this.label.anchor.set(0.5,0.5);
+                this.addChild(this.label);*/
+
+        return _this5;
+    }
+
+    return PawnSprite;
+}(Phaser.Sprite);
+
 var DebugInfo = function () {
-    function DebugInfo(_ref2) {
-        var game = _ref2.game;
+    function DebugInfo(_ref4) {
+        var game = _ref4.game;
 
         _classCallCheck(this, DebugInfo);
 
@@ -6913,11 +6796,11 @@ var DebugInfo = function () {
     }, {
         key: 'render',
         value: function render() {
-            var _this3 = this;
+            var _this6 = this;
 
             var y = 32;
             this.items.forEach(function (key, value) {
-                _this3.game.debug.text(key + ": " + value, 32, y);
+                _this6.game.debug.text(key + ": " + value, 32, y);
                 y += 32;
             });
         }
@@ -6927,12 +6810,13 @@ var DebugInfo = function () {
 }();
 
 exports.Ground = Ground;
+exports.Pawns = Pawns;
 exports.DebugInfo = DebugInfo;
 exports.HEX_WIDTH = HEX_WIDTH;
 exports.HEX_HEIGHT = HEX_HEIGHT;
 exports.LINE_HEIGHT = LINE_HEIGHT;
 
-},{"expect":14,"lib/util":41,"loglevel":36}],46:[function(require,module,exports){
+},{"expect":12,"lib/util":39,"loglevel":34}],45:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6994,7 +6878,8 @@ var TileSelectionProxy = function (_Phaser$Image) {
             debug = _ref.debug,
             ground = _ref.ground,
             log = _ref.log,
-            regions = _ref.regions;
+            regions = _ref.regions,
+            pawns = _ref.pawns;
 
         _classCallCheck(this, TileSelectionProxy);
 
@@ -7018,7 +6903,7 @@ var TileSelectionProxy = function (_Phaser$Image) {
         });
         _this.events.onInputDown.add(function () {
             var hex = _this.getHexUnderCursor();
-            log.info(hex + '\nFaction: ' + regions.factionOf(hex) + '\nRegion:  ' + regions.regionOf(hex));
+            log.info(hex + '\nFaction: ' + regions.factionOf(hex) + '\nRegion:  ' + regions.regionOf(hex) + '\nPawn: ' + pawns.pawnAt(hex));
         });
         return _this;
     }
@@ -7107,5 +6992,5 @@ var TileSelectionProxy = function (_Phaser$Image) {
 
 exports.default = TileSelectionProxy;
 
-},{"ui/Renderer":45}]},{},[38])
+},{"ui/Renderer":44}]},{},[36])
 //# sourceMappingURL=game.js.map

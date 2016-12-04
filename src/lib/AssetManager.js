@@ -32,6 +32,7 @@ AssetManager.images = {
 
 AssetManager.spritesheets = {
     'hex' : ['assets/hex.png', HEX_WIDTH, 41],
+    'pawn' : ['assets/pawn.png', 32,48]
 };
 
 export default AssetManager;

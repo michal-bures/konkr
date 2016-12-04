@@ -169,6 +169,10 @@ class HexGroup {
         }
     }
 
+    filter(fn) {
+        return new HexGroup(this.members.filter(fn));
+    }
+
     forEach(fn) {
         return this.members.forEach(fn);
     }

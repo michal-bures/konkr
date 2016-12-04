@@ -1,7 +1,7 @@
 import { HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT } from 'ui/Renderer';
 
 class TileSelectionProxy extends Phaser.Image {
-    constructor({game,grid,debug,ground,log,regions}) {
+    constructor({game,grid,debug,ground,log,regions,pawns}) {
         super(game,10,10);
 
         this.debug = debug;
@@ -20,7 +20,8 @@ class TileSelectionProxy extends Phaser.Image {
             const hex = this.getHexUnderCursor();
             log.info(`${hex}
 Faction: ${regions.factionOf(hex)}
-Region:  ${regions.regionOf(hex)}`);
+Region:  ${regions.regionOf(hex)}
+Pawn: ${pawns.pawnAt(hex)}`);
         });
     }
 

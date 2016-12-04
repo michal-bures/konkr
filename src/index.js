@@ -132,6 +132,7 @@ PrepareLevel.prototype = {
     preload: function() {
         //Shared assets
         env.assetManager.load('hex');
+        env.assetManager.load('pawn');
     },
 
     create: function(game) {
