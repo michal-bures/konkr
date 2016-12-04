@@ -1,5 +1,7 @@
 import log from 'loglevel';
 import expect from 'expect';
+import { Random } from 'lib/util';
+
 
 // A coordinates in the hexagonal grid.
 // automatically converts between three coordinate systems
@@ -122,7 +124,7 @@ const NullHex = {
 class HexGroup {
     constructor(hexes) {
         this.members=[];
-        this._size = 0;
+        this._length = 0;
         this._pivot = NullHex;
         if (hexes) this.addAll(hexes);
     }
@@ -136,7 +138,7 @@ class HexGroup {
     }
 
     _findNewPivot() {
-        if (!this.size) return NullHex;
+        if (!this.length) return NullHex;
         let first;
         for (first in this.members) break;
         this._pivot = first;
@@ -144,6 +146,20 @@ class HexGroup {
 
     get pivot() {
         return this._pivot;
+    }
+
+    getRandomHex() {
+        if (!this.length) return NullHex;
+        let i = Random.integer(0, this._length-1);
+        let n = 0;
+        var res = NullHex;
+        this.members.some(hex => { 
+            if( n++ === i) {
+                res = hex;
+                return true;
+            }
+        });
+        return res;
     }
 
     getById(id) {
@@ -154,7 +170,7 @@ class HexGroup {
         if (this.members[hex.id]) return false;
         if (!this._pivot.exists()) this._pivot = hex;
         this.members[hex.id] = hex;
-        ++this._size;
+        ++this._length;
         return true;
     }
 
@@ -165,7 +181,7 @@ class HexGroup {
     remove(hex) {
         if (this.members[hex.id] === undefined) return;
         this.members[hex.id] = undefined;
-        --this._size;
+        --this._length;
 
         if (hex === this._pivot) {
             this._findNewPivot();
@@ -188,8 +204,8 @@ class HexGroup {
         this.members = [];
     }
 
-    get size() {
-        return this._size;
+    get length() {
+        return this._length;
     }
 
     floodFill(condition = ()=>true) {
@@ -201,7 +217,7 @@ class HexGroup {
                 nextPending.addAll(thisHex.neighbours().filter((adjHex)=>filterCondition(adjHex,thisHex)));
         };
         const filterCondition = (thisHex,prevHex)=>condition(thisHex,prevHex) && !this.contains(thisHex);
-        while (pending.size > 0) {
+        while (pending.length > 0) {
             //log.debug("Pending:"+ pending.toString());
             nextPending = new HexGroup();
             pending.forEach(processHex);
@@ -210,7 +226,7 @@ class HexGroup {
     }
 
     toString() {
-        return `[HexGroup (${this.size}): ${this.members.map(hex=>`#${hex.id}`).filter(a=>a!==undefined).join(",")}]`;
+        return `[HexGroup (${this.length}): ${this.members.map(hex=>`#${hex.id}`).filter(a=>a!==undefined).join(",")}]`;
     }
 }
 
@@ -220,7 +236,7 @@ class HexGrouping {
     constructor() {
         this.groups = {};
         this.membership = [];
-        this._size = 0;
+        this._length = 0;
     }
 
     add(hex, key) {
@@ -228,7 +244,7 @@ class HexGrouping {
             if (this.membership[hex.id] === key) return;
             this.groups[key].remove(hex);
         } else {
-            ++this._size;
+            ++this._length;
         }
         if (!this.groups[key]) this.groups[key] = new HexGroup();
         this.groups[key].add(hex);
@@ -260,23 +276,23 @@ class HexGrouping {
         var max = 0;
         var res = null;
         this.forEach(hexGroup => {
-            if (hexGroup.size > max) {
-                max = hexGroup.size;
+            if (hexGroup.length > max) {
+                max = hexGroup.length;
                 res = hexGroup;
             }
         });
         return res;
     }
 
-    get size() {
-        return this._size;
+    get length() {
+        return this._length;
     }
 
     toString() {
         let total=0;
         let str = Object.keys(this.groups).map((key) => {
-            console.log("==",key,this.groups[key].size);
-            const len = this.groups[key].size;
+            console.log("==",key,this.groups[key].length);
+            const len = this.groups[key].length;
             total += len;
             return `${key}(${len})`;
         }).join(", ");

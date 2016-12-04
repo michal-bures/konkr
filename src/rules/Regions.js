@@ -81,23 +81,23 @@ function Regions (spec) {
         
         pickNewCapital() {
             if (this.capital) this.capital.destroy();
-            if (this._hexes.size < MIN_SIZE_FOR_CAPITAL) {
+            if (this._hexes.length < MIN_SIZE_FOR_CAPITAL) {
                 //region too small to have capital
                 this.capital = null;
                 return;
             }
 
             const availableHexes = this._hexes.filter(hex=>!pawns.pawnAt(hex));
-            if (availableHexes.size === 0) {
+            if (availableHexes.length === 0) {
                 //TODO: clear some hex to make space for the new capital
                 this.capital = null;
             } else {
-                this.capital = pawns.placeAt(PawnType.TOWN,availableHexes.pivot);
+                this.capital = pawns.placeAt(PawnType.TOWN,availableHexes.getRandomHex());
             }
         }
 
         toString() {
-            return `[Region #${this.id} (${this._hexes.size} hexes,`+(this.hasCapital()?`capital at ${this.capital.hex}`:"no capital")+")]";
+            return `[Region #${this.id} (${this._hexes.length} hexes,`+(this.hasCapital()?`capital at ${this.capital.hex}`:"no capital")+")]";
         }
     }
 

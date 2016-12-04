@@ -8,10 +8,11 @@ function worldGenSolid({grid,log}) {
 function worldGenPerlin({grid,log}) {
     const MIN_SIZE = 150;
     const SMOOTHNESS = 8;
+    const WATER_LEVEL = 0.7;
 
     let noise, comps, largest, tries, seed;
     const generatorFunc = (p=>{
-        return (noise.simplex2(p.x/SMOOTHNESS,p.y/SMOOTHNESS) + 1) * avoidEdges(p.x/grid.width,p.y/grid.height) >=0.75;
+        return (noise.simplex2(p.x/SMOOTHNESS,p.y/SMOOTHNESS) + 1) * avoidEdges(p.x/grid.width,p.y/grid.height) >= WATER_LEVEL;
     });
 
 
@@ -23,7 +24,7 @@ function worldGenPerlin({grid,log}) {
         largest = comps.getLargestGroup();
         ++tries;
         if (tries > 50) throw Error('Failed to generate suitable world after 50 iterations');
-    } while (largest.size < MIN_SIZE);
+    } while (largest.length < MIN_SIZE);
 
     comps.forEach((hexGroup)=>{
         if (hexGroup!=largest) {
