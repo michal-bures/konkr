@@ -1,7 +1,7 @@
-import { HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT } from 'lib/Renderer'
+import { HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT } from 'ui/Renderer';
 
 class TileSelectionProxy extends Phaser.Image {
-    constructor({game,grid,debug,ground,log}) {
+    constructor({game,grid,debug,ground,log,regions}) {
         super(game,10,10);
 
         this.debug = debug;
@@ -17,14 +17,17 @@ class TileSelectionProxy extends Phaser.Image {
         this.events.onInputOver.add(() => this.active = true);
         this.events.onInputOut.add(() => this.active = false);
         this.events.onInputDown.add(() => {
-            log.info(this.getHexUnderCursor().toString(),this.getHexUnderCursor());
+            const hex = this.getHexUnderCursor();
+            log.info(`${hex}
+Faction: ${regions.factionOf(hex)}
+Region:  ${regions.regionOf(hex)}`);
         });
     }
 
     update() {
         super.update(...arguments);
         if (this.active) {
-            this.ground.highlightTiles(this.getHexUnderCursor().neighbours());
+            this.ground.highlightTiles([this.getHexUnderCursor()]);
         }
     }
 

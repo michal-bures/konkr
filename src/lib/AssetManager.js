@@ -1,7 +1,7 @@
 /* exported AssetManager */
 /* globals -AssetManager */
 
-import { HEX_WIDTH, HEX_HEIGHT } from 'lib/Renderer';
+import { HEX_WIDTH, HEX_HEIGHT } from 'ui/Renderer';
 
 class AssetManager {
     constructor({game, log}) {

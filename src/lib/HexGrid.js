@@ -76,7 +76,7 @@ class Hexagon {
     }
 
     toString() {
-        return `[Hex at ${this.position}]`;
+        return `[Hex #${this.id} (${this.position.r},${this.position.c})]`;
     }
 
     neighbours() {
@@ -99,10 +99,28 @@ class Hexagon {
     exists() { return true; }
 }
 
+const NullHex = {
+    toString: () => "[Null Hex]",
+    neighbours: () => [],
+    id: -1,    
+    exists: () => false,
+    position: {
+        x: -1, 
+        y: -1, 
+        r: -1,
+        c: -1,
+        index: -1,
+        toString: () => "[Null GridPoint]"
+    },
+    floodFill: null,
+};
+
+
 class HexGroup {
     constructor(hexes) {
         this.members=[];
         this._size = 0;
+        this._pivot = NullHex;
         if (hexes) this.addAll(hexes);
     }
 
@@ -114,12 +132,24 @@ class HexGroup {
         return !!this.members[id];
     }
 
+    _findNewPivot() {
+        if (!this.size) return NullHex;
+        let first;
+        for (first in this.members) break;
+        this._pivot = first;
+    }
+
+    get pivot() {
+        return this._pivot;
+    }
+
     getById(id) {
         return this.members[id];
     }
 
     add(hex) {
         if (this.members[hex.id]) return false;
+        if (!this._pivot.exists()) this._pivot = hex;
         this.members[hex.id] = hex;
         ++this._size;
         return true;
@@ -133,6 +163,10 @@ class HexGroup {
         if (this.members[hex.id] === undefined) return;
         this.members[hex.id] = undefined;
         --this._size;
+
+        if (hex === this._pivot) {
+            this._findNewPivot();
+        }
     }
 
     forEach(fn) {
@@ -155,11 +189,11 @@ class HexGroup {
         let pending = this.clone(); 
 
         let nextPending;
-        const processHex = hex => {
-                this.add(hex);
-                nextPending.addAll(hex.neighbours().filter(filterCondition));
+        const processHex = thisHex => {
+                this.add(thisHex);
+                nextPending.addAll(thisHex.neighbours().filter((adjHex)=>filterCondition(adjHex,thisHex)));
         };
-        const filterCondition = hex=>condition(hex) && !this.contains(hex);
+        const filterCondition = (thisHex,prevHex)=>condition(thisHex,prevHex) && !this.contains(thisHex);
         while (pending.size > 0) {
             //log.debug("Pending:"+ pending.toString());
             nextPending = new HexGroup();
@@ -172,6 +206,8 @@ class HexGroup {
         return `[HexGroup (${this.size}): ${this.members.map(hex=>`#${hex.id}`).filter(a=>a!==undefined).join(",")}]`;
     }
 }
+
+NullHex.floodFill = () => new HexGroup();
 
 class HexGrouping {
     constructor() {
@@ -203,14 +239,20 @@ class HexGrouping {
 
     forEach(fn) {
         for (const key in this.groups) {
-            fn(key, this.groups[key]);
+            fn(this.groups[key],key);
         }
+    }
+
+    map(fn) {
+        let res = [];
+        this.forEach((group,key)=>res.push(fn(group,key)));
+        return res;
     }
 
     getLargestGroup() {
         var max = 0;
         var res = null;
-        this.forEach((key,hexGroup) => {
+        this.forEach(hexGroup => {
             if (hexGroup.size > max) {
                 max = hexGroup.size;
                 res = hexGroup;
@@ -271,14 +313,13 @@ class HexGrid {
         });
     }
 
-    components(categoryFunction=()=>true) {
+    components(condition=()=>true) {
         let comps = new HexGrouping();
         let compNumber = 1;
         this.forEach(hex => {
             if (!comps.getOwnerOf(hex)) {
-                log.debug("-> "+hex.toString());
                 comps.add(hex, compNumber);
-                comps.addAll(hex.floodFill(categoryFunction), compNumber);
+                comps.addAll(hex.floodFill(condition), compNumber);
                 ++compNumber;
             }
         });
@@ -304,22 +345,6 @@ class HexGrid {
         });
     }
 }
-
-const NullHex = {
-    toString: () => "[Null Hex]",
-    neighbours: () => [],
-    id: -1,    
-    exists: () => false,
-    position: {
-        x: -1, 
-        y: -1, 
-        r: -1,
-        c: -1,
-        index: -1,
-        toString: () => "[Null GridPoint]"
-    },
-    floodFill: () => new HexGroup()
-};
 
 export { HexGrid };
 

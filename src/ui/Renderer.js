@@ -15,12 +15,14 @@ const LINE_HEIGHT = HEX_HEIGHT * 3/4;
 
 class Ground {
     constructor(env) {
-        const {game, grid} = env;
+        const {game, grid, regions} = env;
         expect(game).toExist();
         expect(grid).toExist();
+        expect(regions).toExist();
         this.grid = grid;
         this.game = game;
         this.group = game.add.group();
+        this.regions = regions;
         this.tileToSprite = {};
         this.grid.forEach((hex) => {
             var sprite = new GroundTileSprite(env,hex);
@@ -36,6 +38,7 @@ class Ground {
     }
 
     highlightTiles(tiles) {
+        return;
         var self = this;
         this.highlightedTiles.forEach((tileSprite) => {
             if (tileSprite) tileSprite.frame = 0;
@@ -48,10 +51,11 @@ class Ground {
 }
 
 class GroundTileSprite extends Phaser.Sprite {
-    constructor({game, log},tile) {
+    constructor({game, log, regions},tile) {
         const x = OFFSET_LEFT + tile.position.x * HEX_WIDTH;
         const y = OFFSET_TOP + tile.position.y * LINE_HEIGHT;
         super(game, x, y, 'hex');
+        this.frame=regions.factionOf(tile) || 0;
         //log.debug(`Hex sprite for ${tile} created at ${x}:${y}`);
     
         /*

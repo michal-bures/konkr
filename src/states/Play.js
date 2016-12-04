@@ -1,9 +1,12 @@
 import expect from 'expect';
+import extend from 'util';
 
 import { HexGrid } from 'lib/HexGrid';
-import { Ground, DebugInfo } from 'lib/Renderer';
-import TileSelectionProxy from 'lib/ui/TileSelectionProxy';
-import { worldGenPerlin, worldGenSolid } from 'lib/WorldGenerator';
+import { Ground, DebugInfo } from 'ui/Renderer';
+import TileSelectionProxy from 'ui/TileSelectionProxy';
+import { worldGenPerlin, worldGenSolid } from 'rules/WorldGenerator';
+import Regions from 'rules/Regions';
+
 
 class Play {
     constructor(game) {
@@ -18,10 +21,13 @@ class Play {
         this.debugMode = debugMode;
         this.debug = new DebugInfo(env);
         env.debug = this.debug;
-        const grid = new HexGrid(30,18);
-        env.grid = grid;
-        
+        this.grid = new HexGrid(30,18);
+        env.grid = this.grid;
+        this.regions = new Regions(env);
+        env.regions = this.regions;
+
         worldGenPerlin(env);
+        this.regions.randomize();
 
         this.ground = new Ground(env);
         env.ground = this.ground;

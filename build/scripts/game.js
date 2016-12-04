@@ -2184,6 +2184,629 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],6:[function(require,module,exports){
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+},{}],7:[function(require,module,exports){
+module.exports = function isBuffer(arg) {
+  return arg && typeof arg === 'object'
+    && typeof arg.copy === 'function'
+    && typeof arg.fill === 'function'
+    && typeof arg.readUInt8 === 'function';
+}
+},{}],8:[function(require,module,exports){
+(function (process,global){
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+var formatRegExp = /%[sdj%]/g;
+exports.format = function(f) {
+  if (!isString(f)) {
+    var objects = [];
+    for (var i = 0; i < arguments.length; i++) {
+      objects.push(inspect(arguments[i]));
+    }
+    return objects.join(' ');
+  }
+
+  var i = 1;
+  var args = arguments;
+  var len = args.length;
+  var str = String(f).replace(formatRegExp, function(x) {
+    if (x === '%%') return '%';
+    if (i >= len) return x;
+    switch (x) {
+      case '%s': return String(args[i++]);
+      case '%d': return Number(args[i++]);
+      case '%j':
+        try {
+          return JSON.stringify(args[i++]);
+        } catch (_) {
+          return '[Circular]';
+        }
+      default:
+        return x;
+    }
+  });
+  for (var x = args[i]; i < len; x = args[++i]) {
+    if (isNull(x) || !isObject(x)) {
+      str += ' ' + x;
+    } else {
+      str += ' ' + inspect(x);
+    }
+  }
+  return str;
+};
+
+
+// Mark that a method should not be used.
+// Returns a modified function which warns once by default.
+// If --no-deprecation is set, then it is a no-op.
+exports.deprecate = function(fn, msg) {
+  // Allow for deprecating things in the process of starting up.
+  if (isUndefined(global.process)) {
+    return function() {
+      return exports.deprecate(fn, msg).apply(this, arguments);
+    };
+  }
+
+  if (process.noDeprecation === true) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (process.throwDeprecation) {
+        throw new Error(msg);
+      } else if (process.traceDeprecation) {
+        console.trace(msg);
+      } else {
+        console.error(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+};
+
+
+var debugs = {};
+var debugEnviron;
+exports.debuglog = function(set) {
+  if (isUndefined(debugEnviron))
+    debugEnviron = process.env.NODE_DEBUG || '';
+  set = set.toUpperCase();
+  if (!debugs[set]) {
+    if (new RegExp('\\b' + set + '\\b', 'i').test(debugEnviron)) {
+      var pid = process.pid;
+      debugs[set] = function() {
+        var msg = exports.format.apply(exports, arguments);
+        console.error('%s %d: %s', set, pid, msg);
+      };
+    } else {
+      debugs[set] = function() {};
+    }
+  }
+  return debugs[set];
+};
+
+
+/**
+ * Echos the value of a value. Trys to print the value out
+ * in the best way possible given the different types.
+ *
+ * @param {Object} obj The object to print out.
+ * @param {Object} opts Optional options object that alters the output.
+ */
+/* legacy: obj, showHidden, depth, colors*/
+function inspect(obj, opts) {
+  // default options
+  var ctx = {
+    seen: [],
+    stylize: stylizeNoColor
+  };
+  // legacy...
+  if (arguments.length >= 3) ctx.depth = arguments[2];
+  if (arguments.length >= 4) ctx.colors = arguments[3];
+  if (isBoolean(opts)) {
+    // legacy...
+    ctx.showHidden = opts;
+  } else if (opts) {
+    // got an "options" object
+    exports._extend(ctx, opts);
+  }
+  // set default options
+  if (isUndefined(ctx.showHidden)) ctx.showHidden = false;
+  if (isUndefined(ctx.depth)) ctx.depth = 2;
+  if (isUndefined(ctx.colors)) ctx.colors = false;
+  if (isUndefined(ctx.customInspect)) ctx.customInspect = true;
+  if (ctx.colors) ctx.stylize = stylizeWithColor;
+  return formatValue(ctx, obj, ctx.depth);
+}
+exports.inspect = inspect;
+
+
+// http://en.wikipedia.org/wiki/ANSI_escape_code#graphics
+inspect.colors = {
+  'bold' : [1, 22],
+  'italic' : [3, 23],
+  'underline' : [4, 24],
+  'inverse' : [7, 27],
+  'white' : [37, 39],
+  'grey' : [90, 39],
+  'black' : [30, 39],
+  'blue' : [34, 39],
+  'cyan' : [36, 39],
+  'green' : [32, 39],
+  'magenta' : [35, 39],
+  'red' : [31, 39],
+  'yellow' : [33, 39]
+};
+
+// Don't use 'blue' not visible on cmd.exe
+inspect.styles = {
+  'special': 'cyan',
+  'number': 'yellow',
+  'boolean': 'yellow',
+  'undefined': 'grey',
+  'null': 'bold',
+  'string': 'green',
+  'date': 'magenta',
+  // "name": intentionally not styling
+  'regexp': 'red'
+};
+
+
+function stylizeWithColor(str, styleType) {
+  var style = inspect.styles[styleType];
+
+  if (style) {
+    return '\u001b[' + inspect.colors[style][0] + 'm' + str +
+           '\u001b[' + inspect.colors[style][1] + 'm';
+  } else {
+    return str;
+  }
+}
+
+
+function stylizeNoColor(str, styleType) {
+  return str;
+}
+
+
+function arrayToHash(array) {
+  var hash = {};
+
+  array.forEach(function(val, idx) {
+    hash[val] = true;
+  });
+
+  return hash;
+}
+
+
+function formatValue(ctx, value, recurseTimes) {
+  // Provide a hook for user-specified inspect functions.
+  // Check that value is an object with an inspect function on it
+  if (ctx.customInspect &&
+      value &&
+      isFunction(value.inspect) &&
+      // Filter out the util module, it's inspect function is special
+      value.inspect !== exports.inspect &&
+      // Also filter out any prototype objects using the circular check.
+      !(value.constructor && value.constructor.prototype === value)) {
+    var ret = value.inspect(recurseTimes, ctx);
+    if (!isString(ret)) {
+      ret = formatValue(ctx, ret, recurseTimes);
+    }
+    return ret;
+  }
+
+  // Primitive types cannot have properties
+  var primitive = formatPrimitive(ctx, value);
+  if (primitive) {
+    return primitive;
+  }
+
+  // Look up the keys of the object.
+  var keys = Object.keys(value);
+  var visibleKeys = arrayToHash(keys);
+
+  if (ctx.showHidden) {
+    keys = Object.getOwnPropertyNames(value);
+  }
+
+  // IE doesn't make error fields non-enumerable
+  // http://msdn.microsoft.com/en-us/library/ie/dww52sbt(v=vs.94).aspx
+  if (isError(value)
+      && (keys.indexOf('message') >= 0 || keys.indexOf('description') >= 0)) {
+    return formatError(value);
+  }
+
+  // Some type of object without properties can be shortcutted.
+  if (keys.length === 0) {
+    if (isFunction(value)) {
+      var name = value.name ? ': ' + value.name : '';
+      return ctx.stylize('[Function' + name + ']', 'special');
+    }
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    }
+    if (isDate(value)) {
+      return ctx.stylize(Date.prototype.toString.call(value), 'date');
+    }
+    if (isError(value)) {
+      return formatError(value);
+    }
+  }
+
+  var base = '', array = false, braces = ['{', '}'];
+
+  // Make Array say that they are Array
+  if (isArray(value)) {
+    array = true;
+    braces = ['[', ']'];
+  }
+
+  // Make functions say that they are functions
+  if (isFunction(value)) {
+    var n = value.name ? ': ' + value.name : '';
+    base = ' [Function' + n + ']';
+  }
+
+  // Make RegExps say that they are RegExps
+  if (isRegExp(value)) {
+    base = ' ' + RegExp.prototype.toString.call(value);
+  }
+
+  // Make dates with properties first say the date
+  if (isDate(value)) {
+    base = ' ' + Date.prototype.toUTCString.call(value);
+  }
+
+  // Make error with message first say the error
+  if (isError(value)) {
+    base = ' ' + formatError(value);
+  }
+
+  if (keys.length === 0 && (!array || value.length == 0)) {
+    return braces[0] + base + braces[1];
+  }
+
+  if (recurseTimes < 0) {
+    if (isRegExp(value)) {
+      return ctx.stylize(RegExp.prototype.toString.call(value), 'regexp');
+    } else {
+      return ctx.stylize('[Object]', 'special');
+    }
+  }
+
+  ctx.seen.push(value);
+
+  var output;
+  if (array) {
+    output = formatArray(ctx, value, recurseTimes, visibleKeys, keys);
+  } else {
+    output = keys.map(function(key) {
+      return formatProperty(ctx, value, recurseTimes, visibleKeys, key, array);
+    });
+  }
+
+  ctx.seen.pop();
+
+  return reduceToSingleString(output, base, braces);
+}
+
+
+function formatPrimitive(ctx, value) {
+  if (isUndefined(value))
+    return ctx.stylize('undefined', 'undefined');
+  if (isString(value)) {
+    var simple = '\'' + JSON.stringify(value).replace(/^"|"$/g, '')
+                                             .replace(/'/g, "\\'")
+                                             .replace(/\\"/g, '"') + '\'';
+    return ctx.stylize(simple, 'string');
+  }
+  if (isNumber(value))
+    return ctx.stylize('' + value, 'number');
+  if (isBoolean(value))
+    return ctx.stylize('' + value, 'boolean');
+  // For some reason typeof null is "object", so special case here.
+  if (isNull(value))
+    return ctx.stylize('null', 'null');
+}
+
+
+function formatError(value) {
+  return '[' + Error.prototype.toString.call(value) + ']';
+}
+
+
+function formatArray(ctx, value, recurseTimes, visibleKeys, keys) {
+  var output = [];
+  for (var i = 0, l = value.length; i < l; ++i) {
+    if (hasOwnProperty(value, String(i))) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          String(i), true));
+    } else {
+      output.push('');
+    }
+  }
+  keys.forEach(function(key) {
+    if (!key.match(/^\d+$/)) {
+      output.push(formatProperty(ctx, value, recurseTimes, visibleKeys,
+          key, true));
+    }
+  });
+  return output;
+}
+
+
+function formatProperty(ctx, value, recurseTimes, visibleKeys, key, array) {
+  var name, str, desc;
+  desc = Object.getOwnPropertyDescriptor(value, key) || { value: value[key] };
+  if (desc.get) {
+    if (desc.set) {
+      str = ctx.stylize('[Getter/Setter]', 'special');
+    } else {
+      str = ctx.stylize('[Getter]', 'special');
+    }
+  } else {
+    if (desc.set) {
+      str = ctx.stylize('[Setter]', 'special');
+    }
+  }
+  if (!hasOwnProperty(visibleKeys, key)) {
+    name = '[' + key + ']';
+  }
+  if (!str) {
+    if (ctx.seen.indexOf(desc.value) < 0) {
+      if (isNull(recurseTimes)) {
+        str = formatValue(ctx, desc.value, null);
+      } else {
+        str = formatValue(ctx, desc.value, recurseTimes - 1);
+      }
+      if (str.indexOf('\n') > -1) {
+        if (array) {
+          str = str.split('\n').map(function(line) {
+            return '  ' + line;
+          }).join('\n').substr(2);
+        } else {
+          str = '\n' + str.split('\n').map(function(line) {
+            return '   ' + line;
+          }).join('\n');
+        }
+      }
+    } else {
+      str = ctx.stylize('[Circular]', 'special');
+    }
+  }
+  if (isUndefined(name)) {
+    if (array && key.match(/^\d+$/)) {
+      return str;
+    }
+    name = JSON.stringify('' + key);
+    if (name.match(/^"([a-zA-Z_][a-zA-Z_0-9]*)"$/)) {
+      name = name.substr(1, name.length - 2);
+      name = ctx.stylize(name, 'name');
+    } else {
+      name = name.replace(/'/g, "\\'")
+                 .replace(/\\"/g, '"')
+                 .replace(/(^"|"$)/g, "'");
+      name = ctx.stylize(name, 'string');
+    }
+  }
+
+  return name + ': ' + str;
+}
+
+
+function reduceToSingleString(output, base, braces) {
+  var numLinesEst = 0;
+  var length = output.reduce(function(prev, cur) {
+    numLinesEst++;
+    if (cur.indexOf('\n') >= 0) numLinesEst++;
+    return prev + cur.replace(/\u001b\[\d\d?m/g, '').length + 1;
+  }, 0);
+
+  if (length > 60) {
+    return braces[0] +
+           (base === '' ? '' : base + '\n ') +
+           ' ' +
+           output.join(',\n  ') +
+           ' ' +
+           braces[1];
+  }
+
+  return braces[0] + base + ' ' + output.join(', ') + ' ' + braces[1];
+}
+
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+function isArray(ar) {
+  return Array.isArray(ar);
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return isObject(re) && objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return isObject(d) && objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return isObject(e) &&
+      (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = require('./support/isBuffer');
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+
+function pad(n) {
+  return n < 10 ? '0' + n.toString(10) : n.toString(10);
+}
+
+
+var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
+              'Oct', 'Nov', 'Dec'];
+
+// 26 Feb 16:19:34
+function timestamp() {
+  var d = new Date();
+  var time = [pad(d.getHours()),
+              pad(d.getMinutes()),
+              pad(d.getSeconds())].join(':');
+  return [d.getDate(), months[d.getMonth()], time].join(' ');
+}
+
+
+// log is just a thin wrapper to console.log that prepends a timestamp
+exports.log = function() {
+  console.log('%s - %s', timestamp(), exports.format.apply(exports, arguments));
+};
+
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function} superCtor Constructor function to inherit prototype from.
+ */
+exports.inherits = require('inherits');
+
+exports._extend = function(origin, add) {
+  // Don't do anything if add isn't an object
+  if (!add || !isObject(add)) return origin;
+
+  var keys = Object.keys(add);
+  var i = keys.length;
+  while (i--) {
+    origin[keys[i]] = add[keys[i]];
+  }
+  return origin;
+};
+
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+}).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+
+},{"./support/isBuffer":7,"_process":5,"inherits":6}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2594,7 +3217,7 @@ var aliases = {
 for (var alias in aliases) {
   if (aliases.hasOwnProperty(alias)) Expectation.prototype[alias] = Expectation.prototype[aliases[alias]];
 }exports.default = Expectation;
-},{"./SpyUtils":7,"./TestUtils":8,"./assert":9,"has":16,"tmatch":32}],7:[function(require,module,exports){
+},{"./SpyUtils":10,"./TestUtils":11,"./assert":12,"has":19,"tmatch":35}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2716,7 +3339,7 @@ var spyOn = exports.spyOn = function spyOn(object, methodName) {
 
   return object[methodName];
 };
-},{"./TestUtils":8,"./assert":9,"define-properties":12}],8:[function(require,module,exports){
+},{"./TestUtils":11,"./assert":12,"define-properties":15}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2863,7 +3486,7 @@ var objectContains = exports.objectContains = function objectContains(object, va
 var stringContains = exports.stringContains = function stringContains(string, value) {
   return string.indexOf(value) !== -1;
 };
-},{"is-equal/why":27,"is-regex":28,"object-keys":30}],9:[function(require,module,exports){
+},{"is-equal/why":30,"is-regex":31,"object-keys":33}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2896,7 +3519,7 @@ var assert = function assert(condition, createMessage) {
 };
 
 exports.default = assert;
-},{"object-inspect":29}],10:[function(require,module,exports){
+},{"object-inspect":32}],13:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -2922,7 +3545,7 @@ function extend(extension) {
 }
 
 exports.default = extend;
-},{"./Expectation":6}],11:[function(require,module,exports){
+},{"./Expectation":9}],14:[function(require,module,exports){
 'use strict';
 
 var _Expectation = require('./Expectation');
@@ -2953,7 +3576,7 @@ expect.assert = _assert2.default;
 expect.extend = _extend2.default;
 
 module.exports = expect;
-},{"./Expectation":6,"./SpyUtils":7,"./assert":9,"./extend":10}],12:[function(require,module,exports){
+},{"./Expectation":9,"./SpyUtils":10,"./assert":12,"./extend":13}],15:[function(require,module,exports){
 'use strict';
 
 var keys = require('object-keys');
@@ -3011,7 +3634,7 @@ defineProperties.supportsDescriptors = !!supportsDescriptors;
 
 module.exports = defineProperties;
 
-},{"foreach":13,"object-keys":30}],13:[function(require,module,exports){
+},{"foreach":16,"object-keys":33}],16:[function(require,module,exports){
 
 var hasOwn = Object.prototype.hasOwnProperty;
 var toString = Object.prototype.toString;
@@ -3035,7 +3658,7 @@ module.exports = function forEach (obj, fn, ctx) {
 };
 
 
-},{}],14:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var ERROR_MESSAGE = 'Function.prototype.bind called on incompatible ';
 var slice = Array.prototype.slice;
 var toStr = Object.prototype.toString;
@@ -3085,17 +3708,17 @@ module.exports = function bind(that) {
     return bound;
 };
 
-},{}],15:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var implementation = require('./implementation');
 
 module.exports = Function.prototype.bind || implementation;
 
-},{"./implementation":14}],16:[function(require,module,exports){
+},{"./implementation":17}],19:[function(require,module,exports){
 var bind = require('function-bind');
 
 module.exports = bind.call(Function.call, Object.prototype.hasOwnProperty);
 
-},{"function-bind":15}],17:[function(require,module,exports){
+},{"function-bind":18}],20:[function(require,module,exports){
 'use strict';
 
 module.exports = function () {
@@ -3122,7 +3745,7 @@ module.exports = function () {
 	return { Map: mapForEach, Set: setForEach };
 };
 
-},{}],18:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 'use strict';
 
 var isSymbol = require('is-symbol');
@@ -3141,7 +3764,7 @@ module.exports = function getSymbolIterator() {
 	return symbolIterator;
 };
 
-},{"is-symbol":26}],19:[function(require,module,exports){
+},{"is-symbol":29}],22:[function(require,module,exports){
 'use strict';
 
 var isCallable = require('is-callable');
@@ -3158,7 +3781,7 @@ module.exports = function isArrowFunction(fn) {
 		(isArrowFnWithParensRegex.test(fnStr) || isArrowFnWithoutParensRegex.test(fnStr));
 };
 
-},{"is-callable":21}],20:[function(require,module,exports){
+},{"is-callable":24}],23:[function(require,module,exports){
 'use strict';
 
 var boolToStr = Boolean.prototype.toString;
@@ -3181,7 +3804,7 @@ module.exports = function isBoolean(value) {
 	return hasToStringTag ? tryBooleanObject(value) : toStr.call(value) === boolClass;
 };
 
-},{}],21:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 'use strict';
 
 var fnToStr = Function.prototype.toString;
@@ -3222,7 +3845,7 @@ module.exports = function isCallable(value) {
 	return strClass === fnClass || strClass === genClass;
 };
 
-},{}],22:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 'use strict';
 
 var getDay = Date.prototype.getDay;
@@ -3244,7 +3867,7 @@ module.exports = function isDateObject(value) {
 	return hasToStringTag ? tryDateObject(value) : toStr.call(value) === dateClass;
 };
 
-},{}],23:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -3258,7 +3881,7 @@ module.exports = function isGeneratorFunction(fn) {
 };
 
 
-},{}],24:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 'use strict';
 
 var numToStr = Number.prototype.toString;
@@ -3280,7 +3903,7 @@ module.exports = function isNumberObject(value) {
 	return hasToStringTag ? tryNumberObject(value) : toStr.call(value) === numClass;
 };
 
-},{}],25:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 'use strict';
 
 var strValue = String.prototype.valueOf;
@@ -3302,7 +3925,7 @@ module.exports = function isString(value) {
 	return hasToStringTag ? tryStringObject(value) : toStr.call(value) === strClass;
 };
 
-},{}],26:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -3331,7 +3954,7 @@ if (hasSymbols) {
 	};
 }
 
-},{}],27:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 'use strict';
 
 var ObjectPrototype = Object.prototype;
@@ -3627,7 +4250,7 @@ module.exports = function whyNotEqual(value, other) {
 	return false;
 };
 
-},{"./getCollectionsForEach":17,"./getSymbolIterator":18,"has":16,"is-arrow-function":19,"is-boolean-object":20,"is-callable":21,"is-date-object":22,"is-generator-function":23,"is-number-object":24,"is-regex":28,"is-string":25,"is-symbol":26}],28:[function(require,module,exports){
+},{"./getCollectionsForEach":20,"./getSymbolIterator":21,"has":19,"is-arrow-function":22,"is-boolean-object":23,"is-callable":24,"is-date-object":25,"is-generator-function":26,"is-number-object":27,"is-regex":31,"is-string":28,"is-symbol":29}],31:[function(require,module,exports){
 'use strict';
 
 var regexExec = RegExp.prototype.exec;
@@ -3648,7 +4271,7 @@ module.exports = function isRegex(value) {
 	return hasToStringTag ? tryRegexExec(value) : toStr.call(value) === regexClass;
 };
 
-},{}],29:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 var hasMap = typeof Map === 'function' && Map.prototype;
 var mapSizeDescriptor = Object.getOwnPropertyDescriptor && hasMap ? Object.getOwnPropertyDescriptor(Map.prototype, 'size') : null;
 var mapSize = hasMap && mapSizeDescriptor && typeof mapSizeDescriptor.get === 'function' ? mapSizeDescriptor.get : null;
@@ -3857,7 +4480,7 @@ function inspectString (str) {
     }
 }
 
-},{}],30:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 'use strict';
 
 // modified from https://github.com/es-shims/es5-shim
@@ -3999,7 +4622,7 @@ keysShim.shim = function shimObjectKeys() {
 
 module.exports = keysShim;
 
-},{"./isArguments":31}],31:[function(require,module,exports){
+},{"./isArguments":34}],34:[function(require,module,exports){
 'use strict';
 
 var toStr = Object.prototype.toString;
@@ -4018,7 +4641,7 @@ module.exports = function isArguments(value) {
 	return isArgs;
 };
 
-},{}],32:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 (function (process,Buffer){
 'use strict'
 
@@ -4177,7 +4800,7 @@ function match_ (obj, pattern, ca, cb) {
 
 }).call(this,require('_process'),require("buffer").Buffer)
 
-},{"_process":5,"buffer":1}],33:[function(require,module,exports){
+},{"_process":5,"buffer":1}],36:[function(require,module,exports){
 /*
 * loglevel - https://github.com/pimterry/loglevel
 *
@@ -4402,7 +5025,7 @@ function match_ (obj, pattern, ca, cb) {
     return defaultLogger;
 }));
 
-},{}],34:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 /*
  * A speed-improved perlin and simplex noise algorithms for 2D.
  *
@@ -4731,7 +5354,7 @@ function match_ (obj, pattern, ca, cb) {
 
 })(typeof module === "undefined" ? this : module.exports);
 
-},{}],35:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 'use strict';
 
 var _loglevel = require('loglevel');
@@ -4933,7 +5556,7 @@ game.state.add("Play", _Play2.default);
 console.log(_Play2.default);
 game.state.start("Boot");
 
-},{"expect":11,"lib/AssetManager":36,"loglevel":33,"states/Play":42}],36:[function(require,module,exports){
+},{"expect":14,"lib/AssetManager":39,"loglevel":36,"states/Play":44}],39:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -4951,7 +5574,7 @@ var _createClass = function () {
 }(); /* exported AssetManager */
 /* globals -AssetManager */
 
-var _Renderer = require('lib/Renderer');
+var _Renderer = require('ui/Renderer');
 
 function _classCallCheck(instance, Constructor) {
     if (!(instance instanceof Constructor)) {
@@ -5001,7 +5624,7 @@ AssetManager.spritesheets = {
 
 exports.default = AssetManager;
 
-},{"lib/Renderer":38}],37:[function(require,module,exports){
+},{"ui/Renderer":45}],40:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5146,7 +5769,7 @@ var Hexagon = function () {
     _createClass(Hexagon, [{
         key: 'toString',
         value: function toString() {
-            return '[Hex at ' + this.position + ']';
+            return '[Hex #' + this.id + ' (' + this.position.r + ',' + this.position.c + ')]';
         }
     }, {
         key: 'neighbours',
@@ -5185,12 +5808,37 @@ var Hexagon = function () {
     return Hexagon;
 }();
 
+var NullHex = {
+    toString: function toString() {
+        return "[Null Hex]";
+    },
+    neighbours: function neighbours() {
+        return [];
+    },
+    id: -1,
+    exists: function exists() {
+        return false;
+    },
+    position: {
+        x: -1,
+        y: -1,
+        r: -1,
+        c: -1,
+        index: -1,
+        toString: function toString() {
+            return "[Null GridPoint]";
+        }
+    },
+    floodFill: null
+};
+
 var HexGroup = function () {
     function HexGroup(hexes) {
         _classCallCheck(this, HexGroup);
 
         this.members = [];
         this._size = 0;
+        this._pivot = NullHex;
         if (hexes) this.addAll(hexes);
     }
 
@@ -5205,6 +5853,15 @@ var HexGroup = function () {
             return !!this.members[id];
         }
     }, {
+        key: '_findNewPivot',
+        value: function _findNewPivot() {
+            if (!this.size) return NullHex;
+            var first = void 0;
+            for (first in this.members) {
+                break;
+            }this._pivot = first;
+        }
+    }, {
         key: 'getById',
         value: function getById(id) {
             return this.members[id];
@@ -5213,6 +5870,7 @@ var HexGroup = function () {
         key: 'add',
         value: function add(hex) {
             if (this.members[hex.id]) return false;
+            if (!this._pivot.exists()) this._pivot = hex;
             this.members[hex.id] = hex;
             ++this._size;
             return true;
@@ -5232,6 +5890,10 @@ var HexGroup = function () {
             if (this.members[hex.id] === undefined) return;
             this.members[hex.id] = undefined;
             --this._size;
+
+            if (hex === this._pivot) {
+                this._findNewPivot();
+            }
         }
     }, {
         key: 'forEach',
@@ -5260,12 +5922,14 @@ var HexGroup = function () {
             var pending = this.clone();
 
             var nextPending = void 0;
-            var processHex = function processHex(hex) {
-                _this3.add(hex);
-                nextPending.addAll(hex.neighbours().filter(filterCondition));
+            var processHex = function processHex(thisHex) {
+                _this3.add(thisHex);
+                nextPending.addAll(thisHex.neighbours().filter(function (adjHex) {
+                    return filterCondition(adjHex, thisHex);
+                }));
             };
-            var filterCondition = function filterCondition(hex) {
-                return condition(hex) && !_this3.contains(hex);
+            var filterCondition = function filterCondition(thisHex, prevHex) {
+                return condition(thisHex, prevHex) && !_this3.contains(thisHex);
             };
             while (pending.size > 0) {
                 //log.debug("Pending:"+ pending.toString());
@@ -5284,6 +5948,11 @@ var HexGroup = function () {
             }).join(",") + ']';
         }
     }, {
+        key: 'pivot',
+        get: function get() {
+            return this._pivot;
+        }
+    }, {
         key: 'size',
         get: function get() {
             return this._size;
@@ -5292,6 +5961,10 @@ var HexGroup = function () {
 
     return HexGroup;
 }();
+
+NullHex.floodFill = function () {
+    return new HexGroup();
+};
 
 var HexGrouping = function () {
     function HexGrouping() {
@@ -5334,15 +6007,24 @@ var HexGrouping = function () {
         key: 'forEach',
         value: function forEach(fn) {
             for (var key in this.groups) {
-                fn(key, this.groups[key]);
+                fn(this.groups[key], key);
             }
+        }
+    }, {
+        key: 'map',
+        value: function map(fn) {
+            var res = [];
+            this.forEach(function (group, key) {
+                return res.push(fn(group, key));
+            });
+            return res;
         }
     }, {
         key: 'getLargestGroup',
         value: function getLargestGroup() {
             var max = 0;
             var res = null;
-            this.forEach(function (key, hexGroup) {
+            this.forEach(function (hexGroup) {
                 if (hexGroup.size > max) {
                     max = hexGroup.size;
                     res = hexGroup;
@@ -5422,7 +6104,7 @@ var HexGrid = function () {
     }, {
         key: 'components',
         value: function components() {
-            var categoryFunction = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {
+            var condition = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {
                 return true;
             };
 
@@ -5430,9 +6112,8 @@ var HexGrid = function () {
             var compNumber = 1;
             this.forEach(function (hex) {
                 if (!comps.getOwnerOf(hex)) {
-                    _loglevel2.default.debug("-> " + hex.toString());
                     comps.add(hex, compNumber);
-                    comps.addAll(hex.floodFill(categoryFunction), compNumber);
+                    comps.addAll(hex.floodFill(condition), compNumber);
                     ++compNumber;
                 }
             });
@@ -5464,450 +6145,9 @@ var HexGrid = function () {
     return HexGrid;
 }();
 
-var NullHex = {
-    toString: function toString() {
-        return "[Null Hex]";
-    },
-    neighbours: function neighbours() {
-        return [];
-    },
-    id: -1,
-    exists: function exists() {
-        return false;
-    },
-    position: {
-        x: -1,
-        y: -1,
-        r: -1,
-        c: -1,
-        index: -1,
-        toString: function toString() {
-            return "[Null GridPoint]";
-        }
-    },
-    floodFill: function floodFill() {
-        return new HexGroup();
-    }
-};
-
 exports.HexGrid = HexGrid;
 
-},{"expect":11,"loglevel":33}],38:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.LINE_HEIGHT = exports.HEX_HEIGHT = exports.HEX_WIDTH = exports.DebugInfo = exports.Ground = undefined;
-
-var _createClass = function () {
-    function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-        }
-    }return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-    };
-}();
-
-var _loglevel = require('loglevel');
-
-var _loglevel2 = _interopRequireDefault(_loglevel);
-
-var _expect = require('expect');
-
-var _expect2 = _interopRequireDefault(_expect);
-
-var _util = require('lib/util');
-
-function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : { default: obj };
-}
-
-function _possibleConstructorReturn(self, call) {
-    if (!self) {
-        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }return call && (typeof call === "object" || typeof call === "function") ? call : self;
-}
-
-function _inherits(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-        throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-}
-
-function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-    }
-}
-
-var HEX_WIDTH = 32;
-var HEX_HEIGHT = 37;
-var HEX_SIZE = HEX_HEIGHT / 2;
-var OFFSET_TOP = 10;
-var OFFSET_LEFT = 10 + HEX_WIDTH / 2;
-
-var LINE_HEIGHT = HEX_HEIGHT * 3 / 4;
-
-var Ground = function () {
-    function Ground(env) {
-        var _this = this;
-
-        _classCallCheck(this, Ground);
-
-        var game = env.game,
-            grid = env.grid;
-
-        (0, _expect2.default)(game).toExist();
-        (0, _expect2.default)(grid).toExist();
-        this.grid = grid;
-        this.game = game;
-        this.group = game.add.group();
-        this.tileToSprite = {};
-        this.grid.forEach(function (hex) {
-            var sprite = new GroundTileSprite(env, hex);
-            _this.group.add(sprite);
-            _this.tileToSprite[hex.id] = sprite;
-        });
-
-        this.highlightedTiles = [];
-    }
-
-    _createClass(Ground, [{
-        key: 'getGroup',
-        value: function getGroup() {
-            return this.group;
-        }
-    }, {
-        key: 'highlightTiles',
-        value: function highlightTiles(tiles) {
-            var self = this;
-            this.highlightedTiles.forEach(function (tileSprite) {
-                if (tileSprite) tileSprite.frame = 0;
-            });
-            this.highlightedTiles = tiles.map(function (tile) {
-                return tile && self.tileToSprite[tile.id];
-            });
-            this.highlightedTiles.forEach(function (tileSprite) {
-                if (tileSprite) tileSprite.frame = 1;
-            });
-        }
-    }]);
-
-    return Ground;
-}();
-
-var GroundTileSprite = function (_Phaser$Sprite) {
-    _inherits(GroundTileSprite, _Phaser$Sprite);
-
-    function GroundTileSprite(_ref, tile) {
-        var game = _ref.game,
-            log = _ref.log;
-
-        _classCallCheck(this, GroundTileSprite);
-
-        var x = OFFSET_LEFT + tile.position.x * HEX_WIDTH;
-        var y = OFFSET_TOP + tile.position.y * LINE_HEIGHT;
-        return _possibleConstructorReturn(this, (GroundTileSprite.__proto__ || Object.getPrototypeOf(GroundTileSprite)).call(this, game, x, y, 'hex'));
-        //log.debug(`Hex sprite for ${tile} created at ${x}:${y}`);
-
-        /*
-        var style = { font: "10px Courier New", fill: "white", align: "center"};
-        this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,tile.id + "\n" + tile.position.r + "," + tile.position.c, style);
-        this.label.lineSpacing = -6;
-        this.label.anchor.set(0.5,0.5);
-        this.addChild(this.label);
-        */
-    }
-
-    return GroundTileSprite;
-}(Phaser.Sprite);
-
-var DebugInfo = function () {
-    function DebugInfo(_ref2) {
-        var game = _ref2.game;
-
-        _classCallCheck(this, DebugInfo);
-
-        this.game = game;
-        this.items = new _util.OrderedHashMap();
-    }
-
-    _createClass(DebugInfo, [{
-        key: 'set',
-        value: function set(key, value) {
-            this.items.push(key, value);
-        }
-    }, {
-        key: 'render',
-        value: function render() {
-            var _this3 = this;
-
-            var y = 32;
-            this.items.forEach(function (key, value) {
-                _this3.game.debug.text(key + ": " + value, 32, y);
-                y += 32;
-            });
-        }
-    }]);
-
-    return DebugInfo;
-}();
-
-exports.Ground = Ground;
-exports.DebugInfo = DebugInfo;
-exports.HEX_WIDTH = HEX_WIDTH;
-exports.HEX_HEIGHT = HEX_HEIGHT;
-exports.LINE_HEIGHT = LINE_HEIGHT;
-
-},{"expect":11,"lib/util":41,"loglevel":33}],39:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.worldGenSolid = exports.worldGenPerlin = undefined;
-
-var _noisejs = require('noisejs');
-
-var _noisejs2 = _interopRequireDefault(_noisejs);
-
-function _interopRequireDefault(obj) {
-    return obj && obj.__esModule ? obj : { default: obj };
-}
-
-function worldGenSolid(_ref) {
-    var grid = _ref.grid,
-        log = _ref.log,
-        tileFactory = _ref.tileFactory;
-
-    grid.fillWith(function (p) {
-        return true;
-    });
-}
-
-function worldGenPerlin(_ref2) {
-    var grid = _ref2.grid,
-        log = _ref2.log,
-        tileFactory = _ref2.tileFactory;
-
-    var MIN_SIZE = 150;
-    var SMOOTHNESS = 7;
-
-    var noise = void 0,
-        comps = void 0,
-        largest = void 0,
-        tries = void 0,
-        seed = void 0;
-    var generatorFunc = function generatorFunc(p) {
-        return (noise.simplex2(p.x / SMOOTHNESS, p.y / SMOOTHNESS) + 1) * avoidEdges(p.x / grid.width, p.y / grid.height) >= 0.75;
-    };
-
-    do {
-        seed = Math.floor(Math.random() * 65535);
-        noise = new _noisejs2.default.Noise();
-        grid.fillWith(generatorFunc);
-        comps = grid.components();
-        largest = comps.getLargestGroup();
-        ++tries;
-        if (tries > 50) throw Error('Failed to generate suitable world after 50 iterations');
-    } while (largest.size < MIN_SIZE);
-
-    comps.forEach(function (groupId, hexGroup) {
-        if (hexGroup != largest) {
-            grid.destroyHexes(hexGroup);
-        }
-    });
-
-    log.info("Map generated (seed=" + seed + ")");
-}
-
-// x and y shoudl be between 0 and 1
-// returns 1 for center (0.5;0.5) and approaches zero when going further from center (return 0 in corners such as 0;0, 1;0)
-function avoidEdges(x, y) {
-    return 1 - ((0.5 - x) * (0.5 - x) + (0.5 - y) * (0.5 - y)) * 2;
-}
-
-window.avoidEdges = avoidEdges;
-
-exports.worldGenPerlin = worldGenPerlin;
-exports.worldGenSolid = worldGenSolid;
-
-},{"noisejs":34}],40:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _createClass = function () {
-    function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-        }
-    }return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-    };
-}();
-
-var _get = function get(object, property, receiver) {
-    if (object === null) object = Function.prototype;var desc = Object.getOwnPropertyDescriptor(object, property);if (desc === undefined) {
-        var parent = Object.getPrototypeOf(object);if (parent === null) {
-            return undefined;
-        } else {
-            return get(parent, property, receiver);
-        }
-    } else if ("value" in desc) {
-        return desc.value;
-    } else {
-        var getter = desc.get;if (getter === undefined) {
-            return undefined;
-        }return getter.call(receiver);
-    }
-};
-
-var _Renderer = require('lib/Renderer');
-
-function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-    }
-}
-
-function _possibleConstructorReturn(self, call) {
-    if (!self) {
-        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-    }return call && (typeof call === "object" || typeof call === "function") ? call : self;
-}
-
-function _inherits(subClass, superClass) {
-    if (typeof superClass !== "function" && superClass !== null) {
-        throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-}
-
-var TileSelectionProxy = function (_Phaser$Image) {
-    _inherits(TileSelectionProxy, _Phaser$Image);
-
-    function TileSelectionProxy(_ref) {
-        var game = _ref.game,
-            grid = _ref.grid,
-            debug = _ref.debug,
-            ground = _ref.ground,
-            log = _ref.log;
-
-        _classCallCheck(this, TileSelectionProxy);
-
-        var _this = _possibleConstructorReturn(this, (TileSelectionProxy.__proto__ || Object.getPrototypeOf(TileSelectionProxy)).call(this, game, 10, 10));
-
-        _this.debug = debug;
-        _this.game = game;
-        _this.grid = grid;
-        _this.ground = ground;
-        _this.active = false;
-        _this.fixedToCamera = true;
-        _this.width = game.width - 2 * 10;
-        _this.height = game.height - 2 * 10;
-        _this.inputEnabled = true;
-
-        _this.events.onInputOver.add(function () {
-            return _this.active = true;
-        });
-        _this.events.onInputOut.add(function () {
-            return _this.active = false;
-        });
-        _this.events.onInputDown.add(function () {
-            log.info(_this.getHexUnderCursor().toString(), _this.getHexUnderCursor());
-        });
-        return _this;
-    }
-
-    _createClass(TileSelectionProxy, [{
-        key: 'update',
-        value: function update() {
-            _get(TileSelectionProxy.prototype.__proto__ || Object.getPrototypeOf(TileSelectionProxy.prototype), 'update', this).apply(this, arguments);
-            if (this.active) {
-                this.ground.highlightTiles(this.getHexUnderCursor().neighbours());
-            }
-        }
-    }, {
-        key: 'getHexUnderCursor',
-        value: function getHexUnderCursor() {
-            var x = (this.game.input.mousePointer.worldX - 10) / _Renderer.HEX_WIDTH;
-            var y = (this.game.input.mousePointer.worldY - 10) / _Renderer.LINE_HEIGHT;
-
-            var dx = x % 1;
-            var dy = y % 1;
-
-            var centerX = void 0,
-                centerY = void 0;
-
-            //this.debug.set("pointer-at",x.toFixed(2) + "," +y.toFixed(2));
-
-            if (Math.floor(y) % 2) {
-                //A
-                if (dx < 0.5) {
-                    if (dy < (1 - 2 * dx) / 3) {
-                        //this.debug.set("section","top-left");
-                        centerX = Math.floor(x);
-                        centerY = Math.floor(y) - 1 / 3;
-                    } else {
-                        //this.debug.set("section","bottom");
-                        centerX = Math.floor(x) + 0.5;
-                        centerY = Math.floor(y) + 2 / 3;
-                    }
-                } else {
-                    if (dy < 1 / 3 - 2 * (1 - dx) / 3) {
-                        //this.debug.set("section","top-right");
-                        centerX = Math.floor(x) + 1;
-                        centerY = Math.floor(y) - 1 / 3;
-                    } else {
-                        //this.debug.set("section","bottom");
-                        centerX = Math.floor(x) + 0.5;
-                        centerY = Math.floor(y) + 2 / 3;
-                    }
-                }
-            } else {
-                //B
-                if (dx < 0.5) {
-                    if (dy < 2 * dx / 3) {
-                        //this.debug.set("section","top");
-                        centerX = Math.floor(x) + 1 / 2;
-                        centerY = Math.floor(y) - 1 / 3;
-                    } else {
-                        //this.debug.set("section","bottom-left");
-                        centerX = Math.floor(x);
-                        centerY = Math.floor(y) + 2 / 3;
-                    }
-                } else {
-                    if (dy < 2 / 3 - 2 * dx / 3) {
-                        //this.debug.set("section","top");
-                        centerX = Math.floor(x) + 1 / 2;
-                        centerY = Math.floor(y) - 1 / 3;
-                    } else {
-                        //this.debug.set("section","bottom-right");
-                        centerX = Math.floor(x) + 1;
-                        centerY = Math.floor(y) + 2 / 3;
-                    }
-                }
-            }
-
-            centerX = centerX - 1;
-            centerY = centerY - 2 / 3;
-            var r = Math.round(centerY);
-            var c = Math.round(centerX + centerY / 2);
-
-            return this.grid.getHexByAxial(r, c);
-        }
-    }]);
-
-    return TileSelectionProxy;
-}(Phaser.Image);
-
-exports.default = TileSelectionProxy;
-
-},{"lib/Renderer":38}],41:[function(require,module,exports){
+},{"expect":14,"loglevel":36}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6107,8 +6347,9 @@ var Random = {
             if (Math.random() < 1 / ++count) result = prop;
         }return result;
     },
+    //
     integer: function integer(from, to) {
-        return Math.floor(Math.random() * (to - from)) + from;
+        return Math.floor(Math.random() * (to - from + 1)) + from;
     },
     substring: function substring(str, length) {
         length = length || Random.integer(1, str.length);
@@ -6162,8 +6403,221 @@ console.debug("TEST1:",a);
 */
 
 exports.OrderedHashMap = OrderedHashMap;
+exports.Random = Random;
 
 },{}],42:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () {
+    function defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+        }
+    }return function (Constructor, protoProps, staticProps) {
+        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+    };
+}(); //Region is a connected component on the map belonging to a signle faction
+
+var _expect = require('expect');
+
+var _expect2 = _interopRequireDefault(_expect);
+
+var _util = require('lib/util');
+
+function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+}
+
+function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+    }
+}
+
+var NUMBER_OF_FACTIONS = 4;
+
+var lastRegionId = 0;
+function generateRegionId() {
+    return ++lastRegionId;
+}
+
+var Region = function () {
+    function Region(_ref, hexGroup) {
+        var regions = _ref.regions;
+
+        _classCallCheck(this, Region);
+
+        (0, _expect2.default)(regions).toExist();
+        this._id = generateRegionId();
+        this._hexes = hexGroup;
+        this.treasury = 0;
+        this.capital = null;
+        this.regions = regions;
+        this.pickNewCapital();
+        this.faction = regions.factionOf(this.capital);
+    }
+
+    _createClass(Region, [{
+        key: 'pickNewCapital',
+        value: function pickNewCapital() {
+            this.capital = this._hexes.pivot;
+        }
+    }, {
+        key: 'toString',
+        value: function toString() {
+            return '[Region #' + this.id + ' (' + this._hexes.size + ' hexes, capital at ' + this.capital + ')]';
+        }
+    }, {
+        key: 'hexes',
+        get: function get() {
+            return this._hexes;
+        }
+    }, {
+        key: 'id',
+        get: function get() {
+            return this._id;
+        }
+    }]);
+
+    return Region;
+}();
+
+var Regions = function () {
+    function Regions(_ref2) {
+        var grid = _ref2.grid,
+            log = _ref2.log;
+
+        _classCallCheck(this, Regions);
+
+        this.grid = grid;
+        this.log = log;
+        this.regions = [];
+        this.hexFaction = [];
+        this.hexRegion = [];
+    }
+
+    _createClass(Regions, [{
+        key: 'randomize',
+        value: function randomize() {
+            var _this = this;
+
+            this.grid.forEach(function (hex) {
+                _this.hexFaction[hex.id] = _util.Random.integer(1, NUMBER_OF_FACTIONS);
+            });
+            this.init();
+        }
+    }, {
+        key: 'factionOf',
+        value: function factionOf(hex) {
+            return this.hexFaction[hex.id];
+        }
+    }, {
+        key: 'regionOf',
+        value: function regionOf(hex) {
+            return this.hexRegion[hex.id];
+        }
+    }, {
+        key: 'init',
+        value: function init() {
+            var _this2 = this;
+
+            this.regions = this.grid.components(function (hex, prevHex) {
+                return _this2.factionOf(hex) === _this2.factionOf(prevHex);
+            }).map(function (group) {
+                return new Region({ regions: _this2 }, group);
+            });
+
+            this.regions.forEach(function (region) {
+                region.hexes.forEach(function (hex) {
+                    _this2.hexRegion[hex.id] = region;
+                });
+            });
+        }
+    }]);
+
+    return Regions;
+}();
+
+exports.default = Regions;
+
+},{"expect":14,"lib/util":41}],43:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.worldGenSolid = exports.worldGenPerlin = undefined;
+
+var _noisejs = require('noisejs');
+
+var _noisejs2 = _interopRequireDefault(_noisejs);
+
+function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+}
+
+function worldGenSolid(_ref) {
+    var grid = _ref.grid,
+        log = _ref.log,
+        tileFactory = _ref.tileFactory;
+
+    grid.fillWith(function (p) {
+        return true;
+    });
+}
+
+function worldGenPerlin(_ref2) {
+    var grid = _ref2.grid,
+        log = _ref2.log,
+        tileFactory = _ref2.tileFactory;
+
+    var MIN_SIZE = 150;
+    var SMOOTHNESS = 8;
+
+    var noise = void 0,
+        comps = void 0,
+        largest = void 0,
+        tries = void 0,
+        seed = void 0;
+    var generatorFunc = function generatorFunc(p) {
+        return (noise.simplex2(p.x / SMOOTHNESS, p.y / SMOOTHNESS) + 1) * avoidEdges(p.x / grid.width, p.y / grid.height) >= 0.75;
+    };
+
+    do {
+        seed = Math.floor(Math.random() * 65535);
+        noise = new _noisejs2.default.Noise(seed);
+        grid.fillWith(generatorFunc);
+        comps = grid.components();
+        largest = comps.getLargestGroup();
+        ++tries;
+        if (tries > 50) throw Error('Failed to generate suitable world after 50 iterations');
+    } while (largest.size < MIN_SIZE);
+
+    comps.forEach(function (hexGroup) {
+        if (hexGroup != largest) {
+            grid.destroyHexes(hexGroup);
+        }
+    });
+
+    log.info("Map generated (seed=" + seed + ")");
+}
+
+// x and y shoudl be between 0 and 1
+// returns 1 for center (0.5;0.5) and approaches zero when going further from center (return 0 in corners such as 0;0, 1;0)
+function avoidEdges(x, y) {
+    return 1 - ((0.5 - x) * (0.5 - x) + (0.5 - y) * (0.5 - y)) * 2;
+}
+
+window.avoidEdges = avoidEdges;
+
+exports.worldGenPerlin = worldGenPerlin;
+exports.worldGenSolid = worldGenSolid;
+
+},{"noisejs":37}],44:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -6184,15 +6638,23 @@ var _expect = require('expect');
 
 var _expect2 = _interopRequireDefault(_expect);
 
+var _util = require('util');
+
+var _util2 = _interopRequireDefault(_util);
+
 var _HexGrid = require('lib/HexGrid');
 
-var _Renderer = require('lib/Renderer');
+var _Renderer = require('ui/Renderer');
 
-var _TileSelectionProxy = require('lib/ui/TileSelectionProxy');
+var _TileSelectionProxy = require('ui/TileSelectionProxy');
 
 var _TileSelectionProxy2 = _interopRequireDefault(_TileSelectionProxy);
 
-var _WorldGenerator = require('lib/WorldGenerator');
+var _WorldGenerator = require('rules/WorldGenerator');
+
+var _Regions = require('rules/Regions');
+
+var _Regions2 = _interopRequireDefault(_Regions);
 
 function _interopRequireDefault(obj) {
     return obj && obj.__esModule ? obj : { default: obj };
@@ -6224,10 +6686,13 @@ var Play = function () {
             this.debugMode = debugMode;
             this.debug = new _Renderer.DebugInfo(env);
             env.debug = this.debug;
-            var grid = new _HexGrid.HexGrid(30, 18);
-            env.grid = grid;
+            this.grid = new _HexGrid.HexGrid(30, 18);
+            env.grid = this.grid;
+            this.regions = new _Regions2.default(env);
+            env.regions = this.regions;
 
             (0, _WorldGenerator.worldGenPerlin)(env);
+            this.regions.randomize();
 
             this.ground = new _Renderer.Ground(env);
             env.ground = this.ground;
@@ -6289,5 +6754,358 @@ var Play = function () {
 
 exports.default = Play;
 
-},{"expect":11,"lib/HexGrid":37,"lib/Renderer":38,"lib/WorldGenerator":39,"lib/ui/TileSelectionProxy":40}]},{},[35])
+},{"expect":14,"lib/HexGrid":40,"rules/Regions":42,"rules/WorldGenerator":43,"ui/Renderer":45,"ui/TileSelectionProxy":46,"util":8}],45:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.LINE_HEIGHT = exports.HEX_HEIGHT = exports.HEX_WIDTH = exports.DebugInfo = exports.Ground = undefined;
+
+var _createClass = function () {
+    function defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+        }
+    }return function (Constructor, protoProps, staticProps) {
+        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+    };
+}();
+
+var _loglevel = require('loglevel');
+
+var _loglevel2 = _interopRequireDefault(_loglevel);
+
+var _expect = require('expect');
+
+var _expect2 = _interopRequireDefault(_expect);
+
+var _util = require('lib/util');
+
+function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : { default: obj };
+}
+
+function _possibleConstructorReturn(self, call) {
+    if (!self) {
+        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }return call && (typeof call === "object" || typeof call === "function") ? call : self;
+}
+
+function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+        throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+}
+
+function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+    }
+}
+
+var HEX_WIDTH = 32;
+var HEX_HEIGHT = 37;
+var HEX_SIZE = HEX_HEIGHT / 2;
+var OFFSET_TOP = 10;
+var OFFSET_LEFT = 10 + HEX_WIDTH / 2;
+
+var LINE_HEIGHT = HEX_HEIGHT * 3 / 4;
+
+var Ground = function () {
+    function Ground(env) {
+        var _this = this;
+
+        _classCallCheck(this, Ground);
+
+        var game = env.game,
+            grid = env.grid,
+            regions = env.regions;
+
+        (0, _expect2.default)(game).toExist();
+        (0, _expect2.default)(grid).toExist();
+        (0, _expect2.default)(regions).toExist();
+        this.grid = grid;
+        this.game = game;
+        this.group = game.add.group();
+        this.regions = regions;
+        this.tileToSprite = {};
+        this.grid.forEach(function (hex) {
+            var sprite = new GroundTileSprite(env, hex);
+            _this.group.add(sprite);
+            _this.tileToSprite[hex.id] = sprite;
+        });
+
+        this.highlightedTiles = [];
+    }
+
+    _createClass(Ground, [{
+        key: 'getGroup',
+        value: function getGroup() {
+            return this.group;
+        }
+    }, {
+        key: 'highlightTiles',
+        value: function highlightTiles(tiles) {
+            return;
+            var self = this;
+            this.highlightedTiles.forEach(function (tileSprite) {
+                if (tileSprite) tileSprite.frame = 0;
+            });
+            this.highlightedTiles = tiles.map(function (tile) {
+                return tile && self.tileToSprite[tile.id];
+            });
+            this.highlightedTiles.forEach(function (tileSprite) {
+                if (tileSprite) tileSprite.frame = 1;
+            });
+        }
+    }]);
+
+    return Ground;
+}();
+
+var GroundTileSprite = function (_Phaser$Sprite) {
+    _inherits(GroundTileSprite, _Phaser$Sprite);
+
+    function GroundTileSprite(_ref, tile) {
+        var game = _ref.game,
+            log = _ref.log,
+            regions = _ref.regions;
+
+        _classCallCheck(this, GroundTileSprite);
+
+        var x = OFFSET_LEFT + tile.position.x * HEX_WIDTH;
+        var y = OFFSET_TOP + tile.position.y * LINE_HEIGHT;
+
+        var _this2 = _possibleConstructorReturn(this, (GroundTileSprite.__proto__ || Object.getPrototypeOf(GroundTileSprite)).call(this, game, x, y, 'hex'));
+
+        _this2.frame = regions.factionOf(tile) || 0;
+        //log.debug(`Hex sprite for ${tile} created at ${x}:${y}`);
+
+        /*
+        var style = { font: "10px Courier New", fill: "white", align: "center"};
+        this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,tile.id + "\n" + tile.position.r + "," + tile.position.c, style);
+        this.label.lineSpacing = -6;
+        this.label.anchor.set(0.5,0.5);
+        this.addChild(this.label);
+        */
+        return _this2;
+    }
+
+    return GroundTileSprite;
+}(Phaser.Sprite);
+
+var DebugInfo = function () {
+    function DebugInfo(_ref2) {
+        var game = _ref2.game;
+
+        _classCallCheck(this, DebugInfo);
+
+        this.game = game;
+        this.items = new _util.OrderedHashMap();
+    }
+
+    _createClass(DebugInfo, [{
+        key: 'set',
+        value: function set(key, value) {
+            this.items.push(key, value);
+        }
+    }, {
+        key: 'render',
+        value: function render() {
+            var _this3 = this;
+
+            var y = 32;
+            this.items.forEach(function (key, value) {
+                _this3.game.debug.text(key + ": " + value, 32, y);
+                y += 32;
+            });
+        }
+    }]);
+
+    return DebugInfo;
+}();
+
+exports.Ground = Ground;
+exports.DebugInfo = DebugInfo;
+exports.HEX_WIDTH = HEX_WIDTH;
+exports.HEX_HEIGHT = HEX_HEIGHT;
+exports.LINE_HEIGHT = LINE_HEIGHT;
+
+},{"expect":14,"lib/util":41,"loglevel":36}],46:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () {
+    function defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+        }
+    }return function (Constructor, protoProps, staticProps) {
+        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+    };
+}();
+
+var _get = function get(object, property, receiver) {
+    if (object === null) object = Function.prototype;var desc = Object.getOwnPropertyDescriptor(object, property);if (desc === undefined) {
+        var parent = Object.getPrototypeOf(object);if (parent === null) {
+            return undefined;
+        } else {
+            return get(parent, property, receiver);
+        }
+    } else if ("value" in desc) {
+        return desc.value;
+    } else {
+        var getter = desc.get;if (getter === undefined) {
+            return undefined;
+        }return getter.call(receiver);
+    }
+};
+
+var _Renderer = require('ui/Renderer');
+
+function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+    }
+}
+
+function _possibleConstructorReturn(self, call) {
+    if (!self) {
+        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }return call && (typeof call === "object" || typeof call === "function") ? call : self;
+}
+
+function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+        throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+}
+
+var TileSelectionProxy = function (_Phaser$Image) {
+    _inherits(TileSelectionProxy, _Phaser$Image);
+
+    function TileSelectionProxy(_ref) {
+        var game = _ref.game,
+            grid = _ref.grid,
+            debug = _ref.debug,
+            ground = _ref.ground,
+            log = _ref.log,
+            regions = _ref.regions;
+
+        _classCallCheck(this, TileSelectionProxy);
+
+        var _this = _possibleConstructorReturn(this, (TileSelectionProxy.__proto__ || Object.getPrototypeOf(TileSelectionProxy)).call(this, game, 10, 10));
+
+        _this.debug = debug;
+        _this.game = game;
+        _this.grid = grid;
+        _this.ground = ground;
+        _this.active = false;
+        _this.fixedToCamera = true;
+        _this.width = game.width - 2 * 10;
+        _this.height = game.height - 2 * 10;
+        _this.inputEnabled = true;
+
+        _this.events.onInputOver.add(function () {
+            return _this.active = true;
+        });
+        _this.events.onInputOut.add(function () {
+            return _this.active = false;
+        });
+        _this.events.onInputDown.add(function () {
+            var hex = _this.getHexUnderCursor();
+            log.info(hex + '\nFaction: ' + regions.factionOf(hex) + '\nRegion:  ' + regions.regionOf(hex));
+        });
+        return _this;
+    }
+
+    _createClass(TileSelectionProxy, [{
+        key: 'update',
+        value: function update() {
+            _get(TileSelectionProxy.prototype.__proto__ || Object.getPrototypeOf(TileSelectionProxy.prototype), 'update', this).apply(this, arguments);
+            if (this.active) {
+                this.ground.highlightTiles([this.getHexUnderCursor()]);
+            }
+        }
+    }, {
+        key: 'getHexUnderCursor',
+        value: function getHexUnderCursor() {
+            var x = (this.game.input.mousePointer.worldX - 10) / _Renderer.HEX_WIDTH;
+            var y = (this.game.input.mousePointer.worldY - 10) / _Renderer.LINE_HEIGHT;
+
+            var dx = x % 1;
+            var dy = y % 1;
+
+            var centerX = void 0,
+                centerY = void 0;
+
+            //this.debug.set("pointer-at",x.toFixed(2) + "," +y.toFixed(2));
+
+            if (Math.floor(y) % 2) {
+                //A
+                if (dx < 0.5) {
+                    if (dy < (1 - 2 * dx) / 3) {
+                        //this.debug.set("section","top-left");
+                        centerX = Math.floor(x);
+                        centerY = Math.floor(y) - 1 / 3;
+                    } else {
+                        //this.debug.set("section","bottom");
+                        centerX = Math.floor(x) + 0.5;
+                        centerY = Math.floor(y) + 2 / 3;
+                    }
+                } else {
+                    if (dy < 1 / 3 - 2 * (1 - dx) / 3) {
+                        //this.debug.set("section","top-right");
+                        centerX = Math.floor(x) + 1;
+                        centerY = Math.floor(y) - 1 / 3;
+                    } else {
+                        //this.debug.set("section","bottom");
+                        centerX = Math.floor(x) + 0.5;
+                        centerY = Math.floor(y) + 2 / 3;
+                    }
+                }
+            } else {
+                //B
+                if (dx < 0.5) {
+                    if (dy < 2 * dx / 3) {
+                        //this.debug.set("section","top");
+                        centerX = Math.floor(x) + 1 / 2;
+                        centerY = Math.floor(y) - 1 / 3;
+                    } else {
+                        //this.debug.set("section","bottom-left");
+                        centerX = Math.floor(x);
+                        centerY = Math.floor(y) + 2 / 3;
+                    }
+                } else {
+                    if (dy < 2 / 3 - 2 * dx / 3) {
+                        //this.debug.set("section","top");
+                        centerX = Math.floor(x) + 1 / 2;
+                        centerY = Math.floor(y) - 1 / 3;
+                    } else {
+                        //this.debug.set("section","bottom-right");
+                        centerX = Math.floor(x) + 1;
+                        centerY = Math.floor(y) + 2 / 3;
+                    }
+                }
+            }
+
+            centerX = centerX - 1;
+            centerY = centerY - 2 / 3;
+            var r = Math.round(centerY);
+            var c = Math.round(centerX + centerY / 2);
+
+            return this.grid.getHexByAxial(r, c);
+        }
+    }]);
+
+    return TileSelectionProxy;
+}(Phaser.Image);
+
+exports.default = TileSelectionProxy;
+
+},{"ui/Renderer":45}]},{},[38])
 //# sourceMappingURL=game.js.map

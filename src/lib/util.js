@@ -149,8 +149,9 @@ var Random = {
                result = prop;
         return result;
     },
+    //
     integer: function(from, to) {
-        return Math.floor(Math.random()*(to-from))+from;
+        return Math.floor(Math.random()*(to-from+1))+from;
     },
     substring: function(str, length) {
         length = length || Random.integer(1,str.length);
@@ -204,4 +205,4 @@ console.debug("TEST1:",a);
 */
 
 
-export { OrderedHashMap };
+export { OrderedHashMap, Random };

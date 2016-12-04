@@ -7,7 +7,7 @@ function worldGenSolid({grid,log,tileFactory}) {
 
 function worldGenPerlin({grid,log,tileFactory}) {
     const MIN_SIZE = 150;
-    const SMOOTHNESS = 7;
+    const SMOOTHNESS = 8;
 
     let noise, comps, largest, tries, seed;
     const generatorFunc = (p=>{
@@ -17,7 +17,7 @@ function worldGenPerlin({grid,log,tileFactory}) {
 
     do {
         seed = Math.floor(Math.random()*65535);
-        noise = new noisejs.Noise();
+        noise = new noisejs.Noise(seed);
         grid.fillWith(generatorFunc);
         comps = grid.components();
         largest = comps.getLargestGroup();
@@ -25,7 +25,7 @@ function worldGenPerlin({grid,log,tileFactory}) {
         if (tries > 50) throw Error('Failed to generate suitable world after 50 iterations');
     } while (largest.size < MIN_SIZE);
 
-    comps.forEach((groupId,hexGroup)=>{
+    comps.forEach((hexGroup)=>{
         if (hexGroup!=largest) {
             grid.destroyHexes(hexGroup);
         }
