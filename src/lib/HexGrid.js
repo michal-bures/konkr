@@ -87,7 +87,9 @@ class Hexagon {
     }
 
     floodFill(condition) {
-        return (new HexSet([this])).floodFill(condition);
+        const res = new HexGroup([this]);
+        res.floodFill(condition);
+        return res;
     }
 
     get id() {
@@ -97,9 +99,10 @@ class Hexagon {
     exists() { return true; }
 }
 
-class HexSet {
+class HexGroup {
     constructor(hexes) {
         this.members=[];
+        this._size = 0;
         if (hexes) this.addAll(hexes);
     }
 
@@ -118,15 +121,18 @@ class HexSet {
     add(hex) {
         if (this.members[hex.id]) return false;
         this.members[hex.id] = hex;
+        ++this._size;
         return true;
     }
 
     addAll(hexes) {
-        hexes.forEach(this.add);
+        hexes.forEach(hex=>this.add(hex));
     }
 
     remove(hex) {
+        if (this.members[hex.id] === undefined) return;
         this.members[hex.id] = undefined;
+        --this._size;
     }
 
     forEach(fn) {
@@ -134,15 +140,15 @@ class HexSet {
     }
 
     clone() {
-        return new HexSet(this.members);
+        return new HexGroup(this.members);
     }
 
     clear() {
         this.members = [];
     }
 
-    get length() {
-        return this.members.length;
+    get size() {
+        return this._size;
     }
 
     floodFill(condition = ()=>true) {
@@ -154,15 +160,16 @@ class HexSet {
                 nextPending.addAll(hex.neighbours().filter(filterCondition));
         };
         const filterCondition = hex=>condition(hex) && !this.contains(hex);
-
-        while (pending.length > 0) {
-            nextPending = new HexSet();
+        while (pending.size > 0) {
+            //log.debug("Pending:"+ pending.toString());
+            nextPending = new HexGroup();
             pending.forEach(processHex);
+            pending = nextPending;
         }
     }
 
     toString() {
-        return `[HexSet (${this.data.map(hex=>`#${hex.id}`).join(",")})]`;
+        return `[HexGroup (${this.size}): ${this.members.map(hex=>`#${hex.id}`).filter(a=>a!==undefined).join(",")}]`;
     }
 }
 
@@ -170,16 +177,19 @@ class HexGrouping {
     constructor() {
         this.groups = {};
         this.membership = [];
+        this._size = 0;
     }
 
     add(hex, key) {
         if (this.membership[hex.id]) {
             if (this.membership[hex.id] === key) return;
             this.groups[key].remove(hex);
-            if (!this.groups[key]) this.groups[key] = new HexSet();
-            this.groups[key].add(hex);
-            this.membership[hex.id] = key;
+        } else {
+            ++this._size;
         }
+        if (!this.groups[key]) this.groups[key] = new HexGroup();
+        this.groups[key].add(hex);
+        this.membership[hex.id] = key;
     }
 
     addAll(hexes, key) {
@@ -187,13 +197,37 @@ class HexGrouping {
     }
 
     getOwnerOf(hex) {
+        expect(hex).toExist();
         return this.membership[hex.id];
+    }
+
+    forEach(fn) {
+        for (const key in this.groups) {
+            fn(key, this.groups[key]);
+        }
+    }
+
+    getLargestGroup() {
+        var max = 0;
+        var res = null;
+        this.forEach((key,hexGroup) => {
+            if (hexGroup.size > max) {
+                max = hexGroup.size;
+                res = hexGroup;
+            }
+        });
+        return res;
+    }
+
+    get size() {
+        return this._size;
     }
 
     toString() {
         let total=0;
         let str = Object.keys(this.groups).map((key) => {
-            const len = this.groups[key].length;
+            console.log("==",key,this.groups[key].size);
+            const len = this.groups[key].size;
             total += len;
             return `${key}(${len})`;
         }).join(", ");
@@ -225,23 +259,30 @@ class HexGrid {
         return this.hexes[i] || NullHex;
     }
 
-    map(fn) {
-        var self = this;
-        return this.hexes.map(function(hex, index) {
-            fn(hex, new GridPoint({index: index, rowSize: self.width}));
+    forEach(fn) {
+        return this.hexes.forEach(hex => {
+            if (hex) fn(hex);
         });
     }
 
-    components(categoryFunction) {
+    destroyHexes(hexes) {
+        hexes.forEach(hex => {
+            this.hexes[hex.position.index] = null;
+        });
+    }
+
+    components(categoryFunction=()=>true) {
         let comps = new HexGrouping();
         let compNumber = 1;
-        this.hexes.forEach(hex => {
+        this.forEach(hex => {
             if (!comps.getOwnerOf(hex)) {
+                log.debug("-> "+hex.toString());
                 comps.add(hex, compNumber);
-                comps.addAll(hex.floodFill(), compNumber);
+                comps.addAll(hex.floodFill(categoryFunction), compNumber);
                 ++compNumber;
             }
         });
+        return comps;
     }
 
     dump() {
@@ -258,14 +299,14 @@ class HexGrid {
     static test() {
         let grid = new HexGrid(4,6);
         log.debug("4x6 world");
-        grid.map(function(hex,p) {
-            log.debug("Visited hex #" + p);
+        grid.forEach(function(hex) {
+            log.debug("Visited hex " + hex.toString());
         });
     }
 }
 
 const NullHex = {
-    toString: () => "[Null Hexagon]",
+    toString: () => "[Null Hex]",
     neighbours: () => [],
     id: -1,    
     exists: () => false,
@@ -277,7 +318,7 @@ const NullHex = {
         index: -1,
         toString: () => "[Null GridPoint]"
     },
-    floodFill: () => new HexSet()
+    floodFill: () => new HexGroup()
 };
 
 export { HexGrid };

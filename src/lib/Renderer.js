@@ -22,12 +22,10 @@ class Ground {
         this.game = game;
         this.group = game.add.group();
         this.tileToSprite = {};
-        this.grid.map((hex) => {
-            if (hex) {
-                var sprite = new GroundTileSprite(env,hex);
-                this.group.add(sprite);
-                this.tileToSprite[hex.id] = sprite;
-            }
+        this.grid.forEach((hex) => {
+            var sprite = new GroundTileSprite(env,hex);
+            this.group.add(sprite);
+            this.tileToSprite[hex.id] = sprite;
         });
 
         this.highlightedTiles = [];
@@ -54,7 +52,7 @@ class GroundTileSprite extends Phaser.Sprite {
         const x = OFFSET_LEFT + tile.position.x * HEX_WIDTH;
         const y = OFFSET_TOP + tile.position.y * LINE_HEIGHT;
         super(game, x, y, 'hex');
-        log.debug(`Hex sprite for ${tile} created at ${x}:${y}`);
+        //log.debug(`Hex sprite for ${tile} created at ${x}:${y}`);
     
         /*
         var style = { font: "10px Courier New", fill: "white", align: "center"};

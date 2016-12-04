@@ -6,10 +6,33 @@ function worldGenSolid({grid,log,tileFactory}) {
 }
 
 function worldGenPerlin({grid,log,tileFactory}) {
-    var noise = new noisejs.Noise(Math.random());
-    grid.fillWith((p)=> {
-        return (noise.simplex2(p.x/10,p.y/10) + 1) * avoidEdges(p.x/grid.width,p.y/grid.height) >=0.75;
+    const MIN_SIZE = 150;
+    const SMOOTHNESS = 7;
+
+    let noise, comps, largest, tries, seed;
+    const generatorFunc = (p=>{
+        return (noise.simplex2(p.x/SMOOTHNESS,p.y/SMOOTHNESS) + 1) * avoidEdges(p.x/grid.width,p.y/grid.height) >=0.75;
     });
+
+
+    do {
+        seed = Math.floor(Math.random()*65535);
+        noise = new noisejs.Noise();
+        grid.fillWith(generatorFunc);
+        comps = grid.components();
+        largest = comps.getLargestGroup();
+        ++tries;
+        if (tries > 50) throw Error('Failed to generate suitable world after 50 iterations');
+    } while (largest.size < MIN_SIZE);
+
+    comps.forEach((groupId,hexGroup)=>{
+        if (hexGroup!=largest) {
+            grid.destroyHexes(hexGroup);
+        }
+    });
+
+    log.info("Map generated (seed="+seed+")");
+
 }
 
 // x and y shoudl be between 0 and 1

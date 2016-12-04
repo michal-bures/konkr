@@ -5166,7 +5166,9 @@ var Hexagon = function () {
     }, {
         key: 'floodFill',
         value: function floodFill(condition) {
-            return new HexSet([this]).floodFill(condition);
+            var res = new HexGroup([this]);
+            res.floodFill(condition);
+            return res;
         }
     }, {
         key: 'exists',
@@ -5183,15 +5185,16 @@ var Hexagon = function () {
     return Hexagon;
 }();
 
-var HexSet = function () {
-    function HexSet(hexes) {
-        _classCallCheck(this, HexSet);
+var HexGroup = function () {
+    function HexGroup(hexes) {
+        _classCallCheck(this, HexGroup);
 
         this.members = [];
+        this._size = 0;
         if (hexes) this.addAll(hexes);
     }
 
-    _createClass(HexSet, [{
+    _createClass(HexGroup, [{
         key: 'contains',
         value: function contains(hex) {
             return !!this.members[hex.id];
@@ -5211,17 +5214,24 @@ var HexSet = function () {
         value: function add(hex) {
             if (this.members[hex.id]) return false;
             this.members[hex.id] = hex;
+            ++this._size;
             return true;
         }
     }, {
         key: 'addAll',
         value: function addAll(hexes) {
-            hexes.forEach(this.add);
+            var _this2 = this;
+
+            hexes.forEach(function (hex) {
+                return _this2.add(hex);
+            });
         }
     }, {
         key: 'remove',
         value: function remove(hex) {
+            if (this.members[hex.id] === undefined) return;
             this.members[hex.id] = undefined;
+            --this._size;
         }
     }, {
         key: 'forEach',
@@ -5231,7 +5241,7 @@ var HexSet = function () {
     }, {
         key: 'clone',
         value: function clone() {
-            return new HexSet(this.members);
+            return new HexGroup(this.members);
         }
     }, {
         key: 'clear',
@@ -5241,7 +5251,7 @@ var HexSet = function () {
     }, {
         key: 'floodFill',
         value: function floodFill() {
-            var _this2 = this;
+            var _this3 = this;
 
             var condition = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {
                 return true;
@@ -5251,33 +5261,36 @@ var HexSet = function () {
 
             var nextPending = void 0;
             var processHex = function processHex(hex) {
-                _this2.add(hex);
+                _this3.add(hex);
                 nextPending.addAll(hex.neighbours().filter(filterCondition));
             };
             var filterCondition = function filterCondition(hex) {
-                return condition(hex) && !_this2.contains(hex);
+                return condition(hex) && !_this3.contains(hex);
             };
-
-            while (pending.length > 0) {
-                nextPending = new HexSet();
+            while (pending.size > 0) {
+                //log.debug("Pending:"+ pending.toString());
+                nextPending = new HexGroup();
                 pending.forEach(processHex);
+                pending = nextPending;
             }
         }
     }, {
         key: 'toString',
         value: function toString() {
-            return '[HexSet (' + this.data.map(function (hex) {
+            return '[HexGroup (' + this.size + '): ' + this.members.map(function (hex) {
                 return '#' + hex.id;
-            }).join(",") + ')]';
+            }).filter(function (a) {
+                return a !== undefined;
+            }).join(",") + ']';
         }
     }, {
-        key: 'length',
+        key: 'size',
         get: function get() {
-            return this.members.length;
+            return this._size;
         }
     }]);
 
-    return HexSet;
+    return HexGroup;
 }();
 
 var HexGrouping = function () {
@@ -5286,6 +5299,7 @@ var HexGrouping = function () {
 
         this.groups = {};
         this.membership = [];
+        this._size = 0;
     }
 
     _createClass(HexGrouping, [{
@@ -5294,37 +5308,66 @@ var HexGrouping = function () {
             if (this.membership[hex.id]) {
                 if (this.membership[hex.id] === key) return;
                 this.groups[key].remove(hex);
-                if (!this.groups[key]) this.groups[key] = new HexSet();
-                this.groups[key].add(hex);
-                this.membership[hex.id] = key;
+            } else {
+                ++this._size;
             }
+            if (!this.groups[key]) this.groups[key] = new HexGroup();
+            this.groups[key].add(hex);
+            this.membership[hex.id] = key;
         }
     }, {
         key: 'addAll',
         value: function addAll(hexes, key) {
-            var _this3 = this;
+            var _this4 = this;
 
             hexes.forEach(function (hex) {
-                return _this3.add(hex, key);
+                return _this4.add(hex, key);
             });
         }
     }, {
         key: 'getOwnerOf',
         value: function getOwnerOf(hex) {
+            (0, _expect2.default)(hex).toExist();
             return this.membership[hex.id];
+        }
+    }, {
+        key: 'forEach',
+        value: function forEach(fn) {
+            for (var key in this.groups) {
+                fn(key, this.groups[key]);
+            }
+        }
+    }, {
+        key: 'getLargestGroup',
+        value: function getLargestGroup() {
+            var max = 0;
+            var res = null;
+            this.forEach(function (key, hexGroup) {
+                if (hexGroup.size > max) {
+                    max = hexGroup.size;
+                    res = hexGroup;
+                }
+            });
+            return res;
         }
     }, {
         key: 'toString',
         value: function toString() {
-            var _this4 = this;
+            var _this5 = this;
 
             var total = 0;
             var str = Object.keys(this.groups).map(function (key) {
-                var len = _this4.groups[key].length;
+                console.log("==", key, _this5.groups[key].size);
+                var len = _this5.groups[key].size;
                 total += len;
                 return key + '(' + len + ')';
             }).join(", ");
             return '[HexGrouping (' + total + '): ' + str + ']';
+        }
+    }, {
+        key: 'size',
+        get: function get() {
+            return this._size;
         }
     }]);
 
@@ -5361,25 +5404,39 @@ var HexGrid = function () {
             return this.hexes[i] || NullHex;
         }
     }, {
-        key: 'map',
-        value: function map(fn) {
-            var self = this;
-            return this.hexes.map(function (hex, index) {
-                fn(hex, new GridPoint({ index: index, rowSize: self.width }));
+        key: 'forEach',
+        value: function forEach(fn) {
+            return this.hexes.forEach(function (hex) {
+                if (hex) fn(hex);
+            });
+        }
+    }, {
+        key: 'destroyHexes',
+        value: function destroyHexes(hexes) {
+            var _this6 = this;
+
+            hexes.forEach(function (hex) {
+                _this6.hexes[hex.position.index] = null;
             });
         }
     }, {
         key: 'components',
-        value: function components(categoryFunction) {
+        value: function components() {
+            var categoryFunction = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {
+                return true;
+            };
+
             var comps = new HexGrouping();
             var compNumber = 1;
-            this.hexes.forEach(function (hex) {
+            this.forEach(function (hex) {
                 if (!comps.getOwnerOf(hex)) {
+                    _loglevel2.default.debug("-> " + hex.toString());
                     comps.add(hex, compNumber);
-                    comps.addAll(hex.floodFill(), compNumber);
+                    comps.addAll(hex.floodFill(categoryFunction), compNumber);
                     ++compNumber;
                 }
             });
+            return comps;
         }
     }, {
         key: 'dump',
@@ -5398,8 +5455,8 @@ var HexGrid = function () {
         value: function test() {
             var grid = new HexGrid(4, 6);
             _loglevel2.default.debug("4x6 world");
-            grid.map(function (hex, p) {
-                _loglevel2.default.debug("Visited hex #" + p);
+            grid.forEach(function (hex) {
+                _loglevel2.default.debug("Visited hex " + hex.toString());
             });
         }
     }]);
@@ -5409,7 +5466,7 @@ var HexGrid = function () {
 
 var NullHex = {
     toString: function toString() {
-        return "[Null Hexagon]";
+        return "[Null Hex]";
     },
     neighbours: function neighbours() {
         return [];
@@ -5429,7 +5486,7 @@ var NullHex = {
         }
     },
     floodFill: function floodFill() {
-        return new HexSet();
+        return new HexGroup();
     }
 };
 
@@ -5508,12 +5565,10 @@ var Ground = function () {
         this.game = game;
         this.group = game.add.group();
         this.tileToSprite = {};
-        this.grid.map(function (hex) {
-            if (hex) {
-                var sprite = new GroundTileSprite(env, hex);
-                _this.group.add(sprite);
-                _this.tileToSprite[hex.id] = sprite;
-            }
+        this.grid.forEach(function (hex) {
+            var sprite = new GroundTileSprite(env, hex);
+            _this.group.add(sprite);
+            _this.tileToSprite[hex.id] = sprite;
         });
 
         this.highlightedTiles = [];
@@ -5554,10 +5609,8 @@ var GroundTileSprite = function (_Phaser$Sprite) {
 
         var x = OFFSET_LEFT + tile.position.x * HEX_WIDTH;
         var y = OFFSET_TOP + tile.position.y * LINE_HEIGHT;
-
-        var _this2 = _possibleConstructorReturn(this, (GroundTileSprite.__proto__ || Object.getPrototypeOf(GroundTileSprite)).call(this, game, x, y, 'hex'));
-
-        log.debug('Hex sprite for ' + tile + ' created at ' + x + ':' + y);
+        return _possibleConstructorReturn(this, (GroundTileSprite.__proto__ || Object.getPrototypeOf(GroundTileSprite)).call(this, game, x, y, 'hex'));
+        //log.debug(`Hex sprite for ${tile} created at ${x}:${y}`);
 
         /*
         var style = { font: "10px Courier New", fill: "white", align: "center"};
@@ -5566,7 +5619,6 @@ var GroundTileSprite = function (_Phaser$Sprite) {
         this.label.anchor.set(0.5,0.5);
         this.addChild(this.label);
         */
-        return _this2;
     }
 
     return GroundTileSprite;
@@ -5640,10 +5692,35 @@ function worldGenPerlin(_ref2) {
         log = _ref2.log,
         tileFactory = _ref2.tileFactory;
 
-    var noise = new _noisejs2.default.Noise(Math.random());
-    grid.fillWith(function (p) {
-        return (noise.simplex2(p.x / 10, p.y / 10) + 1) * avoidEdges(p.x / grid.width, p.y / grid.height) >= 0.75;
+    var MIN_SIZE = 150;
+    var SMOOTHNESS = 7;
+
+    var noise = void 0,
+        comps = void 0,
+        largest = void 0,
+        tries = void 0,
+        seed = void 0;
+    var generatorFunc = function generatorFunc(p) {
+        return (noise.simplex2(p.x / SMOOTHNESS, p.y / SMOOTHNESS) + 1) * avoidEdges(p.x / grid.width, p.y / grid.height) >= 0.75;
+    };
+
+    do {
+        seed = Math.floor(Math.random() * 65535);
+        noise = new _noisejs2.default.Noise();
+        grid.fillWith(generatorFunc);
+        comps = grid.components();
+        largest = comps.getLargestGroup();
+        ++tries;
+        if (tries > 50) throw Error('Failed to generate suitable world after 50 iterations');
+    } while (largest.size < MIN_SIZE);
+
+    comps.forEach(function (groupId, hexGroup) {
+        if (hexGroup != largest) {
+            grid.destroyHexes(hexGroup);
+        }
     });
+
+    log.info("Map generated (seed=" + seed + ")");
 }
 
 // x and y shoudl be between 0 and 1
