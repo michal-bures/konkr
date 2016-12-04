@@ -31,7 +31,7 @@ AssetManager.images = {
 };
 
 AssetManager.spritesheets = {
-    'hex' : ['assets/hex.png', HEX_WIDTH, HEX_HEIGHT],
+    'hex' : ['assets/hex.png', HEX_WIDTH, 41],
 };
 
 export default AssetManager;

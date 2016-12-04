@@ -1,28 +1,14 @@
 import noisejs from 'noisejs';
 
-class LandTile {
-    constructor(coords) {
-        this.position = coords;
-    }
 
-    toString() {
-        return `[LandTile at ${this.position}]`;
-    }
-
-    get id() {
-        return this.position.index;
-    }
-
+function worldGenSolid({grid,log,tileFactory}) {
+    grid.fillWith((p)=> true);
 }
 
-function worldGenSolid({grid,log}) {
-    grid.fillWith((p)=> new LandTile(p));
-}
-
-function worldGenPerlin({grid,log}) {
+function worldGenPerlin({grid,log,tileFactory}) {
     var noise = new noisejs.Noise(Math.random());
     grid.fillWith((p)=> {
-        return ((noise.simplex2(p.x/10,p.y/10) + 1) * avoidEdges(p.x/grid.width,p.y/grid.height) >=0.75?new LandTile(p): null);
+        return (noise.simplex2(p.x/10,p.y/10) + 1) * avoidEdges(p.x/grid.width,p.y/grid.height) >=0.75;
     });
 }
 

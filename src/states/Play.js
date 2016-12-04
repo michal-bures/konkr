@@ -1,7 +1,8 @@
 import expect from 'expect';
 
 import { HexGrid } from 'lib/HexGrid';
-import { Ground, TileSelectionProxy, DebugInfo } from 'lib/Renderer';
+import { Ground, DebugInfo } from 'lib/Renderer';
+import TileSelectionProxy from 'lib/ui/TileSelectionProxy';
 import { worldGenPerlin, worldGenSolid } from 'lib/WorldGenerator';
 
 class Play {
@@ -10,18 +11,21 @@ class Play {
     }
 
     init(env) {
-        const {game,log, debugMode} = env;
+        const {game, log, debugMode} = env;
         expect(game).toExist();
         expect(log).toExist();
 
         this.debugMode = debugMode;
         this.debug = new DebugInfo(env);
         env.debug = this.debug;
-        const grid = new HexGrid(15,9);
+        const grid = new HexGrid(30,18);
         env.grid = grid;
-        worldGenSolid(env);
+        
+        worldGenPerlin(env);
+
         this.ground = new Ground(env);
         env.ground = this.ground;
+
         let g = {};
         //display layers hierarchy
         g.root = game.add.group();                                  
@@ -31,7 +35,7 @@ class Play {
                 g.underObjects = g.world.add(game.add.group());     // elements displayed between terrain and objects in the scrolling game world
                 g.objects = g.world.add(game.add.group());          // objects placed on terrain in the game world
                 g.overObjects = g.world.add(game.add.group());      // elements overlayed over objects in the game world
-                g.tileSelectionProxy = g.world.add(new TileSelectionProxy(env)); // invisible sprite capturing mouseover items for game world
+                g.tileSelectionProxy = g.world.add(new TileSelectionProxy(env)); // invisible sprite capturing mouseover/mousedown items on game world and translating them to events on individual hexagons
             g.UIbackground = g.root.add(game.add.group());
             g.UI = g.root.add(game.add.group());
   
@@ -42,10 +46,6 @@ class Play {
         bg.scale.y = bg.scale.x;
         bg.y=game.world.height-120-bg.height;*/
         //bg.height = game.world.height;
-
-        g.tileSelectionProxy = new Image()
-
-        this.ground.highlightTiles([env.grid.getHexByAxial(10,20)]);
 
         this.game.stage.backgroundColor='#d5dfef';
 

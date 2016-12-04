@@ -4933,7 +4933,7 @@ game.state.add("Play", _Play2.default);
 console.log(_Play2.default);
 game.state.start("Boot");
 
-},{"expect":11,"lib/AssetManager":36,"loglevel":33,"states/Play":41}],36:[function(require,module,exports){
+},{"expect":11,"lib/AssetManager":36,"loglevel":33,"states/Play":42}],36:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -4996,7 +4996,7 @@ AssetManager.images = {
 };
 
 AssetManager.spritesheets = {
-    'hex': ['assets/hex.png', _Renderer.HEX_WIDTH, _Renderer.HEX_HEIGHT]
+    'hex': ['assets/hex.png', _Renderer.HEX_WIDTH, 41]
 };
 
 exports.default = AssetManager;
@@ -5133,7 +5133,203 @@ var GridPoint = function () {
     return GridPoint;
 }();
 
-window.GridPoint = GridPoint; //TODO:REMOVE
+var HEX_ADJACENCY_VECTORS = [[-1, -1], [-1, 0], [0, 1], [1, 1], [1, 0], [0, -1]];
+
+var Hexagon = function () {
+    function Hexagon(grid, gridPoint) {
+        _classCallCheck(this, Hexagon);
+
+        this.position = gridPoint;
+        this.grid = grid;
+    }
+
+    _createClass(Hexagon, [{
+        key: 'toString',
+        value: function toString() {
+            return '[Hex at ' + this.position + ']';
+        }
+    }, {
+        key: 'neighbours',
+        value: function neighbours() {
+            var _this = this;
+
+            var _position = this.position,
+                r = _position.r,
+                c = _position.c;
+
+            return HEX_ADJACENCY_VECTORS.map(function (change) {
+                return _this.grid.getHexByAxial(r + change[0], c + change[1]);
+            }).filter(function (hex) {
+                return hex.exists();
+            });
+        }
+    }, {
+        key: 'floodFill',
+        value: function floodFill(condition) {
+            return new HexSet([this]).floodFill(condition);
+        }
+    }, {
+        key: 'exists',
+        value: function exists() {
+            return true;
+        }
+    }, {
+        key: 'id',
+        get: function get() {
+            return this.position.index;
+        }
+    }]);
+
+    return Hexagon;
+}();
+
+var HexSet = function () {
+    function HexSet(hexes) {
+        _classCallCheck(this, HexSet);
+
+        this.members = [];
+        if (hexes) this.addAll(hexes);
+    }
+
+    _createClass(HexSet, [{
+        key: 'contains',
+        value: function contains(hex) {
+            return !!this.members[hex.id];
+        }
+    }, {
+        key: 'containsId',
+        value: function containsId(id) {
+            return !!this.members[id];
+        }
+    }, {
+        key: 'getById',
+        value: function getById(id) {
+            return this.members[id];
+        }
+    }, {
+        key: 'add',
+        value: function add(hex) {
+            if (this.members[hex.id]) return false;
+            this.members[hex.id] = hex;
+            return true;
+        }
+    }, {
+        key: 'addAll',
+        value: function addAll(hexes) {
+            hexes.forEach(this.add);
+        }
+    }, {
+        key: 'remove',
+        value: function remove(hex) {
+            this.members[hex.id] = undefined;
+        }
+    }, {
+        key: 'forEach',
+        value: function forEach(fn) {
+            return this.members.forEach(fn);
+        }
+    }, {
+        key: 'clone',
+        value: function clone() {
+            return new HexSet(this.members);
+        }
+    }, {
+        key: 'clear',
+        value: function clear() {
+            this.members = [];
+        }
+    }, {
+        key: 'floodFill',
+        value: function floodFill() {
+            var _this2 = this;
+
+            var condition = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : function () {
+                return true;
+            };
+
+            var pending = this.clone();
+
+            var nextPending = void 0;
+            var processHex = function processHex(hex) {
+                _this2.add(hex);
+                nextPending.addAll(hex.neighbours().filter(filterCondition));
+            };
+            var filterCondition = function filterCondition(hex) {
+                return condition(hex) && !_this2.contains(hex);
+            };
+
+            while (pending.length > 0) {
+                nextPending = new HexSet();
+                pending.forEach(processHex);
+            }
+        }
+    }, {
+        key: 'toString',
+        value: function toString() {
+            return '[HexSet (' + this.data.map(function (hex) {
+                return '#' + hex.id;
+            }).join(",") + ')]';
+        }
+    }, {
+        key: 'length',
+        get: function get() {
+            return this.members.length;
+        }
+    }]);
+
+    return HexSet;
+}();
+
+var HexGrouping = function () {
+    function HexGrouping() {
+        _classCallCheck(this, HexGrouping);
+
+        this.groups = {};
+        this.membership = [];
+    }
+
+    _createClass(HexGrouping, [{
+        key: 'add',
+        value: function add(hex, key) {
+            if (this.membership[hex.id]) {
+                if (this.membership[hex.id] === key) return;
+                this.groups[key].remove(hex);
+                if (!this.groups[key]) this.groups[key] = new HexSet();
+                this.groups[key].add(hex);
+                this.membership[hex.id] = key;
+            }
+        }
+    }, {
+        key: 'addAll',
+        value: function addAll(hexes, key) {
+            var _this3 = this;
+
+            hexes.forEach(function (hex) {
+                return _this3.add(hex, key);
+            });
+        }
+    }, {
+        key: 'getOwnerOf',
+        value: function getOwnerOf(hex) {
+            return this.membership[hex.id];
+        }
+    }, {
+        key: 'toString',
+        value: function toString() {
+            var _this4 = this;
+
+            var total = 0;
+            var str = Object.keys(this.groups).map(function (key) {
+                var len = _this4.groups[key].length;
+                total += len;
+                return key + '(' + len + ')';
+            }).join(", ");
+            return '[HexGrouping (' + total + '): ' + str + ']';
+        }
+    }]);
+
+    return HexGrouping;
+}();
 
 var HexGrid = function () {
     function HexGrid(width, height) {
@@ -5143,21 +5339,14 @@ var HexGrid = function () {
         this.width = width;
         this.height = height;
         this.upperBound = width * height;
-
-        this.fillWith(null);
     }
 
     _createClass(HexGrid, [{
         key: 'fillWith',
-        value: function fillWith(value) {
-            if (typeof value == 'function') {
-                for (var i = 0; i < this.upperBound; ++i) {
-                    this.hexes[i] = value(new GridPoint({ index: i, rowSize: this.width }));
-                }
-            } else {
-                for (var _i = 0; _i < this.upperBound; ++_i) {
-                    this.hexes[_i] = value;
-                }
+        value: function fillWith(fn) {
+            for (var i = 0; i < this.upperBound; ++i) {
+                var p = new GridPoint({ index: i, rowSize: this.width });
+                this.hexes[i] = fn(p) ? new Hexagon(this, p) : null;
             }
         }
 
@@ -5166,10 +5355,10 @@ var HexGrid = function () {
     }, {
         key: 'getHexByAxial',
         value: function getHexByAxial(r, c) {
-            if (c >= this.width - 0.5 + r / 2 || c - r / 2 <= -1) return undefined;
-            if (r >= this.height) return undefined;
+            if (c >= this.width - 0.5 + r / 2 || c - r / 2 <= -1) return NullHex;
+            if (r >= this.height) return NullHex;
             var i = r * this.width + c - Math.floor(r / 2);
-            return this.hexes[i];
+            return this.hexes[i] || NullHex;
         }
     }, {
         key: 'map',
@@ -5177,6 +5366,19 @@ var HexGrid = function () {
             var self = this;
             return this.hexes.map(function (hex, index) {
                 fn(hex, new GridPoint({ index: index, rowSize: self.width }));
+            });
+        }
+    }, {
+        key: 'components',
+        value: function components(categoryFunction) {
+            var comps = new HexGrouping();
+            var compNumber = 1;
+            this.hexes.forEach(function (hex) {
+                if (!comps.getOwnerOf(hex)) {
+                    comps.add(hex, compNumber);
+                    comps.addAll(hex.floodFill(), compNumber);
+                    ++compNumber;
+                }
             });
         }
     }, {
@@ -5205,6 +5407,32 @@ var HexGrid = function () {
     return HexGrid;
 }();
 
+var NullHex = {
+    toString: function toString() {
+        return "[Null Hexagon]";
+    },
+    neighbours: function neighbours() {
+        return [];
+    },
+    id: -1,
+    exists: function exists() {
+        return false;
+    },
+    position: {
+        x: -1,
+        y: -1,
+        r: -1,
+        c: -1,
+        index: -1,
+        toString: function toString() {
+            return "[Null GridPoint]";
+        }
+    },
+    floodFill: function floodFill() {
+        return new HexSet();
+    }
+};
+
 exports.HexGrid = HexGrid;
 
 },{"expect":11,"loglevel":33}],38:[function(require,module,exports){
@@ -5213,23 +5441,7 @@ exports.HexGrid = HexGrid;
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.HEX_HEIGHT = exports.HEX_WIDTH = exports.DebugInfo = exports.TileSelectionProxy = exports.Ground = undefined;
-
-var _get = function get(object, property, receiver) {
-    if (object === null) object = Function.prototype;var desc = Object.getOwnPropertyDescriptor(object, property);if (desc === undefined) {
-        var parent = Object.getPrototypeOf(object);if (parent === null) {
-            return undefined;
-        } else {
-            return get(parent, property, receiver);
-        }
-    } else if ("value" in desc) {
-        return desc.value;
-    } else {
-        var getter = desc.get;if (getter === undefined) {
-            return undefined;
-        }return getter.call(receiver);
-    }
-};
+exports.LINE_HEIGHT = exports.HEX_HEIGHT = exports.HEX_WIDTH = exports.DebugInfo = exports.Ground = undefined;
 
 var _createClass = function () {
     function defineProperties(target, props) {
@@ -5273,8 +5485,8 @@ function _classCallCheck(instance, Constructor) {
     }
 }
 
-var HEX_WIDTH = 128;
-var HEX_HEIGHT = 148;
+var HEX_WIDTH = 32;
+var HEX_HEIGHT = 37;
 var HEX_SIZE = HEX_HEIGHT / 2;
 var OFFSET_TOP = 10;
 var OFFSET_LEFT = 10 + HEX_WIDTH / 2;
@@ -5316,7 +5528,6 @@ var Ground = function () {
         key: 'highlightTiles',
         value: function highlightTiles(tiles) {
             var self = this;
-            _loglevel2.default.debug("tiles", tiles);
             this.highlightedTiles.forEach(function (tileSprite) {
                 if (tileSprite) tileSprite.frame = 0;
             });
@@ -5348,13 +5559,13 @@ var GroundTileSprite = function (_Phaser$Sprite) {
 
         log.debug('Hex sprite for ' + tile + ' created at ' + x + ':' + y);
 
-        //add letter to my sprite
-        var style = { font: "10px Arial", fill: "#666666", align: "center" };
-        _this2.label = game.add.text(HEX_WIDTH / 2, HEX_HEIGHT / 2, tile.id + "\n" + tile.position.r + "," + tile.position.c, style);
-        _this2.label.lineSpacing = -6;
-        _this2.label.anchor.set(0.5, 0.5);
-        _this2.addChild(_this2.label);
-
+        /*
+        var style = { font: "10px Courier New", fill: "white", align: "center"};
+        this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,tile.id + "\n" + tile.position.r + "," + tile.position.c, style);
+        this.label.lineSpacing = -6;
+        this.label.anchor.set(0.5,0.5);
+        this.addChild(this.label);
+        */
         return _this2;
     }
 
@@ -5392,112 +5603,19 @@ var DebugInfo = function () {
     return DebugInfo;
 }();
 
-var TileSelectionProxy = function (_Phaser$Image) {
-    _inherits(TileSelectionProxy, _Phaser$Image);
-
-    function TileSelectionProxy(_ref3) {
-        var game = _ref3.game,
-            grid = _ref3.grid,
-            debug = _ref3.debug,
-            ground = _ref3.ground;
-
-        _classCallCheck(this, TileSelectionProxy);
-
-        var _this4 = _possibleConstructorReturn(this, (TileSelectionProxy.__proto__ || Object.getPrototypeOf(TileSelectionProxy)).call(this, game, 10, 10));
-
-        _this4.debug = debug;
-        _this4.game = game;
-        _this4.grid = grid;
-        _this4.ground = ground;
-        _this4.active = false;
-        _this4.fixedToCamera = true;
-        _this4.width = game.width - 2 * 10;
-        _this4.height = game.height - 2 * 10;
-        _this4.inputEnabled = true;
-
-        _this4.events.onInputOver.add(function () {
-            return _this4.active = true;
-        });
-        _this4.events.onInputOut.add(function () {
-            return _this4.active = false;
-        });
-        _this4.events.onInputDown.add(function () {
-            return console.log("INPUT DOWN ", a, b, c);
-        });
-        return _this4;
-    }
-
-    _createClass(TileSelectionProxy, [{
-        key: 'update',
-        value: function update() {
-            var _this5 = this;
-
-            _get(TileSelectionProxy.prototype.__proto__ || Object.getPrototypeOf(TileSelectionProxy.prototype), 'update', this).apply(this, arguments);
-            if (this.active) {
-                (function () {
-                    var x = _this5.game.input.mousePointer.worldX - 10 - HEX_WIDTH;
-                    x /= HEX_WIDTH;
-                    var y = _this5.game.input.mousePointer.worldY - 10 - HEX_HEIGHT / 2;
-                    y /= LINE_HEIGHT;
-                    var r = y;
-                    var c = x + y / 2;
-
-                    var candidates = [[Math.floor(r), Math.floor(c)], [Math.floor(r), Math.ceil(c)], [Math.ceil(r), Math.floor(c)], [Math.ceil(r), Math.ceil(c)]];
-                    console.log(candidates);
-                    var max = 1;
-                    var rr = void 0;
-                    var rc = void 0;
-                    candidates.forEach(function (coord) {
-                        var cr = coord[0];
-                        var cc = coord[1];
-                        var dr = Math.abs(cr - r);
-                        var dc = Math.abs(cc - c);
-                        var d = Math.sqrt(dr * dr + dc * dc);
-                        console.log('dist from ' + cr + ',' + cc + ' to ' + r.toFixed(1) + ',' + c.toFixed(1) + ' is ' + d);
-                        if (d < max) {
-                            max = d;
-                            rr = coord[0];
-                            rc = coord[1];
-                        }
-                    });
-
-                    //let q = Math.round((x * Math.sqrt(3)/3 - y / 3) / HEX_SIZE);
-                    _this5.debug.set("pointer-at", x.toFixed(2) + "," + y.toFixed(2));
-                    _this5.debug.set("axial", r.toFixed(2) + ',' + c.toFixed(2));
-                    _this5.ground.highlightTiles([_this5.grid.getHexByAxial(rr, rc)]);
-                })();
-            } else {
-                this.debug.set("pointer-at", "N/A");
-            }
-        }
-    }]);
-
-    return TileSelectionProxy;
-}(Phaser.Image);
-
 exports.Ground = Ground;
-exports.TileSelectionProxy = TileSelectionProxy;
 exports.DebugInfo = DebugInfo;
 exports.HEX_WIDTH = HEX_WIDTH;
 exports.HEX_HEIGHT = HEX_HEIGHT;
+exports.LINE_HEIGHT = LINE_HEIGHT;
 
-},{"expect":11,"lib/util":40,"loglevel":33}],39:[function(require,module,exports){
+},{"expect":11,"lib/util":41,"loglevel":33}],39:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
 exports.worldGenSolid = exports.worldGenPerlin = undefined;
-
-var _createClass = function () {
-    function defineProperties(target, props) {
-        for (var i = 0; i < props.length; i++) {
-            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
-        }
-    }return function (Constructor, protoProps, staticProps) {
-        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
-    };
-}();
 
 var _noisejs = require('noisejs');
 
@@ -5507,50 +5625,24 @@ function _interopRequireDefault(obj) {
     return obj && obj.__esModule ? obj : { default: obj };
 }
 
-function _classCallCheck(instance, Constructor) {
-    if (!(instance instanceof Constructor)) {
-        throw new TypeError("Cannot call a class as a function");
-    }
-}
-
-var LandTile = function () {
-    function LandTile(coords) {
-        _classCallCheck(this, LandTile);
-
-        this.position = coords;
-    }
-
-    _createClass(LandTile, [{
-        key: 'toString',
-        value: function toString() {
-            return '[LandTile at ' + this.position + ']';
-        }
-    }, {
-        key: 'id',
-        get: function get() {
-            return this.position.index;
-        }
-    }]);
-
-    return LandTile;
-}();
-
 function worldGenSolid(_ref) {
     var grid = _ref.grid,
-        log = _ref.log;
+        log = _ref.log,
+        tileFactory = _ref.tileFactory;
 
     grid.fillWith(function (p) {
-        return new LandTile(p);
+        return true;
     });
 }
 
 function worldGenPerlin(_ref2) {
     var grid = _ref2.grid,
-        log = _ref2.log;
+        log = _ref2.log,
+        tileFactory = _ref2.tileFactory;
 
     var noise = new _noisejs2.default.Noise(Math.random());
     grid.fillWith(function (p) {
-        return (noise.simplex2(p.x / 10, p.y / 10) + 1) * avoidEdges(p.x / grid.width, p.y / grid.height) >= 0.75 ? new LandTile(p) : null;
+        return (noise.simplex2(p.x / 10, p.y / 10) + 1) * avoidEdges(p.x / grid.width, p.y / grid.height) >= 0.75;
     });
 }
 
@@ -5566,6 +5658,179 @@ exports.worldGenPerlin = worldGenPerlin;
 exports.worldGenSolid = worldGenSolid;
 
 },{"noisejs":34}],40:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+var _createClass = function () {
+    function defineProperties(target, props) {
+        for (var i = 0; i < props.length; i++) {
+            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+        }
+    }return function (Constructor, protoProps, staticProps) {
+        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+    };
+}();
+
+var _get = function get(object, property, receiver) {
+    if (object === null) object = Function.prototype;var desc = Object.getOwnPropertyDescriptor(object, property);if (desc === undefined) {
+        var parent = Object.getPrototypeOf(object);if (parent === null) {
+            return undefined;
+        } else {
+            return get(parent, property, receiver);
+        }
+    } else if ("value" in desc) {
+        return desc.value;
+    } else {
+        var getter = desc.get;if (getter === undefined) {
+            return undefined;
+        }return getter.call(receiver);
+    }
+};
+
+var _Renderer = require('lib/Renderer');
+
+function _classCallCheck(instance, Constructor) {
+    if (!(instance instanceof Constructor)) {
+        throw new TypeError("Cannot call a class as a function");
+    }
+}
+
+function _possibleConstructorReturn(self, call) {
+    if (!self) {
+        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+    }return call && (typeof call === "object" || typeof call === "function") ? call : self;
+}
+
+function _inherits(subClass, superClass) {
+    if (typeof superClass !== "function" && superClass !== null) {
+        throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+}
+
+var TileSelectionProxy = function (_Phaser$Image) {
+    _inherits(TileSelectionProxy, _Phaser$Image);
+
+    function TileSelectionProxy(_ref) {
+        var game = _ref.game,
+            grid = _ref.grid,
+            debug = _ref.debug,
+            ground = _ref.ground,
+            log = _ref.log;
+
+        _classCallCheck(this, TileSelectionProxy);
+
+        var _this = _possibleConstructorReturn(this, (TileSelectionProxy.__proto__ || Object.getPrototypeOf(TileSelectionProxy)).call(this, game, 10, 10));
+
+        _this.debug = debug;
+        _this.game = game;
+        _this.grid = grid;
+        _this.ground = ground;
+        _this.active = false;
+        _this.fixedToCamera = true;
+        _this.width = game.width - 2 * 10;
+        _this.height = game.height - 2 * 10;
+        _this.inputEnabled = true;
+
+        _this.events.onInputOver.add(function () {
+            return _this.active = true;
+        });
+        _this.events.onInputOut.add(function () {
+            return _this.active = false;
+        });
+        _this.events.onInputDown.add(function () {
+            log.info(_this.getHexUnderCursor().toString(), _this.getHexUnderCursor());
+        });
+        return _this;
+    }
+
+    _createClass(TileSelectionProxy, [{
+        key: 'update',
+        value: function update() {
+            _get(TileSelectionProxy.prototype.__proto__ || Object.getPrototypeOf(TileSelectionProxy.prototype), 'update', this).apply(this, arguments);
+            if (this.active) {
+                this.ground.highlightTiles(this.getHexUnderCursor().neighbours());
+            }
+        }
+    }, {
+        key: 'getHexUnderCursor',
+        value: function getHexUnderCursor() {
+            var x = (this.game.input.mousePointer.worldX - 10) / _Renderer.HEX_WIDTH;
+            var y = (this.game.input.mousePointer.worldY - 10) / _Renderer.LINE_HEIGHT;
+
+            var dx = x % 1;
+            var dy = y % 1;
+
+            var centerX = void 0,
+                centerY = void 0;
+
+            //this.debug.set("pointer-at",x.toFixed(2) + "," +y.toFixed(2));
+
+            if (Math.floor(y) % 2) {
+                //A
+                if (dx < 0.5) {
+                    if (dy < (1 - 2 * dx) / 3) {
+                        //this.debug.set("section","top-left");
+                        centerX = Math.floor(x);
+                        centerY = Math.floor(y) - 1 / 3;
+                    } else {
+                        //this.debug.set("section","bottom");
+                        centerX = Math.floor(x) + 0.5;
+                        centerY = Math.floor(y) + 2 / 3;
+                    }
+                } else {
+                    if (dy < 1 / 3 - 2 * (1 - dx) / 3) {
+                        //this.debug.set("section","top-right");
+                        centerX = Math.floor(x) + 1;
+                        centerY = Math.floor(y) - 1 / 3;
+                    } else {
+                        //this.debug.set("section","bottom");
+                        centerX = Math.floor(x) + 0.5;
+                        centerY = Math.floor(y) + 2 / 3;
+                    }
+                }
+            } else {
+                //B
+                if (dx < 0.5) {
+                    if (dy < 2 * dx / 3) {
+                        //this.debug.set("section","top");
+                        centerX = Math.floor(x) + 1 / 2;
+                        centerY = Math.floor(y) - 1 / 3;
+                    } else {
+                        //this.debug.set("section","bottom-left");
+                        centerX = Math.floor(x);
+                        centerY = Math.floor(y) + 2 / 3;
+                    }
+                } else {
+                    if (dy < 2 / 3 - 2 * dx / 3) {
+                        //this.debug.set("section","top");
+                        centerX = Math.floor(x) + 1 / 2;
+                        centerY = Math.floor(y) - 1 / 3;
+                    } else {
+                        //this.debug.set("section","bottom-right");
+                        centerX = Math.floor(x) + 1;
+                        centerY = Math.floor(y) + 2 / 3;
+                    }
+                }
+            }
+
+            centerX = centerX - 1;
+            centerY = centerY - 2 / 3;
+            var r = Math.round(centerY);
+            var c = Math.round(centerX + centerY / 2);
+
+            return this.grid.getHexByAxial(r, c);
+        }
+    }]);
+
+    return TileSelectionProxy;
+}(Phaser.Image);
+
+exports.default = TileSelectionProxy;
+
+},{"lib/Renderer":38}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5821,7 +6086,7 @@ console.debug("TEST1:",a);
 
 exports.OrderedHashMap = OrderedHashMap;
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5845,6 +6110,10 @@ var _expect2 = _interopRequireDefault(_expect);
 var _HexGrid = require('lib/HexGrid');
 
 var _Renderer = require('lib/Renderer');
+
+var _TileSelectionProxy = require('lib/ui/TileSelectionProxy');
+
+var _TileSelectionProxy2 = _interopRequireDefault(_TileSelectionProxy);
 
 var _WorldGenerator = require('lib/WorldGenerator');
 
@@ -5878,11 +6147,14 @@ var Play = function () {
             this.debugMode = debugMode;
             this.debug = new _Renderer.DebugInfo(env);
             env.debug = this.debug;
-            var grid = new _HexGrid.HexGrid(15, 9);
+            var grid = new _HexGrid.HexGrid(30, 18);
             env.grid = grid;
-            (0, _WorldGenerator.worldGenSolid)(env);
+
+            (0, _WorldGenerator.worldGenPerlin)(env);
+
             this.ground = new _Renderer.Ground(env);
             env.ground = this.ground;
+
             var g = {};
             //display layers hierarchy
             g.root = game.add.group();
@@ -5892,7 +6164,7 @@ var Play = function () {
             g.underObjects = g.world.add(game.add.group()); // elements displayed between terrain and objects in the scrolling game world
             g.objects = g.world.add(game.add.group()); // objects placed on terrain in the game world
             g.overObjects = g.world.add(game.add.group()); // elements overlayed over objects in the game world
-            g.tileSelectionProxy = g.world.add(new _Renderer.TileSelectionProxy(env)); // invisible sprite capturing mouseover items for game world
+            g.tileSelectionProxy = g.world.add(new _TileSelectionProxy2.default(env)); // invisible sprite capturing mouseover/mousedown items on game world and translating them to events on individual hexagons
             g.UIbackground = g.root.add(game.add.group());
             g.UI = g.root.add(game.add.group());
 
@@ -5903,10 +6175,6 @@ var Play = function () {
             bg.scale.y = bg.scale.x;
             bg.y=game.world.height-120-bg.height;*/
             //bg.height = game.world.height;
-
-            g.tileSelectionProxy = new Image();
-
-            this.ground.highlightTiles([env.grid.getHexByAxial(10, 20)]);
 
             this.game.stage.backgroundColor = '#d5dfef';
 
@@ -5944,5 +6212,5 @@ var Play = function () {
 
 exports.default = Play;
 
-},{"expect":11,"lib/HexGrid":37,"lib/Renderer":38,"lib/WorldGenerator":39}]},{},[35])
+},{"expect":11,"lib/HexGrid":37,"lib/Renderer":38,"lib/WorldGenerator":39,"lib/ui/TileSelectionProxy":40}]},{},[35])
 //# sourceMappingURL=game.js.map
