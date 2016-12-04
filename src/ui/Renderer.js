@@ -4,7 +4,7 @@ import { OrderedMap } from 'lib/util';
 
 const HEX_WIDTH = 32;
 const HEX_HEIGHT = 37;
-const HEX_SIZE = Math.floor(HEX_HEIGHT/2);
+const HEX_EDGE_SIZE = Math.floor(HEX_HEIGHT/2);
 const OFFSET_TOP = 10;
 const OFFSET_LEFT = 10 + Math.floor(HEX_WIDTH/2);
 
@@ -18,51 +18,63 @@ function convertToWorldCoordinates(x,y) {
 }
 
 
-class Ground {
-    constructor(env) {
-        const {game, grid, regions} = env;
-        this.grid = grid;
-        this.game = game;
-        this.group = game.add.group();
-        this.regions = regions;
-        this.tileToSprite = {};
-        this.grid.forEach((hex) => {
-            var sprite = new GroundTileSprite(env,hex);
-            this.group.add(sprite);
-            this.tileToSprite[hex.id] = sprite;
-        });
+function LandSprites(spec) {
+    const {game, grid, regions} = spec;
+    
+    //public
+    let landSprites = Object.freeze({
+        highlightTiles,
+        get group() { return group; }
+    });
 
-        this.highlightedTiles = [];
+    //private
+    let group = game.add.group(),
+        tileToSprite = {},
+        highlightedTiles = [];
+
+    class LandSprite extends Phaser.Sprite {
+        constructor(tile) {
+            const {x,y} = convertToWorldCoordinates(tile.position.x, tile.position.y);
+            super(game, x, y, 'hex');
+            this.frame=regions.factionOf(tile) || 0;
+            //log.debug(`Hex sprite for ${tile} created at ${x}:${y}`);
+            /*
+            var style = { font: "12px Courier New", fill: "white", align: "center"};
+            this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,tile.id, style);
+            this.label.alpha=0.5;
+            this.label.lineSpacing = -6;
+            this.label.anchor.set(0.5,0.5);
+            this.addChild(this.label);*/
+            
+        }
     }
 
-    highlightTiles(tiles) {
+    //initialization
+    grid.forEach((hex) => {
+        var sprite = new LandSprite(hex);
+        group.add(sprite);
+        tileToSprite[hex.id] = sprite;
+    });
+
+    //implementation
+
+    function highlightTiles(tiles) {
         return;
-        this.highlightedTiles.forEach((tileSprite) => {
+        highlightedTiles.forEach((tileSprite) => {
             if (tileSprite) tileSprite.frame = 0;
         });
-        this.highlightedTiles = tiles.map((tile) => tile && this.tileToSprite[tile.id]);
-        this.highlightedTiles.forEach((tileSprite) => {
+        highlightedTiles = tiles.map((tile) => tile && tileToSprite[tile.id]);
+        highlightedTiles.forEach((tileSprite) => {
             if (tileSprite) tileSprite.frame = 1;
         });
     }
+
+
+
+    return landSprites;
 }
 
-class GroundTileSprite extends Phaser.Sprite {
-    constructor({game, log, regions},tile) {
-        const {x,y} = convertToWorldCoordinates(tile.position.x, tile.position.y);
-        super(game, x, y, 'hex');
-        this.frame=regions.factionOf(tile) || 0;
-        //log.debug(`Hex sprite for ${tile} created at ${x}:${y}`);
-        /*
-        var style = { font: "12px Courier New", fill: "white", align: "center"};
-        this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,tile.id, style);
-        this.label.alpha=0.5;
-        this.label.lineSpacing = -6;
-        this.label.anchor.set(0.5,0.5);
-        this.addChild(this.label);*/
-        
-    }
-}
+
 
 const PAWN_OFFSET_TOP = -13;
 
@@ -119,4 +131,4 @@ class DebugInfo {
     }
 }
 
-export { Ground, Pawns, DebugInfo, HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT };
+export { LandSprites, Pawns, DebugInfo, HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT };

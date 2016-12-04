@@ -1,6 +1,5 @@
 //Region is a connected component on the map belonging to a signle faction
 
-import expect from 'expect';
 import { Random } from 'lib/util';
 import { PawnType } from 'rules/Pawns';
 
@@ -12,71 +11,23 @@ function generateRegionId() {
     return ++lastRegionId;
 }
 
-class Region {
-    constructor({regions, pawns},hexGroup) {
-        expect(regions).toExist();
-        expect(pawns).toExist();
-        this.pawns = pawns;
-        this.regions = regions;
-
-        this._id = generateRegionId();
-        this._hexes = hexGroup;
-        this.treasury = 0;
-        this.capital = null;
-        this.pickNewCapital();
-        this.faction = regions.factionOf(this.hexes.pivot);
-        Object.seal(this);
-    }
-
-    get hexes() {
-        return this._hexes;
-    }
-
-    get id() {
-        return this._id;
-    }
-
-    hasCapital() {
-        return !!this.capital;
-    }
-
-    pickNewCapital() {
-        if (this.capital) this.capital.destroy();
-        if (this._hexes.size < MIN_SIZE_FOR_CAPITAL) {
-            //region too small to have capital
-            this.capital = null;
-            return;
-        }
-
-        const availableHexes = this._hexes.filter(hex=>!this.pawns.pawnAt(hex));
-        if (availableHexes.size === 0) {
-            //TODO: clear some hex to make space for the new capital
-            this.capital = null;
-        } else {
-            this.capital = this.pawns.placeAt(PawnType.TOWN,availableHexes.pivot);
-        }
-    }
-
-    toString() {
-
-        return `[Region #${this.id} (${this._hexes.size} hexes,`+(this.hasCapital()?`capital at ${this.capital.hex}`:"no capital")+")]";
-    }
-
-}
-
 function Regions (spec) {
-    let { grid } = spec;
+    let { grid, pawns, log } = spec;
     
-    let regions = [],
-        hexFaction = [],
-        hexRegion = [];
-
-    return Object.freeze({
+    //public
+    let regions = Object.freeze({
         randomize,
         factionOf,
         regionOf,
         init
     });
+
+    //private
+    let _regions = [],
+        hexFaction = [],
+        hexRegion = [];
+
+    //implementation
 
     function randomize() {
         grid.forEach((hex)=>{
@@ -94,17 +45,63 @@ function Regions (spec) {
     }
 
     function init() {
-        regions =
+        _regions =
             grid
             .components((hex, prevHex) => factionOf(hex) === factionOf(prevHex))
-            .map(group=>new Region(spec,group));
+            .map(group=>new Region(group));
 
-        regions.forEach(region=> {
+        _regions.forEach(region=> {
             region.hexes.forEach( hex=> {
                 hexRegion[hex.id] = region;
             });
         });
     }
+   
+    class Region {
+        constructor(hexGroup) {
+            this._id = generateRegionId();
+            this._hexes = hexGroup;
+            this.treasury = 0;
+            this.capital = null;
+            this.faction = regions.factionOf(this.hexes.pivot);
+            this.pickNewCapital();
+        }
+        
+        get hexes() {
+            return this._hexes; 
+        }
+        
+        get id() { 
+            return this._id; 
+        }
+
+        hasCapital() {
+            return !!this.capital; 
+        }
+        
+        pickNewCapital() {
+            if (this.capital) this.capital.destroy();
+            if (this._hexes.size < MIN_SIZE_FOR_CAPITAL) {
+                //region too small to have capital
+                this.capital = null;
+                return;
+            }
+
+            const availableHexes = this._hexes.filter(hex=>!pawns.pawnAt(hex));
+            if (availableHexes.size === 0) {
+                //TODO: clear some hex to make space for the new capital
+                this.capital = null;
+            } else {
+                this.capital = pawns.placeAt(PawnType.TOWN,availableHexes.pivot);
+            }
+        }
+
+        toString() {
+            return `[Region #${this.id} (${this._hexes.size} hexes,`+(this.hasCapital()?`capital at ${this.capital.hex}`:"no capital")+")]";
+        }
+    }
+
+    return regions;
 }
 
 export default Regions;

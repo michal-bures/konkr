@@ -1,67 +1,72 @@
-import { HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT } from 'ui/Renderer';
+import { HEX_WIDTH, LINE_HEIGHT } from 'ui/Renderer';
 
-class TileSelectionProxy extends Phaser.Image {
-    constructor({game,grid,debug,groundSprites,log,regions,pawns}) {
-        super(game,10,10);
+function TileSelectionProxy(spec) {
+    let {game,grid,debug,landSprites,log,regions,pawns} = spec;
 
-        this.debug = debug;
-        this.game = game;
-        this.grid = grid;
-        this.groundSprites = groundSprites;
-        this.active = false;
-        this.fixedToCamera = true;
-        this.width = game.width - 2 * 10;
-        this.height = game.height - 2 * 10;
-        this.inputEnabled = true;
-        
-        this.events.onInputOver.add(() => this.active = true);
-        this.events.onInputOut.add(() => this.active = false);
-        this.events.onInputDown.add(() => {
-            const hex = this.getHexUnderCursor();
+    let active = false,
+        image = initImage();
+
+    //public
+    return Object.freeze({
+        update,
+        getHexUnderCursor,
+        get agent() { return image; }
+    });
+
+    function initImage() {
+        let surface = new Phaser.Image(game,10,10);
+        surface.inputEnabled = true;
+        surface.fixedToCamera = true;
+        surface.width = game.width - 2 * 10;
+        surface.height = game.height - 2 * 10;
+        surface.events.onInputOver.add(() => active = true);
+        surface.events.onInputOut.add(() => active = false);
+        surface.events.onInputDown.add(() => {
+            const hex = getHexUnderCursor();
             log.info(`${hex}
 Faction: ${regions.factionOf(hex)}
 Region:  ${regions.regionOf(hex)}
 Pawn: ${pawns.pawnAt(hex)}`);
         });
+        return surface;
     }
 
-    update() {
-        super.update(...arguments);
-        if (this.active) {
-            this.groundSprites.highlightTiles([this.getHexUnderCursor()]);
+    function update() {
+        if (active) {
+            landSprites.highlightTiles([getHexUnderCursor()]);
         }
     }
 
-    getHexUnderCursor() {
-        let x = (this.game.input.mousePointer.worldX - 10) / HEX_WIDTH;
-        let y = (this.game.input.mousePointer.worldY - 10) / LINE_HEIGHT;
+    function getHexUnderCursor() {
+        let x = (game.input.mousePointer.worldX - 10) / HEX_WIDTH;
+        let y = (game.input.mousePointer.worldY - 10) / LINE_HEIGHT;
 
         let dx = x % 1;
         let dy = y % 1;
 
         let centerX, centerY;
 
-        //this.debug.set("pointer-at",x.toFixed(2) + "," +y.toFixed(2));
+        //debug.set("pointer-at",x.toFixed(2) + "," +y.toFixed(2));
 
         if (Math.floor(y) % 2) {
             //A
             if (dx < 0.5) {
                 if (dy < (1-(2*dx))/3) {
-                    //this.debug.set("section","top-left");
+                    //debug.set("section","top-left");
                     centerX = Math.floor(x);
                     centerY = Math.floor(y) - 1/3;
                 } else {
-                    //this.debug.set("section","bottom");
+                    //debug.set("section","bottom");
                     centerX = Math.floor(x) + 0.5;
                     centerY = Math.floor(y) + 2/3;
                 }
             } else {
                 if (dy < 1/3-(2*(1-dx)/3)) {
-                    //this.debug.set("section","top-right");
+                    //debug.set("section","top-right");
                     centerX = Math.floor(x) + 1;
                     centerY = Math.floor(y) - 1/3;
                 } else {
-                    //this.debug.set("section","bottom");
+                    //debug.set("section","bottom");
                     centerX = Math.floor(x) + 0.5;
                     centerY = Math.floor(y) + 2/3;
                 }
@@ -70,21 +75,21 @@ Pawn: ${pawns.pawnAt(hex)}`);
             //B
             if (dx < 0.5) {
                 if (dy < (2*dx)/3) {
-                    //this.debug.set("section","top");
+                    //debug.set("section","top");
                     centerX = Math.floor(x) + 1/2;
                     centerY = Math.floor(y) - 1/3;
                 } else {
-                    //this.debug.set("section","bottom-left");
+                    //debug.set("section","bottom-left");
                     centerX = Math.floor(x);
                     centerY = Math.floor(y) + 2/3;
                 }
             } else {
                 if (dy < 2/3-(2*(dx)/3)) {
-                    //this.debug.set("section","top");
+                    //debug.set("section","top");
                     centerX = Math.floor(x) + 1/2;
                     centerY = Math.floor(y) - 1/3;
                 } else {
-                    //this.debug.set("section","bottom-right");
+                    //debug.set("section","bottom-right");
                     centerX = Math.floor(x) + 1;
                     centerY = Math.floor(y) + 2/3;
                 }
@@ -96,7 +101,7 @@ Pawn: ${pawns.pawnAt(hex)}`);
         let r = Math.round(centerY);
         let c = Math.round(centerX + (centerY / 2)); 
 
-        return this.grid.getHexByAxial(r,c);
+        return grid.getHexByAxial(r,c);
     }
 
 }
