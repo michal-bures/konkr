@@ -7,6 +7,7 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="744.09448819"
@@ -17,7 +18,133 @@
    inkscape:version="0.48.4 r"
    sodipodi:docname="notes.svg">
   <defs
-     id="defs3" />
+     id="defs3">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="274 : 314.18109 : 1"
+       inkscape:vp_y="372.04724 : 1350.7874 : 1"
+       inkscape:vp_z="-496.90552 : 8.1810902 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective5487" />
+    <linearGradient
+       id="linearGradient5345">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop5347" />
+      <stop
+         style="stop-color:#525252;stop-opacity:1;"
+         offset="1"
+         id="stop5349" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient5345-7">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop5347-7" />
+      <stop
+         style="stop-color:#525252;stop-opacity:1;"
+         offset="1"
+         id="stop5349-9" />
+    </linearGradient>
+    <linearGradient
+       gradientTransform="matrix(0,-1,1,0,-363,-893.7791)"
+       y2="371.5"
+       x2="-904.36218"
+       y1="364.75"
+       x1="-904.48718"
+       gradientUnits="userSpaceOnUse"
+       id="linearGradient5382"
+       xlink:href="#linearGradient5345-7"
+       inkscape:collect="always" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5345"
+       id="linearGradient5483"
+       gradientUnits="userSpaceOnUse"
+       x1="-904.48718"
+       y1="364.75"
+       x2="-904.36218"
+       y2="371.5"
+       gradientTransform="matrix(0,-1,1,0,0,67.46967)" />
+    <linearGradient
+       id="linearGradient5345-9">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop5347-78" />
+      <stop
+         style="stop-color:#525252;stop-opacity:1;"
+         offset="1"
+         id="stop5349-8" />
+    </linearGradient>
+    <linearGradient
+       id="linearGradient5345-7-7">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop5347-7-5" />
+      <stop
+         style="stop-color:#525252;stop-opacity:1;"
+         offset="1"
+         id="stop5349-9-8" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5345-7-4"
+       id="linearGradient5481-5"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(0,0.7071068)"
+       x1="352"
+       y1="907.07623"
+       x2="384.02545"
+       y2="907.07623" />
+    <linearGradient
+       id="linearGradient5345-7-4">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop5347-7-52" />
+      <stop
+         style="stop-color:#525252;stop-opacity:1;"
+         offset="1"
+         id="stop5349-9-89" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5345-3"
+       id="linearGradient5483-8"
+       gradientUnits="userSpaceOnUse"
+       x1="-904.48718"
+       y1="364.75"
+       x2="-904.36218"
+       y2="371.5"
+       gradientTransform="matrix(0,-1,1,0,0,7.4696699)" />
+    <linearGradient
+       id="linearGradient5345-3">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop5347-3" />
+      <stop
+         style="stop-color:#525252;stop-opacity:1;"
+         offset="1"
+         id="stop5349-94" />
+    </linearGradient>
+    <filter
+       inkscape:collect="always"
+       id="filter5869"
+       x="-0.26826464"
+       width="1.5365293"
+       y="-0.67991211"
+       height="2.3598242">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="1.0269506"
+         id="feGaussianBlur5871" />
+    </filter>
+  </defs>
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -25,30 +152,31 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="388.25435"
-     inkscape:cy="162.06954"
+     inkscape:zoom="1.8250371"
+     inkscape:cx="245.66777"
+     inkscape:cy="137.15692"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g5457"
      showgrid="true"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
-     inkscape:window-x="-32000"
-     inkscape:window-y="-32000"
-     inkscape:window-maximized="0"
-     inkscape:snap-bbox="false"
-     inkscape:snap-grids="false">
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:snap-bbox="true"
+     inkscape:snap-grids="true"
+     inkscape:snap-nodes="false">
     <inkscape:grid
        type="xygrid"
        id="grid2990"
-       empspacing="4"
+       empspacing="32"
        visible="true"
        enabled="true"
        snapvisiblegridlinesonly="true"
-       spacingx="16px"
-       spacingy="16px" />
+       spacingx="1px"
+       spacingy="1px" />
   </sodipodi:namedview>
   <metadata
      id="metadata6">
@@ -63,28 +191,234 @@
     </rdf:RDF>
   </metadata>
   <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Ground"
+     style="display:inline"
+     sodipodi:insensitive="true">
+    <g
+       style="display:inline"
+       id="g4435"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
+       inkscape:export-xdpi="22.49"
+       inkscape:export-ydpi="22.49"
+       transform="matrix(0.24988844,0,0,0.24988844,240.02085,694.81557)">
+      <path
+         style="color:#000000;fill:#483737;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         d="m 511.92498,947.61314 64.42026,-37.19632 0,-74.39266 -64.42026,-37.19634 z"
+         id="path4423"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="ccccc" />
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="path4420"
+         d="m 512.09573,947.29572 -63.96188,-36.93167 0,-73.86332 63.96188,-36.93168 z"
+         style="color:#000000;fill:#6c5353;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.08555889;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new" />
+      <path
+         inkscape:export-ydpi="90.225502"
+         inkscape:export-xdpi="90.225502"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
+         transform="matrix(1.0135937,0,0,1.0136829,-6.5144702,-26.918265)"
+         d="m 574.88531,904.52272 -63.24304,36.51338 -63.24303,-36.51338 0,-73.02676 63.24303,-36.51339 63.24304,36.51339 z"
+         inkscape:randomized="0"
+         inkscape:rounded="0"
+         inkscape:flatsided="true"
+         sodipodi:arg2="1.0471976"
+         sodipodi:arg1="0.52359878"
+         sodipodi:r2="63.243031"
+         sodipodi:r1="73.026764"
+         sodipodi:cy="868.00934"
+         sodipodi:cx="511.64227"
+         sodipodi:sides="6"
+         id="path3874"
+         style="color:#000000;fill:#008000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.08555889;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         sodipodi:type="star" />
+    </g>
+    <g
+       style="display:inline"
+       id="g4441"
+       transform="matrix(0.24988844,0,0,0.24988844,272.0697,694.81557)"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
+       inkscape:export-xdpi="22.49"
+       inkscape:export-ydpi="22.49">
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="path4443"
+         d="m 511.92498,947.61314 64.42026,-37.19632 0,-74.39266 -64.42026,-37.19634 z"
+         style="color:#000000;fill:#483737;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new" />
+      <path
+         style="color:#000000;fill:#6c5353;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.08555889;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         d="m 512.09573,947.29572 -63.96188,-36.93167 0,-73.86332 63.96188,-36.93168 z"
+         id="path4445"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="ccccc" />
+      <path
+         sodipodi:type="star"
+         style="color:#000000;fill:#5aa02c;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.08555889;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         id="path4447"
+         sodipodi:sides="6"
+         sodipodi:cx="511.64227"
+         sodipodi:cy="868.00934"
+         sodipodi:r1="73.026764"
+         sodipodi:r2="63.243031"
+         sodipodi:arg1="0.52359878"
+         sodipodi:arg2="1.0471976"
+         inkscape:flatsided="true"
+         inkscape:rounded="0"
+         inkscape:randomized="0"
+         d="m 574.88531,904.52272 -63.24304,36.51338 -63.24303,-36.51338 0,-73.02676 63.24303,-36.51339 63.24304,36.51339 z"
+         transform="matrix(1.0135937,0,0,1.0136829,-6.5144702,-26.918265)"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
+         inkscape:export-xdpi="90.225502"
+         inkscape:export-ydpi="90.225502" />
+    </g>
+    <g
+       style="display:inline"
+       transform="matrix(0.24988844,0,0,0.24988844,304.05542,694.81557)"
+       id="g4453"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
+       inkscape:export-xdpi="22.49"
+       inkscape:export-ydpi="22.49">
+      <path
+         style="color:#000000;fill:#483737;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         d="m 511.92498,947.61314 64.42026,-37.19632 0,-74.39266 -64.42026,-37.19634 z"
+         id="path4455"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="ccccc" />
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="path4457"
+         d="m 512.09573,947.29572 -63.96188,-36.93167 0,-73.86332 63.96188,-36.93168 z"
+         style="color:#000000;fill:#6c5353;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.08555889;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new" />
+      <path
+         inkscape:export-ydpi="90.225502"
+         inkscape:export-xdpi="90.225502"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
+         transform="matrix(1.0135937,0,0,1.0136829,-6.5144702,-26.918265)"
+         d="m 574.88531,904.52272 -63.24304,36.51338 -63.24303,-36.51338 0,-73.02676 63.24303,-36.51339 63.24304,36.51339 z"
+         inkscape:randomized="0"
+         inkscape:rounded="0"
+         inkscape:flatsided="true"
+         sodipodi:arg2="1.0471976"
+         sodipodi:arg1="0.52359878"
+         sodipodi:r2="63.243031"
+         sodipodi:r1="73.026764"
+         sodipodi:cy="868.00934"
+         sodipodi:cx="511.64227"
+         sodipodi:sides="6"
+         id="path4459"
+         style="color:#000000;fill:#808000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.08555889;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         sodipodi:type="star" />
+    </g>
+    <g
+       style="display:inline"
+       id="g4465"
+       transform="matrix(0.24988844,0,0,0.24988844,336.10427,694.81557)"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
+       inkscape:export-xdpi="22.49"
+       inkscape:export-ydpi="22.49">
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="path4467"
+         d="m 511.92498,947.61314 64.42026,-37.19632 0,-74.39266 -64.42026,-37.19634 z"
+         style="color:#000000;fill:#483737;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
+         inkscape:export-xdpi="22.48"
+         inkscape:export-ydpi="22.48" />
+      <path
+         style="color:#000000;fill:#6c5353;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.08555889;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         d="m 512.09573,947.29572 -63.96188,-36.93167 0,-73.86332 63.96188,-36.93168 z"
+         id="path4469"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="ccccc"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
+         inkscape:export-xdpi="22.48"
+         inkscape:export-ydpi="22.48" />
+      <path
+         sodipodi:type="star"
+         style="color:#000000;fill:#a0892c;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.08555889;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         id="path4471"
+         sodipodi:sides="6"
+         sodipodi:cx="511.64227"
+         sodipodi:cy="868.00934"
+         sodipodi:r1="73.026764"
+         sodipodi:r2="63.243031"
+         sodipodi:arg1="0.52359878"
+         sodipodi:arg2="1.0471976"
+         inkscape:flatsided="true"
+         inkscape:rounded="0"
+         inkscape:randomized="0"
+         d="m 574.88531,904.52272 -63.24304,36.51338 -63.24303,-36.51338 0,-73.02676 63.24303,-36.51339 63.24304,36.51339 z"
+         transform="matrix(1.0135937,0,0,1.0136829,-6.5144702,-26.918265)"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
+         inkscape:export-xdpi="22.48"
+         inkscape:export-ydpi="22.48" />
+    </g>
+    <g
+       style="display:inline"
+       inkscape:export-ydpi="22.48"
+       inkscape:export-xdpi="22.48"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
+       id="g4477"
+       transform="translate(-128,0)">
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="path4479"
+         d="m 463.95926,931.61314 16.09788,-9.29493 0,-18.58987 -16.09788,-9.29493 z"
+         style="color:#000000;fill:#483737;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
+         inkscape:export-xdpi="22.49"
+         inkscape:export-ydpi="22.49" />
+      <path
+         style="color:#000000;fill:#6c5353;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.08555889;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         d="m 464.00193,931.53382 -15.98333,-9.2288 0,-18.45759 15.98333,-9.2288 z"
+         id="path4481"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="ccccc"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
+         inkscape:export-xdpi="22.49"
+         inkscape:export-ydpi="22.49" />
+      <path
+         sodipodi:type="star"
+         style="color:#000000;fill:#999999;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:4.08555889;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         id="path4483"
+         sodipodi:sides="6"
+         sodipodi:cx="511.64227"
+         sodipodi:cy="868.00934"
+         sodipodi:r1="73.026764"
+         sodipodi:r2="63.243031"
+         sodipodi:arg1="0.52359878"
+         sodipodi:arg2="1.0471976"
+         inkscape:flatsided="true"
+         inkscape:rounded="0"
+         inkscape:randomized="0"
+         d="m 574.88531,904.52272 -63.24304,36.51338 -63.24303,-36.51338 0,-73.02676 63.24303,-36.51339 63.24304,36.51339 z"
+         transform="matrix(0.25328535,0,0,0.25330764,334.40724,688.08901)"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
+         inkscape:export-xdpi="22.49"
+         inkscape:export-ydpi="22.49" />
+    </g>
+  </g>
+  <g
      inkscape:label="Vrstva 1"
      inkscape:groupmode="layer"
-     id="layer1">
-    <path
-       sodipodi:type="star"
-       style="color:#000000;fill:#cccccc;fill-opacity:0.45161288;fill-rule:nonzero;stroke:#b3b3b3;stroke-width:4.08555889;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
-       id="path3874"
-       sodipodi:sides="6"
-       sodipodi:cx="511.64227"
-       sodipodi:cy="868.00934"
-       sodipodi:r1="73.026764"
-       sodipodi:r2="63.243031"
-       sodipodi:arg1="0.52359878"
-       sodipodi:arg2="1.0471976"
-       inkscape:flatsided="true"
-       inkscape:rounded="0"
-       inkscape:randomized="0"
-       d="m 574.88531,904.52272 -63.24304,36.51338 -63.24303,-36.51338 0,-73.02676 63.24303,-36.51339 63.24304,36.51339 z"
-       transform="matrix(0.97901512,0,0,0.9791013,11.177374,3.0988751)"
-       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
-       inkscape:export-xdpi="90.225502"
-       inkscape:export-ydpi="90.225502" />
+     id="layer1"
+     style="display:inline">
+    <rect
+       style="color:#000000;fill:none;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.99999994000000003px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect5479"
+       width="31.942383"
+       height="47.892822"
+       x="288.05762"
+       y="876.46936"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+       inkscape:export-xdpi="90.201408"
+       inkscape:export-ydpi="90.201408" />
     <path
        sodipodi:type="star"
        style="color:#000000;fill:#ffffff;fill-opacity:0.45161288;fill-rule:nonzero;stroke:#000000;stroke-width:8.52607441;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
@@ -798,50 +1132,310 @@
          id="tspan3248"
          x="608"
          y="618.36218">2-5</tspan></text>
+    <g
+       id="g5457"
+       transform="translate(-64,0)"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+       inkscape:export-xdpi="90.201408"
+       inkscape:export-ydpi="90.201408">
+      <path
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"
+         sodipodi:type="arc"
+         style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;filter:url(#filter5869);enable-background:accumulate"
+         id="path5851"
+         sodipodi:cx="303.90625"
+         sodipodi:cy="915.73718"
+         sodipodi:rx="4.59375"
+         sodipodi:ry="1.8125"
+         d="m 308.5,915.73718 a 4.59375,1.8125 0 1 1 -9.1875,0 4.59375,1.8125 0 1 1 9.1875,0 z"
+         transform="matrix(1.1972788,0,0,1.3793043,4.6394978,-354.35878)" />
+      <path
+         sodipodi:nodetypes="cccc"
+         inkscape:connector-curvature="0"
+         id="path5273"
+         d="m 363.52083,961.83184 4.43644,-7.43206 4.52189,7.43322 c -2.98611,2.29771 -5.79544,2.29732 -8.95833,-10e-4 z"
+         style="fill:#d40000;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <path
+         sodipodi:nodetypes="cczcczc"
+         inkscape:connector-curvature="0"
+         id="rect5271"
+         d="m 363.5,980.33184 0,-18.58308 c 0,0 1.35721,1.46599 4.5598,1.46599 3.2026,0 4.4402,-1.46599 4.4402,-1.46599 l 0,18.58308 c 0,0 -1.625,2.01603 -4.625,1.875 -3,-0.14103 -4.375,-1.875 -4.375,-1.875 z"
+         style="color:#000000;fill:url(#linearGradient5483);fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.99999988;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <path
+         sodipodi:nodetypes="ccccccc"
+         inkscape:connector-curvature="0"
+         id="path5358"
+         d="m 366.50229,982.1228 -1e-5,-4.8449 1.56097,-1.09756 1.44424,1.09756 0,4.8007 -1.45841,0.22097 z"
+         style="fill:#241c1c;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <path
+         style="fill:#008080;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 366.50229,972.1228 -1e-5,-4.8449 1.56097,-1.09756 1.44424,1.09756 0,4.8007 -1.45841,0.22097 z"
+         id="path5360"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="ccccccc"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <g
+         id="g5836"
+         transform="translate(-25.484608,-3.028507)"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90"
+         style="stroke:none">
+        <path
+           sodipodi:nodetypes="ccsccc"
+           inkscape:connector-curvature="0"
+           id="path5787"
+           d="m 389.5,906.86218 0,4.73834 c 0.0625,0.75397 2.08363,1.85541 4.5,1.85541 2.41637,0 4.375,-1.02331 4.4375,-1.77728 0,-0.0847 0.0625,-4.81647 0.0625,-4.81647 z"
+           style="color:#000000;fill:#ac9393;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+        <path
+           sodipodi:nodetypes="ccscc"
+           inkscape:connector-curvature="0"
+           id="path5789"
+           d="m 393.9375,899.875 -5.4375,6.91185 c -0.20313,1.09936 2.50038,2.3069 5.5,2.3069 2.99962,0 5.89063,-1.09817 5.4375,-2.40065 0,-0.0509 -5.5,-6.8181 -5.5,-6.8181 z"
+           style="color:#000000;fill:#504416;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:0.99999988;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+        <path
+           inkscape:export-ydpi="90"
+           inkscape:export-xdpi="90"
+           inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+           style="fill:#333333;stroke:none;display:inline"
+           d="m 392.62501,913.25554 -10e-6,-2.76658 1.49333,-0.62674 1.38167,0.62674 0,2.74134 -1.39523,0.1262 z"
+           id="path5358-6"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="ccccccc" />
+      </g>
+    </g>
+    <rect
+       inkscape:export-ydpi="90.201408"
+       inkscape:export-xdpi="90.201408"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+       y="876.46936"
+       x="256.05762"
+       height="47.892822"
+       width="31.942383"
+       id="rect5485"
+       style="color:#000000;fill:none;stroke:none;stroke-width:0.99999994000000003px;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+    <rect
+       style="color:#000000;fill:#e9ddaf;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1.10612285;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect5525"
+       width="13.458629"
+       height="9.9999828"
+       x="319.94727"
+       y="714.76013"
+       transform="matrix(0.81732219,0.5761809,0,1,0,0)"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       transform="matrix(-0.81732219,0.5761809,0,1,0,0)"
+       y="1098.9646"
+       x="-346.86444"
+       height="9.9999828"
+       width="13.458629"
+       id="rect5527"
+       style="color:#000000;fill:#d3bc5f;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1.10612285;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-dasharray:none;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
     <path
-       sodipodi:type="arc"
-       style="color:#000000;fill:#ffaaaa;fill-opacity:0.45161288;fill-rule:nonzero;stroke:#ffaaaa;stroke-width:4.02623034;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
-       id="path3096"
-       sodipodi:cx="511.96429"
-       sodipodi:cy="868.43359"
-       sodipodi:rx="6.25"
-       sodipodi:ry="6.25"
-       d="m 518.21429,868.43359 a 6.25,6.25 0 1 1 -12.5,0 6.25,6.25 0 1 1 12.5,0 z"
-       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
-       inkscape:export-xdpi="90.225502"
-       inkscape:export-ydpi="90.225502"
-       transform="matrix(0.9934716,0,0,0.99349885,3.6948344,-9.832131)" />
-    <path
-       transform="matrix(0.97901512,0,0,0.9791013,139.17737,3.098875)"
-       d="m 574.88531,904.52272 -63.24304,36.51338 -63.24303,-36.51338 0,-73.02676 63.24303,-36.51339 63.24304,36.51339 z"
-       inkscape:randomized="0"
-       inkscape:rounded="0"
-       inkscape:flatsided="true"
-       sodipodi:arg2="1.0471976"
-       sodipodi:arg1="0.52359878"
-       sodipodi:r2="63.243031"
-       sodipodi:r1="73.026764"
-       sodipodi:cy="868.00934"
-       sodipodi:cx="511.64227"
-       sodipodi:sides="6"
-       id="path3880"
-       style="color:#000000;fill:#008000;fill-opacity:0.6851064;fill-rule:nonzero;stroke:#00ff00;stroke-width:4.08555888999999970;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
-       sodipodi:type="star"
-       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
-       inkscape:export-xdpi="90.225502"
-       inkscape:export-ydpi="90.225502" />
-    <path
-       transform="matrix(0.9934716,0,0,0.99349885,131.69483,-9.832131)"
-       inkscape:export-ydpi="90.225502"
-       inkscape:export-xdpi="90.225502"
-       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\hex.png"
-       d="m 518.21429,868.43359 a 6.25,6.25 0 1 1 -12.5,0 6.25,6.25 0 1 1 12.5,0 z"
-       sodipodi:ry="6.25"
-       sodipodi:rx="6.25"
-       sodipodi:cy="868.43359"
-       sodipodi:cx="511.96429"
-       id="path3882"
-       style="color:#000000;fill:#00ff00;fill-opacity:0.45161287999999999;fill-rule:nonzero;stroke:#008000;stroke-width:4.02623033999999970;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
-       sodipodi:type="arc" />
+       style="fill:#fff6d5;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:bevel;stroke-opacity:1"
+       d="m 261.5625,899.23718 10.6875,-7.3125 11.0625,7.375 -10.75,7.5625 z"
+       id="path5529"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <text
+       xml:space="preserve"
+       style="font-size:11.44705772px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Arial;-inkscape-font-specification:Arial Bold"
+       x="255.93338"
+       y="948.15948"
+       id="text5531"
+       sodipodi:linespacing="125%"
+       transform="scale(1.0495896,0.95275334)"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"><tspan
+         sodipodi:role="line"
+         id="tspan5533"
+         x="255.93338"
+         y="948.15948"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial Bold">?</tspan></text>
+    <g
+       style="display:inline"
+       id="g5457-2"
+       transform="translate(-5.9604645e-8,-63.999997)"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+       inkscape:export-xdpi="90.201408"
+       inkscape:export-ydpi="90.201408">
+      <g
+         transform="translate(-4,-4)"
+         id="g5435-1"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90">
+        <rect
+           transform="scale(-1,-1)"
+           y="-911.86218"
+           x="-381.5"
+           height="4"
+           width="7"
+           id="rect5437-9"
+           style="color:#000000;fill:#dcdcdc;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.99999994;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new" />
+        <path
+           sodipodi:nodetypes="ccccc"
+           inkscape:connector-curvature="0"
+           id="path5439-6"
+           d="m 380.4375,904.79968 -4.8125,0 -1.125,3.0625 7,0 z"
+           style="color:#000000;fill:#d40000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+      </g>
+      <g
+         transform="translate(0,2)"
+         id="g5430-5"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90">
+        <rect
+           style="color:#000000;fill:#dcdcdc;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.99999994;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+           id="rect5424-6"
+           width="7"
+           height="4"
+           x="-381.5"
+           y="-911.86218"
+           transform="scale(-1,-1)" />
+        <path
+           style="color:#000000;fill:#a90000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+           d="m 380.4375,904.79968 -4.8125,0 -1.125,3.0625 7,0 z"
+           id="path5426-1"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="ccccc" />
+        <rect
+           style="color:#000000;fill:#dcdcdc;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+           id="rect5428-6"
+           width="2.09375"
+           height="2.000061"
+           x="377.5"
+           y="909.86218" />
+      </g>
+      <path
+         sodipodi:nodetypes="sscscsscscsssc"
+         inkscape:connector-curvature="0"
+         id="path5364-3"
+         d="m 367.75693,894.64083 c -8.56041,0 -15.25693,5.0538 -15.25693,11.19129 0,0.6892 0.0825,1.3455 0.25,2 1.30717,-5.18877 7.63617,-9.125 15.25,-9.125 7.61383,0 14.208,3.58268 15.51517,8.77145 -0.0535,-0.76499 0.007,-1.15612 0.007,-1.84532 0,-6.13749 -7.20476,-10.99242 -15.76517,-10.99242 z m 15.75824,12.83774 c -1.32399,5.17392 -7.91604,9.4473 -15.51517,9.4473 -7.59913,0 -13.92601,-3.91983 -15.25,-9.09375 -0.16251,0.64509 -0.25,1.32134 -0.25,2 0,6.13749 6.93959,11.09375 15.5,11.09375 8.56041,0 15.5,-4.95626 15.5,-11.09375 0,-0.67866 0.0451,-1.64217 0.0152,-2.35355 z"
+         style="color:#000000;fill:url(#linearGradient5481-5);fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.99999988;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <g
+         id="g5443-8"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90">
+        <rect
+           transform="scale(-1,-1)"
+           y="-903.86218"
+           x="-365.5"
+           height="4"
+           width="7"
+           id="rect5420-6"
+           style="color:#000000;fill:#dcdcdc;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.99999994;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new" />
+        <path
+           sodipodi:nodetypes="ccccc"
+           inkscape:connector-curvature="0"
+           id="path5422-4"
+           d="m 364.4375,896.79968 -4.8125,0 -1.125,3.0625 7,0 z"
+           style="color:#000000;fill:#d40000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+      </g>
+      <g
+         transform="translate(-5.2928932,5.1161165)"
+         id="g5447-7"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90">
+        <rect
+           style="color:#000000;fill:#dcdcdc;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.99999994;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+           id="rect5449-1"
+           width="7"
+           height="4"
+           x="-365.5"
+           y="-903.86218"
+           transform="scale(-1,-1)" />
+        <path
+           style="color:#000000;fill:#a00000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+           d="m 364.4375,896.79968 -4.8125,0 -1.125,3.0625 7,0 z"
+           id="path5451-7"
+           inkscape:connector-curvature="0"
+           sodipodi:nodetypes="ccccc" />
+      </g>
+      <rect
+         transform="scale(-1,-1)"
+         y="-913.86218"
+         x="-364.79285"
+         height="4"
+         width="7"
+         id="rect5269-7"
+         style="color:#000000;fill:#dcdcdc;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.99999994;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <path
+         sodipodi:nodetypes="ccccc"
+         inkscape:connector-curvature="0"
+         id="rect5400-8"
+         d="m 363.73038,906.79968 -4.8125,0 -1.125,3.0625 7,0 z"
+         style="color:#000000;fill:#d40000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <path
+         sodipodi:nodetypes="cccc"
+         inkscape:connector-curvature="0"
+         id="path5273-3"
+         d="m 363.52083,901.83184 4.43644,-7.43206 4.52189,7.43322 c -2.98611,2.29771 -5.79544,2.29732 -8.95833,-10e-4 z"
+         style="fill:#d40000;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;display:inline"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <path
+         sodipodi:nodetypes="cczcczc"
+         inkscape:connector-curvature="0"
+         id="rect5271-2"
+         d="m 363.5,920.33184 0,-18.58308 c 0,0 1.35721,1.46599 4.5598,1.46599 3.2026,0 4.4402,-1.46599 4.4402,-1.46599 l 0,18.58308 c 0,0 -1.625,2.01603 -4.625,1.875 -3,-0.14103 -4.375,-1.875 -4.375,-1.875 z"
+         style="color:#000000;fill:url(#linearGradient5483-8);fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.99999988;stroke-linecap:butt;stroke-linejoin:bevel;stroke-miterlimit:4;stroke-opacity:1;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <path
+         sodipodi:nodetypes="ccccccc"
+         inkscape:connector-curvature="0"
+         id="path5358-5"
+         d="m 366.50229,922.1228 -1e-5,-4.8449 1.56097,-1.09756 1.44424,1.09756 0,4.8007 -1.45841,0.22097 z"
+         style="fill:#241c1c;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <path
+         style="fill:#008080;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 366.50229,912.1228 -1e-5,-4.8449 1.56097,-1.09756 1.44424,1.09756 0,4.8007 -1.45841,0.22097 z"
+         id="path5360-9"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="ccccccc"
+         inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+    </g>
   </g>
 </svg>

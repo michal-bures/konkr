@@ -4,11 +4,11 @@ import { OrderedHashMap } from 'lib/util';
 
 const HEX_WIDTH = 32;
 const HEX_HEIGHT = 37;
-const HEX_SIZE = HEX_HEIGHT/2;
+const HEX_SIZE = Math.floor(HEX_HEIGHT/2);
 const OFFSET_TOP = 10;
-const OFFSET_LEFT = 10 + HEX_WIDTH/2;
+const OFFSET_LEFT = 10 + Math.floor(HEX_WIDTH/2);
 
-const LINE_HEIGHT = HEX_HEIGHT * 3/4;
+const LINE_HEIGHT = Math.floor(HEX_HEIGHT * 3/4);
 
 function convertToWorldCoordinates(x,y) {
     return {
