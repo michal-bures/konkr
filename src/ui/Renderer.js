@@ -18,6 +18,18 @@ function convertToWorldCoordinates(x,y) {
 }
 
 
+function drawInnerHex(graphics, hex, scale=1) {
+    drawOnHex(graphics, hex, scale, 
+        [[-1,-0.5], [0,-1], [1,-0.5], [1,0.5], [0,1], [-1,0.5]]);
+}
+
+function drawOnHex(graphics, hex, scale, path) {
+    const {x,y} = convertToWorldCoordinates(hex.position.x, hex.position.y);
+    const H = HEX_HEIGHT/2;
+    const W = HEX_WIDTH/2;
+    graphics.drawPolygon(path.map(p=>[(x + W *(1+ p[0]*scale)), (y + H*(1+p[1]*scale))]));
+}
+
 function LandSprites(spec) {
     const {game, grid, regions} = spec;
     
@@ -131,4 +143,17 @@ class DebugInfo {
     }
 }
 
-export { LandSprites, Pawns, DebugInfo, HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT, OFFSET_TOP, OFFSET_LEFT, HEX_EDGE_SIZE };
+export { 
+    convertToWorldCoordinates,
+    drawOnHex,
+    drawInnerHex,
+    LandSprites, 
+    Pawns, 
+    DebugInfo,
+    HEX_WIDTH,
+    HEX_HEIGHT,
+    LINE_HEIGHT,
+    OFFSET_TOP,
+    OFFSET_LEFT,
+    HEX_EDGE_SIZE 
+};

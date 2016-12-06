@@ -66,6 +66,7 @@ function RegionPanel(spec) {
             economyLabel.text = `${treasury} ${netIncome} = ${projectedTreasury}`;
             const offsetNetIncome = String(treasury).length+1;
             const offsetProjected = offsetNetIncome+String(netIncome).length+1;
+            economyLabel.resetColors();
             economyLabel.addColor(incomeColor, offsetNetIncome);
             economyLabel.addColor('#888888', offsetProjected);            
         }

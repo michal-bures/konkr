@@ -25,10 +25,12 @@ function Economy(spec) {
     }
 
     function incomeOf(region) {
+        if (!region.hasCapital()) return 0;
         return region.hexes.length;
     }
 
     function expensesOf(region) {
+        if (!region.hasCapital()) return 0;
         let sum = 0;
         region.hexes.forEach((hex) => {
             sum += upkeepOfPawn(pawns.pawnAt(hex));

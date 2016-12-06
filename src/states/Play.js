@@ -5,10 +5,13 @@ import { worldGenPerlin, worldGenSolid } from 'rules/WorldGenerator';
 import Injector from 'lib/Injector';
 import Scrolling from 'ui/Scrolling';
 import RegionPanel from 'ui/RegionPanel';
+import GridOverlays from 'ui/GridOverlays';
 
 import Regions from 'rules/Regions';
 import Economy from 'rules/Economy';
 import { Pawns } from 'rules/Pawns';
+import Actions from 'rules/Actions';
+import Warfare from 'rules/Warfare';
 
 function Play(game) { 
 
@@ -32,13 +35,16 @@ function Play(game) {
             pawns: spec => new Pawns(spec),
             regions: spec => new Regions(spec),
             economy: spec => new Economy(spec),
+            actions: spec => new Actions(spec),
+            warfare: spec => new Warfare(spec),
 
             landSprites: spec => new Renderer.LandSprites(spec),
             pawnSprites: spec => new Renderer.Pawns(spec),
             generateWorld: () => worldGenPerlin,
             hexSelectionProxy: spec => new HexSelectionProxy(spec),
             scrolling: spec => new Scrolling(spec),
-            uiRegionPanel: spec => new RegionPanel(spec)
+            uiRegionPanel: spec => new RegionPanel(spec),
+            gridOverlays: spec => new GridOverlays(spec),
         });
         log = spec.log;
         window.spec = gameSpec;
@@ -54,6 +60,7 @@ function Play(game) {
 
         //display layers z-order
         game.world.add(gameSpec.landSprites.group);          
+        game.world.add(gameSpec.gridOverlays.group);  
         game.world.add(gameSpec.pawnSprites.group);          
         game.world.add(gameSpec.hexSelectionProxy.group);
         game.world.add(gameSpec.uiRegionPanel.group);  
@@ -73,6 +80,16 @@ function Play(game) {
 */
         log.info("Level initialization complete.");
 
+        gameSpec.gridOverlays.configureOverlay({
+            name: 'defense',
+            func: (hex) => { return gameSpec.warfare.defenseOf(hex)/5; }
+        });
+        gameSpec.gridOverlays.show('defense');
+        gameSpec.actions.execute('NEXT_TURN');
+        game.canvas.oncontextmenu = function (e) { 
+            e.preventDefault(); 
+            gameSpec.gridOverlays.group.visible = !gameSpec.gridOverlays.group.visible;
+        };
         game.debug.reset();
     }
 
@@ -86,7 +103,6 @@ function Play(game) {
     }
 
     function render() {
-        game.debug.cameraInfo(game.camera, 32, 32);
     }
 }
 

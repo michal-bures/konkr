@@ -1,7 +1,7 @@
 import { HEX_WIDTH, LINE_HEIGHT, OFFSET_TOP, OFFSET_LEFT } from 'ui/Renderer';
 
 function HexSelectionProxy(spec) {
-    let {game,grid,debug,landSprites,log,regions,pawns,uiRegionPanel} = spec;
+    let {game,grid,debug,landSprites,log,regions,pawns,uiRegionPanel, warfare} = spec;
 
     let active = false,
         image = initImage(),
@@ -30,7 +30,8 @@ function HexSelectionProxy(spec) {
             log.info(`${hex}
 Faction: ${regions.factionOf(hex)}
 Region:  ${regions.regionOf(hex)}
-Pawn: ${pawns.pawnAt(hex)}`);
+Pawn: ${pawns.pawnAt(hex)}
+Defense: ${warfare.defenseOf(hex)}`);
         });
         return surface;
     }

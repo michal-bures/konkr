@@ -16,7 +16,7 @@ function Pawns(spec) {
     let pawns = Object.freeze({
         pawnAt,
         forEach,
-        placeAt
+        placeAt,
     });
 
     //private

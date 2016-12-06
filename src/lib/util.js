@@ -46,7 +46,6 @@ function onFirefox() {
     return (navigator.userAgent.toLowerCase().indexOf('firefox') !== -1 );
 }
 
-
 class OrderedMap {
     constructor() {
         this._keys = [];

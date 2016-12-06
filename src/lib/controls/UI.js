@@ -135,6 +135,10 @@ class Label extends UIComponent {
     addColor(...args) {
         return this.image.addColor(...args);
     }
+
+    resetColors() {
+        this.image.colors=[];
+    }
 }
 
 

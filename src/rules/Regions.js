@@ -2,6 +2,7 @@
 
 import { Random } from 'lib/util';
 import { PawnType } from 'rules/Pawns';
+import IterableOn from 'lib/decorators/IterableOn';
 
 const NUMBER_OF_FACTIONS = 4;
 const MIN_SIZE_FOR_CAPITAL = 2;
@@ -13,20 +14,23 @@ function generateRegionId() {
 
 function Regions (spec) {
     let { grid, pawns, log } = spec;
-    
+
+    //private
+    let _regions = [], //must be const in order not to break IterableOn
+        hexFaction = [],
+        hexRegion = [];
+
+
     //public
-    let regions = Object.freeze({
+    let regions = {
         randomize,
         factionOf,
         regionOf,
         init,
         byId
-    });
-
-    //private
-    let _regions = [],
-        hexFaction = [],
-        hexRegion = [];
+    };
+    IterableOn(regions,()=>_regions);
+    Object.freeze(regions);
 
     //implementation
 
