@@ -1,28 +1,32 @@
-import { HEX_WIDTH, LINE_HEIGHT } from 'ui/Renderer';
+import { HEX_WIDTH, LINE_HEIGHT, OFFSET_TOP, OFFSET_LEFT } from 'ui/Renderer';
 
-function TileSelectionProxy(spec) {
-    let {game,grid,debug,landSprites,log,regions,pawns} = spec;
+function HexSelectionProxy(spec) {
+    let {game,grid,debug,landSprites,log,regions,pawns,uiRegionPanel} = spec;
 
     let active = false,
-        image = initImage();
+        image = initImage(),
+        group = game.add.group(null);
+
+    group.add(image);
 
     //public
     return Object.freeze({
         update,
         getHexUnderCursor,
-        get agent() { return image; }
+        get group() { return group; }
     });
 
     function initImage() {
-        let surface = new Phaser.Image(game,10,10);
+        let surface = new Phaser.Image(game,0,0, null);
         surface.inputEnabled = true;
         surface.fixedToCamera = true;
-        surface.width = game.width - 2 * 10;
-        surface.height = game.height - 2 * 10;
+        surface.width = game.width;
+        surface.height = game.height;
         surface.events.onInputOver.add(() => active = true);
         surface.events.onInputOut.add(() => active = false);
         surface.events.onInputDown.add(() => {
             const hex = getHexUnderCursor();
+            uiRegionPanel.setRegion(regions.regionOf(hex));
             log.info(`${hex}
 Faction: ${regions.factionOf(hex)}
 Region:  ${regions.regionOf(hex)}
@@ -38,8 +42,8 @@ Pawn: ${pawns.pawnAt(hex)}`);
     }
 
     function getHexUnderCursor() {
-        let x = (game.input.mousePointer.worldX - 10) / HEX_WIDTH;
-        let y = (game.input.mousePointer.worldY - 10) / LINE_HEIGHT;
+        let x = (game.input.activePointer.worldX - OFFSET_LEFT) / HEX_WIDTH;
+        let y = (game.input.activePointer.worldY - OFFSET_TOP) / LINE_HEIGHT;
 
         let dx = x % 1;
         let dy = y % 1;
@@ -107,4 +111,4 @@ Pawn: ${pawns.pawnAt(hex)}`);
 }
 
 
-export default TileSelectionProxy;
+export default HexSelectionProxy;

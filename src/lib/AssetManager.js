@@ -25,8 +25,7 @@ function AssetManager(spec) {
 }
 
 AssetManager.images = {
-    'control-panel': ['assets/control-panel.png'],
-    'stolenBackground': ['assets/stolen-background.png']
+    'paneBackground' : ['assets/ui/paneBackground.png']
 };
 
 AssetManager.spritesheets = {

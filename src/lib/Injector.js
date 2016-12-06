@@ -4,12 +4,12 @@ import { isFunction, OrderedMap } from 'lib/util';
 class Injector {
     constructor(parent) {
         this._resolved = {};
-        this._props = {};
+        this._constructors = {};
         this._loading = [];
 
         if (parent instanceof Injector) {
-            Object.keys(parent._props).forEach(key => {
-                this.register(key, parent._props[key]);
+            Object.keys(parent._constructors).forEach(key => {
+                this.register(key, parent._constructors[key]);
             });
             Object.assign(this._resolved,parent._resolved);
         } else if (typeof parent == 'object') {
@@ -25,8 +25,8 @@ class Injector {
         if (!isFunction(factoryFunction)) throw Error(`Invalid factoryMethod for property '${name}' passed to injector`);
 
         if (Object.isSealed(this)) throw Error(`Attempt to add propert ${name} to an injector that is already sealed`);
-        if (this._props[name]) throw Error(`Injector already has a '${name} propety registered'`);
-        this._props[name] = factoryFunction;
+        if (this._constructors[name]) throw Error(`Injector already has a '${name} propety registered'`);
+        this._constructors[name] = factoryFunction;
         Object.defineProperty(this,name,{
             get: () => { 
                 Object.seal(this); // no more props can be added to the injector after its used for the first time

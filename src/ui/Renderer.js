@@ -6,13 +6,13 @@ const HEX_WIDTH = 32;
 const HEX_HEIGHT = 37;
 const HEX_EDGE_SIZE = Math.floor(HEX_HEIGHT/2);
 const OFFSET_TOP = 10;
-const OFFSET_LEFT = 10 + Math.floor(HEX_WIDTH/2);
+const OFFSET_LEFT = 10;
 
 const LINE_HEIGHT = Math.floor(HEX_HEIGHT * 3/4);
 
 function convertToWorldCoordinates(x,y) {
     return {
-        x: OFFSET_LEFT + x * HEX_WIDTH,
+        x: OFFSET_LEFT + Math.floor(HEX_WIDTH/2) + x * HEX_WIDTH,
         y: OFFSET_TOP + y * LINE_HEIGHT
     };
 }
@@ -32,7 +32,7 @@ function LandSprites(spec) {
         tileToSprite = {},
         highlightedTiles = [];
 
-    class LandSprite extends Phaser.Sprite {
+    class LandSprite extends Phaser.Image {
         constructor(tile) {
             const {x,y} = convertToWorldCoordinates(tile.position.x, tile.position.y);
             super(game, x, y, 'hex');
@@ -131,4 +131,4 @@ class DebugInfo {
     }
 }
 
-export { LandSprites, Pawns, DebugInfo, HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT };
+export { LandSprites, Pawns, DebugInfo, HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT, OFFSET_TOP, OFFSET_LEFT, HEX_EDGE_SIZE };

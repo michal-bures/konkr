@@ -25,6 +25,13 @@ function extend(base, child, stack) {
     }
 }
 
+function assertDefined(...args) {
+    args.forEach( (arg, i) => { 
+        if (arg === undefined) throw Error(`Argument #${i+1} is undefined.`);
+        if (arg === null) throw Error(`Argument #${i+1} is null.`);
+    });
+}
+
 function isFunction(obj) {
     return typeof obj === 'function';
 }
@@ -215,4 +222,4 @@ console.debug("TEST1:",a);
 */
 
 
-export { OrderedMap, Random, isFunction, isObject };
+export { OrderedMap, Random, isFunction, isObject, assertDefined };

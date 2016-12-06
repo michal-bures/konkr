@@ -19,7 +19,8 @@ function Regions (spec) {
         randomize,
         factionOf,
         regionOf,
-        init
+        init,
+        byId
     });
 
     //private
@@ -34,6 +35,10 @@ function Regions (spec) {
             hexFaction[hex.id] = Random.integer(1,NUMBER_OF_FACTIONS);
         });
         init();
+    }
+
+    function byId(id) {
+        return _regions[id];
     }
 
     function factionOf(hex) {

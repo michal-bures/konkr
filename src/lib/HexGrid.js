@@ -291,7 +291,6 @@ class HexGrouping {
     toString() {
         let total=0;
         let str = Object.keys(this.groups).map((key) => {
-            console.log("==",key,this.groups[key].length);
             const len = this.groups[key].length;
             total += len;
             return `${key}(${len})`;

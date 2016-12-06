@@ -126,6 +126,7 @@ PrepareLevel.prototype = {
         //Shared assets
         spec.assetManager.load('hex');
         spec.assetManager.load('pawn');
+        spec.assetManager.load('paneBackground');
     },
 
     create: function(game) {
