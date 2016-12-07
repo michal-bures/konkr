@@ -21,7 +21,9 @@ function Play(game) {
     let log = console;
     let gameSpec = null,
         gameUi = null,
-        debugTabName='gameDirector';
+        debugTabName='gameDirector',
+        lastDebugContent='';
+
 
     return Object.freeze({
         init,
@@ -33,32 +35,39 @@ function Play(game) {
     });
 
     function init(spec) {
-        console.debug("init");
-        gameSpec = new Injector(spec);
-        gameSpec.registerAll({
+
+        gameSpec = new Injector(spec,{
+            // returns a modified clone of spec which has some modules customized for the specified name
+            usingName: spec => (moduleName) => {
+                return spec.extend({ 
+                    actions: () => spec.actions && spec.actions.getNamedProxy(moduleName),
+                    log: () => spec.log && {
+                        debug: (...args) => console.debug(`${moduleName}>`, ...args)
+                    }
+                });
+            },
             debug: spec => new Renderer.DebugInfo(spec),
             grid: () => new HexGrid(40,40),
             pawns: spec => new Pawns(spec),
             regions: spec => new Regions(spec),
-            economy: spec => new Economy(spec),
+            economy: spec => new Economy(spec.usingName('economy')),
             actions: spec => new Actions(spec),
             warfare: spec => new Warfare(spec),
             generateWorld: () => worldGenPerlin,
-            gameDirector: spec => new GameDirector(spec),
+            gameDirector: spec => new GameDirector(spec.usingName('gameDirector')),
             players: spec => new Players(spec),
         });
 
-        gameUi = new Injector(gameSpec);
-        gameUi.registerAll({
+        gameUi = gameSpec.extend({
             landSprites: spec => new Renderer.LandSprites(spec),
             pawnSprites: spec => new Renderer.Pawns(spec),
             hexSelectionProxy: spec => new HexSelectionProxy(spec),
             scrolling: spec => new Scrolling(spec),
-            uiRegionPanel: spec => new RegionPanel(spec),
+            uiRegionPanel: spec => new RegionPanel(spec.usingName('uiRegionPanel')),
             gridOverlays: spec => new GridOverlays(spec),
         });
         log = spec.log;
-        window.spec = gameUi;
+        window.c = gameUi;
     }
 
     function create() {
@@ -97,7 +106,7 @@ function Play(game) {
         });
         gameUi.gridOverlays.show('defense');
         //gameUi.actions.execute('NEXT_TURN');
-        game.canvas.oncontextmenu = function (e) { 
+        game.canvas.onspecmenu = function (e) { 
             e.preventDefault(); 
             gameUi.gridOverlays.group.visible = !gameUi.gridOverlays.group.visible;
         };
@@ -145,7 +154,10 @@ function Play(game) {
 
     function refreshDebugTab(name = debugTabName) {
         debugTabName=name;
-        document.getElementById("debugContent").innerHTML = `<pre>${gameUi[name].toDebugString()}</pre>`; 
+        const newContent = `<pre>${gameUi[name].toDebugString()}</pre>`;
+        if (newContent == lastDebugContent) return;
+        lastDebugContent = newContent;
+        document.getElementById("debugContent").innerHTML = newContent; 
     }
 
     function preload() {

@@ -57,7 +57,7 @@ function RegionPanel(spec) {
             regionNameLabel.text = '';
         } else {
             regionNameLabel.text = `Region #${region.id}`;
-            const treasury = region.treasury;
+            const treasury = economy.treasuryOf(region);
             let netIncome = economy.netIncomeOf(region);
             const incomeColor = accountingColor(netIncome);
             const projectedTreasury = treasury + netIncome;

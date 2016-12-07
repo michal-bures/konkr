@@ -2,6 +2,7 @@
 
 
 function Actions(spec) {
+    let {log} = spec;
     let undoStack = [];
 
     const self = {
@@ -10,7 +11,8 @@ function Actions(spec) {
         checkHandlers,
         setHandler,
         toString,
-        toDebugString
+        toDebugString,
+        getNamedProxy,
     };
 
     const handlers = {
@@ -26,7 +28,23 @@ function Actions(spec) {
         'PLAYER_PLAY' : null, //player
     };
 
+    let handlerNames = [];
+
     Object.seal(handlers);
+
+    function getNamedProxy(name) {
+        return {
+            execute: (id, ...args) => {
+                log.debug(`Action ${id} executed by ${name} with arguments`, ...args);
+                execute(id, ...args);
+            },
+            setHandler: (actionName, handler) => {
+                setHandler(actionName, handler);
+                handlerNames[actionName] = name;
+            },
+            toString: () => '[Actions proxy: '+ name +']'
+        };
+    }
 
 
     function execute(id, ...args) {
@@ -57,7 +75,7 @@ function Actions(spec) {
     }
 
     function toDebugString() {
-        return Object.keys(handlers).map(key => `* ${key} => ${handlers[key]}`).join("\n");
+        return Object.keys(handlers).map(key => `* ${key} => ${handlerNames[key] || (handlers[key]?"(anonymous function)":"N/A")}`).join("\n");
     }
 
     return self;

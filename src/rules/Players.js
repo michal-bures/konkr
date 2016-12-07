@@ -1,21 +1,36 @@
 import IterableOn from 'lib/decorators/IterableOn';
 
-function SimpleAI(spec) {
-    return {
-        name:"SimpleAI"
-    };
-}
-
-
 function Players(spec) {
-    const _players = [new SimpleAI(spec)];
+
+    class Player {
+        constructor(name) {
+            this.name = name;
+        }
+
+        get controlledRegions() {
+            return getRegionsControlledBy(this);
+        }
+    }
+
+    class GlobalRegionAI extends Player {
+        constructor() {
+            super("GlobalRegionAI");
+        }
+    }
+
+    let { regions } = spec;
+    const _players = [new GlobalRegionAI()];
     
-    let self = {
-        _players
-    };
+    // public API
+    let self = {};
     IterableOn(self, _players);
 
     return Object.freeze(self);
+
+    function getRegionsControlledBy(player) {
+        //TODO less bullshit, more actual implementation
+        return regions.map(r=>r);
+    }
 }
 
 export default Players;

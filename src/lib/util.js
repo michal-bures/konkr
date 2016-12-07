@@ -41,6 +41,9 @@ function isObject(obj) {
     return typeof obj === 'object';
 }
 
+function signedNumber(num) {
+    return String(num>=0?'+':'')+num;
+}
 
 function onFirefox() {
     return (navigator.userAgent.toLowerCase().indexOf('firefox') !== -1 );
@@ -221,4 +224,4 @@ console.debug("TEST1:",a);
 */
 
 
-export { OrderedMap, Random, isFunction, isObject, assertDefined };
+export { OrderedMap, Random, isFunction, isObject, assertDefined, signedNumber };

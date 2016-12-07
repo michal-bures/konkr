@@ -1,58 +1,56 @@
 import 'must/register';
 import { isFunction, OrderedMap } from 'lib/util';
 
-class Injector {
-    constructor(parent) {
-        this._resolved = {};
-        this._constructors = {};
-        this._loading = [];
-        this._parentConstructors = [];
+function Injector(parent=Object, extension) {
 
-        if (parent instanceof Injector) {
-            this._parentConstructors = parent.listConstructors();
-            this._parentConstructors.forEach(key => {
-                Object.defineProperty(this,key,{
-                    get: () => { return parent[key]; }
-                });
-            });
-        } else if (typeof parent == 'object') {
-            this.registerAll(parent);
-        }
-    }
+    let _resolved = {},
+        _constructors = {},
+        _loading = [];
 
-    listConstructors() {
-        return Object.keys(this._constructors).concat(this._parentConstructors);
-    }
+    const self = Object.create(parent);
 
-    registerAll(obj) {
-        Object.keys(obj).forEach(key => this.register(key, obj[key]));
-    }
+    self.listConstructors = function() {
+        if (parent === Object) return Object.keys(_constructors);
+        return Object.keys(_constructors).concat(parent.listConstructors());
+    };
 
-    register(name, factoryFunction) {
+    self.registerAll = function(obj) {
+        Object.keys(obj).forEach(key => self.register(key, obj[key]));
+    };
+
+    self.extend = function(extension) {
+        return new Injector(self,extension);
+    };
+
+    self.register = function (name, factoryFunction) {
         if (!isFunction(factoryFunction)) throw Error(`Invalid factoryMethod for property '${name}' passed to injector`);
 
-        if (Object.isSealed(this)) throw Error(`Attempt to add propert ${name} to an injector that is already sealed`);
-        if (this._constructors[name]) throw Error(`Injector already has a '${name} propety registered'`);
-        this._constructors[name] = factoryFunction;
-        Object.defineProperty(this,name,{
+        if (Object.isSealed(self)) throw Error(`Attempt to add property '${name}' to an injector that is already sealed`);
+        if (_constructors[name]) throw Error(`Injector already has a '${name} propety registered'`);
+        _constructors[name] = factoryFunction;
+        Object.defineProperty(self,name,{
             get: () => { 
-                Object.seal(this); // no more props can be added to the injector after its used for the first time
-                if (!this._resolved[name]) {
-                    if (this._loading.indexOf(name)!==-1) throw Error(`Dependency loop detected! ${this._loading.concat(name).join(' <- ')}`);
-                    this._loading.push(name);
-                    console.debug(`Loading: ${this._loading.join(' <- ')}`);
-                    this._resolved[name]=factoryFunction(this);
-                    this._loading.pop();
+                //Object.seal(self); // no more props can be added to the injector after its used for the first time
+                if (!_resolved[name]) {
+                    if (_loading.indexOf(name)!==-1) throw Error(`Dependency loop detected! ${_loading.concat(name).join(' <- ')}`);
+                    _loading.push(name);
+                    console.debug(`Injector> loading: ${_loading.join(' <- ')}`);
+                    _resolved[name]=factoryFunction(self);
+                    _loading.pop();
                 }
-                return this._resolved[name];
+                return _resolved[name];
             }
         });
-    }
+    };
 
     //explicitely resolve a property
-    resolve(name) {
-        return this[name];
-    }
+    self.resolve = function(name) {
+        return self[name];
+    };
+
+    if (extension) self.registerAll(extension);
+
+    return self;
 }
 
 export default Injector;

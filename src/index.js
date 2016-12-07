@@ -30,11 +30,12 @@ game = new Phaser.Game(1024, 550, Phaser.AUTO, 'content');
 //game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
 
 
-var spec = new Injector({
+var spec = new Injector(undefined,{
     log: () => log,
     game: () => game,
     assetManager: spec => new AssetManager(spec),
 });
+
 
 //default loglevel
 log.setDefaultLevel(log.levels.DEBUG);

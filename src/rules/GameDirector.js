@@ -1,9 +1,9 @@
-function GameDirector({players, log}) {
+import { assertDefined } from 'lib/util';
+
+function GameDirector({players, log, actions}) {
     
-    let //onBeforeState(tasks, currentState, nextState)
-        onBeforeStateChange = new Phaser.Signal(), 
-        //onStateChange(?)
-        onStateChange = new Phaser.Signal(),
+    let onBeforeStateChange = new Phaser.Signal(/*addTask, currentState, nextState*/), 
+        onStateChange = new Phaser.Signal(/*addTask, state*/),
         currentStateIndex = -1,
         tasks = null,
         states = [];
@@ -20,7 +20,7 @@ function GameDirector({players, log}) {
         if (tasks) throw Error("Director already running!");
         states = [];
         players.forEach(player => {
-            states.push(new EconomyUpdate(player));
+            states.push(new UpdateEconomy(player));
             states.push(new PlayersTurn(player));
         });
         nextState();
@@ -39,6 +39,7 @@ function GameDirector({players, log}) {
         tasks.onResolved(() => {
             currentStateIndex = (currentStateIndex+1) % states.length;
             log.debug(`now in state ${newState}`);
+            newState.run();
             tasks = new TaskTracker();
             onStateChange.dispatch(tasks.addTask.bind(tasks), newState);
             tasks.onResolved(nextState);
@@ -64,6 +65,10 @@ ${states.map((state,index)=>((index===currentStateIndex?" -> ":"    ")+state.toS
             this.type = type;
         }
 
+        run() {
+
+        }
+
         toString() {
             return `[State ${this.type}${this.name?'/'+this.name:''}]`;
         }
@@ -72,13 +77,21 @@ ${states.map((state,index)=>((index===currentStateIndex?" -> ":"    ")+state.toS
     class PlayersTurn extends State {
         constructor(player) {
             super("PLAYERS_TURN",player.name);
+            this.player = player;
         }
+
     }
 
-    class EconomyUpdate extends State {
+    class UpdateEconomy extends State {
         constructor(player) {
-            super("ECONOMY_UPDATE", player.name);
+            super("UPDATE_ECONOMY", player.name);
+            this.player = player;
         }
+
+        run() {
+            actions.execute("UPDATE_ECONOMY", this.player);
+        }
+
     }
 
     class TaskTracker {

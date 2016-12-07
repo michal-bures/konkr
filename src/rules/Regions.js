@@ -71,7 +71,6 @@ function Regions (spec) {
             this._id = generateRegionId();
             this._hexes = hexGroup;
             this.faction = faction;
-            this.treasury = 0;
             this.capital = null;
             this.pickNewCapital();
         }
