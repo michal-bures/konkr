@@ -6,15 +6,22 @@ class Injector {
         this._resolved = {};
         this._constructors = {};
         this._loading = [];
+        this._parentConstructors = [];
 
         if (parent instanceof Injector) {
-            Object.keys(parent._constructors).forEach(key => {
-                this.register(key, parent._constructors[key]);
+            this._parentConstructors = parent.listConstructors();
+            this._parentConstructors.forEach(key => {
+                Object.defineProperty(this,key,{
+                    get: () => { return parent[key]; }
+                });
             });
-            Object.assign(this._resolved,parent._resolved);
         } else if (typeof parent == 'object') {
             this.registerAll(parent);
         }
+    }
+
+    listConstructors() {
+        return Object.keys(this._constructors).concat(this._parentConstructors);
     }
 
     registerAll(obj) {

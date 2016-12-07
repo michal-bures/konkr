@@ -6,7 +6,10 @@ import Injector from 'lib/Injector';
 import Scrolling from 'ui/Scrolling';
 import RegionPanel from 'ui/RegionPanel';
 import GridOverlays from 'ui/GridOverlays';
+import UI from 'lib/controls/UI';
 
+import GameDirector from 'rules/GameDirector';
+import Players from 'rules/Players';
 import Regions from 'rules/Regions';
 import Economy from 'rules/Economy';
 import { Pawns } from 'rules/Pawns';
@@ -16,7 +19,8 @@ import Warfare from 'rules/Warfare';
 function Play(game) { 
 
     let log = console;
-    let gameSpec = null;
+    let gameSpec = null,
+        gameUi = null;
 
     return Object.freeze({
         init,
@@ -37,17 +41,22 @@ function Play(game) {
             economy: spec => new Economy(spec),
             actions: spec => new Actions(spec),
             warfare: spec => new Warfare(spec),
+            generateWorld: () => worldGenPerlin,
+            gameDirector: spec => new GameDirector(spec),
+            players: spec => new Players(spec),
+        });
 
+        gameUi = new Injector(gameSpec);
+        gameUi.registerAll({
             landSprites: spec => new Renderer.LandSprites(spec),
             pawnSprites: spec => new Renderer.Pawns(spec),
-            generateWorld: () => worldGenPerlin,
             hexSelectionProxy: spec => new HexSelectionProxy(spec),
             scrolling: spec => new Scrolling(spec),
             uiRegionPanel: spec => new RegionPanel(spec),
             gridOverlays: spec => new GridOverlays(spec),
         });
         log = spec.log;
-        window.spec = gameSpec;
+        window.spec = gameUi;
     }
 
     function create() {
@@ -59,11 +68,11 @@ function Play(game) {
 
 
         //display layers z-order
-        game.world.add(gameSpec.landSprites.group);          
-        game.world.add(gameSpec.gridOverlays.group);  
-        game.world.add(gameSpec.pawnSprites.group);          
-        game.world.add(gameSpec.hexSelectionProxy.group);
-        game.world.add(gameSpec.uiRegionPanel.group);  
+        game.world.add(gameUi.landSprites.group);          
+        game.world.add(gameUi.gridOverlays.group);  
+        game.world.add(gameUi.pawnSprites.group);          
+        game.world.add(gameUi.hexSelectionProxy.group);
+        game.world.add(gameUi.uiRegionPanel.group);  
         // A simple background    
         /*
         var bg = g.staticBackground.create(0, 0, CFG.world.background);
@@ -80,17 +89,43 @@ function Play(game) {
 */
         log.info("Level initialization complete.");
 
-        gameSpec.gridOverlays.configureOverlay({
+        gameUi.gridOverlays.configureOverlay({
             name: 'defense',
             func: (hex) => { return gameSpec.warfare.defenseOf(hex)/5; }
         });
-        gameSpec.gridOverlays.show('defense');
-        gameSpec.actions.execute('NEXT_TURN');
+        gameUi.gridOverlays.show('defense');
+        //gameUi.actions.execute('NEXT_TURN');
         game.canvas.oncontextmenu = function (e) { 
             e.preventDefault(); 
-            gameSpec.gridOverlays.group.visible = !gameSpec.gridOverlays.group.visible;
+            gameUi.gridOverlays.group.visible = !gameUi.gridOverlays.group.visible;
         };
+
+        let { nextTurnButton } = new UI(gameSpec,{
+            name: 'nextTurnButton',
+            component: 'button',
+            sprite: 'nextTurnButton',
+            hAlign: 'right',
+            vAlign: 'bottom',
+            hOffset: 10,
+            vOffset: 10,
+        });
+
+        let nextStatePromise = null;
+
+        gameSpec.gameDirector.onStateChange.add((rfc, state) => {
+            nextStatePromise = rfc.waitFor(this, "wait for manual confirmation");
+        });
+
+        nextTurnButton.addToGroup(game.world);
+        nextTurnButton.onInputUp.add(() => {
+            if (nextStatePromise) {
+                nextStatePromise.done();
+            }
+        });
+
         game.debug.reset();
+
+        gameSpec.gameDirector.run();
     }
 
     function preload() {
@@ -99,7 +134,7 @@ function Play(game) {
     }
 
     function update() {
-        gameSpec.scrolling.update();
+        gameUi.scrolling.update();
     }
 
     function render() {

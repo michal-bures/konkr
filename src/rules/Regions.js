@@ -16,8 +16,7 @@ function Regions (spec) {
     let { grid, pawns, log } = spec;
 
     //private
-    let _regions = [], //must be const in order not to break IterableOn
-        hexFaction = [],
+    const _regions = [], //must be const in order not to break IterableOn
         hexRegion = [];
 
 
@@ -29,16 +28,25 @@ function Regions (spec) {
         init,
         byId
     };
-    IterableOn(regions,()=>_regions);
+    IterableOn(regions,_regions);
     Object.freeze(regions);
 
     //implementation
 
     function randomize() {
+        let hexFaction=[];
         grid.forEach((hex)=>{
             hexFaction[hex.id] = Random.integer(1,NUMBER_OF_FACTIONS);
         });
-        init();
+        _regions.length = 0;
+        grid.components((hex, prevHex) => hexFaction[hex.id] === hexFaction[prevHex.id])
+            .map(group=>new Region(hexFaction[group.pivot.id],group))
+            .forEach(region=>{
+                _regions.push(region);
+                region.hexes.forEach( hex=> {
+                    hexRegion[hex.id] = region;
+                });
+            });
     }
 
     function byId(id) {
@@ -46,7 +54,8 @@ function Regions (spec) {
     }
 
     function factionOf(hex) {
-        return hexFaction[hex.id];
+        if (regionOf(hex)===undefined) return 0;
+        return regionOf(hex).faction;
     }
 
     function regionOf(hex) {
@@ -54,25 +63,16 @@ function Regions (spec) {
     }
 
     function init() {
-        _regions =
-            grid
-            .components((hex, prevHex) => factionOf(hex) === factionOf(prevHex))
-            .map(group=>new Region(group));
 
-        _regions.forEach(region=> {
-            region.hexes.forEach( hex=> {
-                hexRegion[hex.id] = region;
-            });
-        });
     }
    
     class Region {
-        constructor(hexGroup) {
+        constructor(faction,hexGroup) {
             this._id = generateRegionId();
             this._hexes = hexGroup;
+            this.faction = faction;
             this.treasury = 0;
             this.capital = null;
-            this.faction = regions.factionOf(this.hexes.pivot);
             this.pickNewCapital();
         }
         

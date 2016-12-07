@@ -1,7 +1,7 @@
 
 
 function Actions(spec) {
-    let { regions, economy } = spec;
+    let { regions, economy, rulers } = spec;
     let undoStack = [];
 
     const self = {
@@ -45,6 +45,10 @@ function Actions(spec) {
     class NextTurn extends Action {
         execute() {
             regions.forEach(region => {
+                if (region.hasCapital()) {
+                    rulers.rulerOf(region).play();
+                }
+
                 region.treasury += economy.netIncomeOf(region);
                 //TODO: kill all units if region is bankrupt
             });
@@ -53,7 +57,7 @@ function Actions(spec) {
 
     const ACTIONS = {
         NEXT_TURN: NextTurn,
-
+        
     };    
 
     return self;

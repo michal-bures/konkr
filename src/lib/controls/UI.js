@@ -10,6 +10,7 @@ function generateComponentId() {
 const components = {
     'pane' : (...args) => new Pane(...args),
     'label' : (...args) => new Label(...args),
+    'button' : (...args) => new Button(...args),
 };
 
 class UIComponent {
@@ -42,28 +43,28 @@ class UIComponent {
         throw Error(`Component does not have a container.`);
     }
 
-    setPlacement({hAlign, vAlign, x=0, y=0}) {
+    setPlacement({hAlign, vAlign, x=0, y=0, hOffset=0, vOffset=0}) {
         if (hAlign) {
-            this.setHAlign(hAlign);  
+            this.setHAlign(hAlign, hOffset);  
         }  else {
             this.image.x = x;
         }
         if (vAlign) {
-            this.setVAlign(vAlign);
+            this.setVAlign(vAlign, vOffset);
         } else {
             this.image.y = y;
         }
     }
 
-    setHAlign(hAlign) {
+    setHAlign(hAlign, hOffset) {
         const img = this.image;
         switch (hAlign) {
             case 'left':
-                img.x = 0;
+                img.x = hOffset;
                 img.anchor.x = 0;
                 break;
             case 'right':
-                img.x = this.parentContainer.width;
+                img.x = this.parentContainer.width - hOffset;
                 img.anchor.x = 1;
                 break;
             case 'center':
@@ -75,15 +76,15 @@ class UIComponent {
         }
     }
 
-    setVAlign(vAlign) {
+    setVAlign(vAlign, vOffset) {
         const img = this.image;
         switch (vAlign) {
             case 'top':
-                img.y = 0;
+                img.y = vOffset;
                 img.anchor.y = 0;
                 break;
             case 'bottom':
-                img.y = this.parentContainer.height;
+                img.y = this.parentContainer.height - vOffset;
                 img.anchor.y = 1;
                 break;
             case 'center':
@@ -141,6 +142,14 @@ class Label extends UIComponent {
     }
 }
 
+class Button extends UIComponent {
+    createDisplayObject({sprite}) {
+        let btn = this.game.add.button(0, 0, sprite);
+        this.onInputUp = btn.onInputUp;
+        this.onInputDown = btn.onInputDown;
+        return btn;
+    }
+}
 
 function UI (spec, def) {
     let {log, game} = spec;
