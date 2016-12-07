@@ -29,6 +29,7 @@
     "yargs": "^4.6.0"
   },
   "dependencies": {
+    "async": "^2.1.4",
     "enumify": "^1.0.4",
     "expect": "^1.20.2",
     "loglevel": "^1.4.1",

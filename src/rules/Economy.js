@@ -27,7 +27,7 @@ function Economy(spec) {
         toDebugString
     });
 
-    actions.setHandler('UPDATE_ECONOMY', (player)=>{
+    actions.addHandler('UPDATE_ECONOMY', (callback,player)=>{
         player.controlledRegions.forEach( (region) => {
             const oldValue = regionTreasury.get(region) || 0;
             let newValue = oldValue + netIncomeOf(region);
@@ -40,13 +40,12 @@ function Economy(spec) {
             if (newValue != oldValue) {
                 self.onRegionTreasuryChanged.dispatch(region, newValue, oldValue);
             }
-
         });
+        return callback();
     });
 
     function toDebugString() {
         return regions.map(region => {
-            log.debug("REGION:", region);
             if (region.hasCapital()) return `* ${region.id}: ${regionTreasury.get(region) || 'N/A'} (${signedNumber(netIncomeOf(region))})`;
         }).filter(x=>x).join('\n');
     }

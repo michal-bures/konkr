@@ -21,7 +21,7 @@ function Play(game) {
     let log = console;
     let gameSpec = null,
         gameUi = null,
-        debugTabName='gameDirector',
+        debugTabName='actions',
         lastDebugContent='';
 
 
@@ -51,11 +51,11 @@ function Play(game) {
             pawns: spec => new Pawns(spec),
             regions: spec => new Regions(spec),
             economy: spec => new Economy(spec.usingName('economy')),
-            actions: spec => new Actions(spec),
-            warfare: spec => new Warfare(spec),
+            actions: spec => new Actions(spec.usingName('actions')),
+            warfare: spec => new Warfare(spec.usingName('warfare')),
             generateWorld: () => worldGenPerlin,
             gameDirector: spec => new GameDirector(spec.usingName('gameDirector')),
-            players: spec => new Players(spec),
+            players: spec => new Players(spec.usingName('players')),
         });
 
         gameUi = gameSpec.extend({
@@ -71,7 +71,6 @@ function Play(game) {
     }
 
     function create() {
-        console.debug("create");
 
         gameSpec.generateWorld(gameSpec);
         gameSpec.regions.randomize();
@@ -121,16 +120,20 @@ function Play(game) {
             vOffset: 10,
         });
 
-        let nextStatePromise = null;
+        let nextStateCallback = null;
 
-        gameSpec.gameDirector.onStateChange.add((addTask, state) => {
-            nextStatePromise = addTask(this, "wait for manual confirmation");
-        });
+        gameSpec.actions.addHandler('UPDATE_ECONOMY', (callback) => {
+            nextStateCallback = callback;
+        }, 'BREAKPOINT');
+        gameSpec.actions.addHandler('PLAYER_ACT', (callback) => {
+            nextStateCallback = callback;
+        }, 'BREAKPOINT');
 
         nextTurnButton.addToGroup(game.world);
         nextTurnButton.onInputUp.add(() => {
-            if (nextStatePromise) {
-                nextStatePromise.done();
+            if (nextStateCallback) {
+                nextStateCallback();
+                nextStateCallback = null;
             }
         });
 
@@ -143,7 +146,6 @@ function Play(game) {
     function setupDebugDiv() {
         const debugDiv = document.getElementById("debug");
         const debugSelect = document.getElementById("debugModeSelect");
-        const debugContent = document.getElementById("debugContent");
 
         if (!debugDiv) return;
         debugSelect.innerHTML= gameUi.listConstructors().sort().map(key => (gameUi[key].toDebugString?`<option value='${key}'>${key}</option>`:''));
