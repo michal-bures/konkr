@@ -9,7 +9,17 @@ body {
   height: inherit;
   width: inherit;
   margin: 0px;
-  display: flex;
+/*  display: flex;*/
   justify-content: center;
   align-items: center;
+}
+
+pre {
+  margin: 0;
+}
+
+div#debugContent {
+  font-family: Courier New
+  font-size: 8pt;
+  padding:10px;
 }

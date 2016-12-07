@@ -38,7 +38,7 @@ class Injector {
             get: () => { 
                 Object.seal(this); // no more props can be added to the injector after its used for the first time
                 if (!this._resolved[name]) {
-                    if (this._loading.indexOf(name)!==-1) throw Error(`Dependency loop detected! ${this._loading.join(' <- ')}`);
+                    if (this._loading.indexOf(name)!==-1) throw Error(`Dependency loop detected! ${this._loading.concat(name).join(' <- ')}`);
                     this._loading.push(name);
                     console.debug(`Loading: ${this._loading.join(' <- ')}`);
                     this._resolved[name]=factoryFunction(this);

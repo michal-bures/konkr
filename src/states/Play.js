@@ -20,7 +20,8 @@ function Play(game) {
 
     let log = console;
     let gameSpec = null,
-        gameUi = null;
+        gameUi = null,
+        debugTabName='gameDirector';
 
     return Object.freeze({
         init,
@@ -28,6 +29,7 @@ function Play(game) {
         create,
         update,
         render,
+        toString:()=>"[State Play]"
     });
 
     function init(spec) {
@@ -112,8 +114,8 @@ function Play(game) {
 
         let nextStatePromise = null;
 
-        gameSpec.gameDirector.onStateChange.add((rfc, state) => {
-            nextStatePromise = rfc.waitFor(this, "wait for manual confirmation");
+        gameSpec.gameDirector.onStateChange.add((addTask, state) => {
+            nextStatePromise = addTask(this, "wait for manual confirmation");
         });
 
         nextTurnButton.addToGroup(game.world);
@@ -125,7 +127,25 @@ function Play(game) {
 
         game.debug.reset();
 
+        setupDebugDiv();
         gameSpec.gameDirector.run();
+    }
+
+    function setupDebugDiv() {
+        const debugDiv = document.getElementById("debug");
+        const debugSelect = document.getElementById("debugModeSelect");
+        const debugContent = document.getElementById("debugContent");
+
+        if (!debugDiv) return;
+        debugSelect.innerHTML= gameUi.listConstructors().sort().map(key => (gameUi[key].toDebugString?`<option value='${key}'>${key}</option>`:''));
+        debugSelect.value = debugTabName;
+        debugSelect.onchange = () => { refreshDebugTab(debugSelect.value); };
+        setInterval(refreshDebugTab, 100);
+    }
+
+    function refreshDebugTab(name = debugTabName) {
+        debugTabName=name;
+        document.getElementById("debugContent").innerHTML = `<pre>${gameUi[name].toDebugString()}</pre>`; 
     }
 
     function preload() {

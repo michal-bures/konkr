@@ -1,26 +1,50 @@
 
 
+
 function Actions(spec) {
-    let { regions, economy, rulers } = spec;
     let undoStack = [];
 
     const self = {
         execute,
-        create,
-        undoLastAction
+        undoLastAction,
+        checkHandlers,
+        setHandler,
+        toString,
+        toDebugString
     };
 
+    const handlers = {
+        // Handled by Regions
+        'CREATE_REGION' : null, 
+        'ADD_HEXES_TO_REGION' : null, //hexes, region
+        'MODIFY_REGION_TREASURY': null, //region, change
+
+        // Handled by Economy
+        'UPDATE_ECONOMY' : null, //player
+
+        // Handled by Players
+        'PLAYER_PLAY' : null, //player
+    };
+
+    Object.seal(handlers);
+
+
     function execute(id, ...args) {
-        const action = create(id, ...args);
-        if (action.execute() && action.canUndo()) {
-            undoStack.push(action);
-        }
+        if (handlers[id]===null) throw Error(`Action ${id} has no handler`);
+        if (handlers[id]===undefined) throw Error(`Call to unknown action '${id}'`);
+        handlers[id](...args);
     }
 
+    //check that all actions have handlers
+    function checkHandlers() {
+        let missing = Object.keys(handlers).filter(key => !handlers[key]);
+        if (missing.length) log.warning("Some actions lack a handler: "+missing.join(", "));
+    }
 
-    function create(id, ...args) {
-        if (!ACTIONS[id]) throw Error(`Unkown action ${id}`);
-        return new ACTIONS[id](...args);
+    function setHandler(actionName, handler) {
+        if (handlers[actionName]) throw Error(`Action ${actionName} already has a handler assigned`);
+        if (handlers[actionName]===undefined) throw Error(`Invalid action name '${actionName}'`);
+        handlers[actionName] = handler;
     }
 
     function undoLastAction() {
@@ -28,37 +52,13 @@ function Actions(spec) {
         return undoStack.pop().undo(); 
     }
 
-    class Action {
-        execute() {
-            throw Error("Not implemented");
-        }
-
-        canUndo() {
-            return false;
-        }
-
-        undo() {
-            throw Error("Cannot undo this action");
-        }
+    function toString() {
+        return "[Actions manager]";
     }
 
-    class NextTurn extends Action {
-        execute() {
-            regions.forEach(region => {
-                if (region.hasCapital()) {
-                    rulers.rulerOf(region).play();
-                }
-
-                region.treasury += economy.netIncomeOf(region);
-                //TODO: kill all units if region is bankrupt
-            });
-        }
+    function toDebugString() {
+        return Object.keys(handlers).map(key => `* ${key} => ${handlers[key]}`).join("\n");
     }
-
-    const ACTIONS = {
-        NEXT_TURN: NextTurn,
-        
-    };    
 
     return self;
 }

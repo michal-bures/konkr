@@ -11,13 +11,34 @@ const PAWN_UPKEEP = new Map([
 ]);
 
 function Economy(spec) {
-    let {pawns} = spec;
+    let {pawns, actions, regions} = spec;
 
-    return Object.freeze({
+    let regionTreasury = new WeakMap();
+
+    const self = Object.freeze({
         netIncomeOf,
         incomeOf,
         expensesOf,
-        upkeepOfPawn
+        upkeepOfPawn,
+        onRegionTreasuryChanged: Phaser.Signal(/* region, newValue, oldValue */),
+        onRegionBankrupt: Phaser.Signal(/* region */),
+    });
+
+    actions.setHandler('UPDATE_ECONOMY', (player)=>{
+        player.controlledRegions.forEach( (region) => {
+            const oldValue = regionTreasury.get(region);
+            let newValue = oldValue + netIncomeOf(region);
+            if (newValue <=0) {
+                newValue = 0;
+                self.onRegionBankrupt.dispatch(region);
+                actions.execute('KILL_EVERYTHING_IN_REGION', region);
+            }
+            regionTreasury.set(newValue);
+            if (newValue != oldValue) {
+                self.onRegionTreasuryChanged.dispatch(region, newValue, oldValue);
+            }
+
+        });
     });
 
     function netIncomeOf(region) {
@@ -42,6 +63,8 @@ function Economy(spec) {
         if (!pawn) return 0;
         return PAWN_UPKEEP.get(pawn.pawnType) || 0;
     }
+
+    return self;
 }
 
 export default Economy;
