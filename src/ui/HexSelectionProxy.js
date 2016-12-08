@@ -13,6 +13,7 @@ function HexSelectionProxy(spec) {
     return Object.freeze({
         update,
         getHexUnderCursor,
+        toDebugString,
         get group() { return group; }
     });
 
@@ -27,13 +28,18 @@ function HexSelectionProxy(spec) {
         surface.events.onInputDown.add(() => {
             const hex = getHexUnderCursor();
             uiRegionPanel.setRegion(regions.regionOf(hex));
-            log.info(`${hex}
+        });
+        return surface;
+    }
+
+    function toDebugString() {
+        const hex = getHexUnderCursor();
+
+        return `Under cursor: ${hex}
 Faction: ${regions.factionOf(hex)}
 Region:  ${regions.regionOf(hex)}
 Pawn: ${pawns.pawnAt(hex)}
-Defense: ${warfare.defenseOf(hex)}`);
-        });
-        return surface;
+Defense: ${warfare.defenseOf(hex)}`;
     }
 
     function update() {

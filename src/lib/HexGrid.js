@@ -196,6 +196,10 @@ class HexGroup {
         return this.members.forEach(fn);
     }
 
+    sort(fn) {
+        return this.members.sort(fn);
+    }
+
     clone() {
         return new HexGroup(this.members);
     }

@@ -10,18 +10,28 @@ function generatePawnId() {
 }
 
 function Pawns(spec) {
-    let { log } = spec;
+    let { actions, log } = spec;
     
     // public
     let pawns = Object.freeze({
         pawnAt,
         forEach,
         placeAt,
+        onCreated: new Phaser.Signal(/* pawn */)
     });
 
     //private
     let hexPawn = [],
         _pawns = {};
+
+
+    actions.addHandler("CREATE_PAWN", (callback, pawnType, hex) => {
+        if (pawnAt(hex)) throw Error("Cannot replace existing pawn"); //TODO: Implement
+        const newPawn = placeAt(pawnType, hex);
+        pawns.onCreated.dispatch(newPawn);
+        return callback();
+    });
+
 
     function pawnAt(hex) {
         return hexPawn[hex.id] || null;

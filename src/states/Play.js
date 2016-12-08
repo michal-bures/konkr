@@ -42,7 +42,10 @@ function Play(game) {
                 return spec.extend({ 
                     actions: () => spec.actions && spec.actions.getNamedProxy(moduleName),
                     log: () => spec.log && {
-                        debug: (...args) => console.debug(`${moduleName}>`, ...args)
+                        debug: (...args) => console.debug(`${moduleName}>`, ...args),
+                        error: (...args) => console.error(`${moduleName}>`, ...args),
+                        warn: (...args) => console.warn(`${moduleName}>`, ...args),
+                        log: (...args) => console.log(`${moduleName}>`, ...args),
                     }
                 });
             },
@@ -140,6 +143,7 @@ function Play(game) {
         game.debug.reset();
 
         setupDebugDiv();
+        gameSpec.actions.checkHandlers();
         gameSpec.gameDirector.run();
     }
 

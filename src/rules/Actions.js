@@ -21,14 +21,19 @@ function Actions(spec) {
     const handlers = {
         // Handled by Regions
         'CREATE_REGION' : [], 
-        'ADD_HEXES_TO_REGION' : [], //hexes, region
-        'MODIFY_REGION_TREASURY': [], //region, change
+        'ADD_HEXES_TO_REGION' : [], // (hexes, region)
+        'MODIFY_REGION_TREASURY': [], // (region, change)
 
         // Handled by Economy
-        'UPDATE_ECONOMY' : [], //player
+        'UPDATE_ECONOMY' : [], // (player)
+        'CHANGE_TREASURY' : [], // (region, amount)
+        'BUY_UNIT' : [], // (unitType, hex)
+
+        // Handled by Pawns
+        'CREATE_PAWN' : [], // (pawn, hex)
 
         // Handled by Players
-        'PLAYER_ACT' : [], //player
+        'PLAYER_ACT' : [], // (player)
     };
 
     Object.seal(handlers);
@@ -70,8 +75,8 @@ function Actions(spec) {
 
     //check that all actions have handlers
     function checkHandlers() {
-        let missing = Object.keys(handlers).filter(key => !handlers[key]);
-        if (missing.length) log.warning("Some actions lack a handler: "+missing.join(", "));
+        let missing = Object.keys(handlers).filter(key => !handlers[key].length);
+        if (missing.length) log.warn("Some actions lack a handler: "+missing.join(", "));
     }
 
     function addHandler(actionName, handler, description='anonymous') {

@@ -91,7 +91,7 @@ function LandSprites(spec) {
 const PAWN_OFFSET_TOP = -13;
 
 class Pawns {
-    constructor({game, log, pawns}) {
+    constructor({game, log, pawns, actions}) {
         expect(game).toExist();
         expect(pawns).toExist();    
 
@@ -104,6 +104,12 @@ class Pawns {
             this.group.add(sprite);
             this.pawnToSprite[pawn.id] = sprite;
         });        
+
+        pawns.onCreated.add((pawn) => {
+            var sprite = new PawnSprite({game},pawn);
+            this.group.add(sprite);
+            this.pawnToSprite[pawn.id] = sprite;
+        });
     }
 }
 
