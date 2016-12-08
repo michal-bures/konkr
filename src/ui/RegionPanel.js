@@ -2,10 +2,10 @@ import UI from 'lib/controls/UI';
 import { assertDefined } from 'lib/util';
 
 function RegionPanel(spec) {
-    let { game, log, economy } = spec;
-    assertDefined(game, log, economy);
+    let { game, log, economy, regions } = spec;
 
-    let group = game.add.group();
+    let group = game.add.group(),
+        currrentRegion = null;
 
     let ui = new UI(spec,{
         name: 'mainContainer',
@@ -40,6 +40,8 @@ function RegionPanel(spec) {
     assertDefined(mainContainer, regionNameLabel, economyLabel);
 
     mainContainer.addToGroup(group);
+
+    regions.on
 
     return Object.freeze({
         setRegion,

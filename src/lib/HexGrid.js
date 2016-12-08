@@ -175,6 +175,7 @@ class HexGroup {
     }
 
     addAll(hexes) {
+        log.warn("ADD_ALL", hexes);
         hexes.forEach(hex=>this.add(hex));
     }
 
@@ -188,12 +189,16 @@ class HexGroup {
         }
     }
 
+    subtract(hexGroup) {
+        hexGroup.forEach(hex => this.remove(hex));
+    }
+
     filter(fn) {
         return new HexGroup(this.members.filter(fn));
     }
 
     forEach(fn) {
-        return this.members.forEach(fn);
+        return this.members.forEach((h)=>h && fn(h));
     }
 
     sort(fn) {
@@ -305,8 +310,13 @@ class HexGrouping {
 
 class HexGrid {
 
-    constructor(width, height) {
+    constructor(width=0, height=0) {
         this.hexes = [];
+        this.reset(width, height);
+    }
+
+    reset(width, height) {
+        this.hexes.length = 0;
         this.width = width;
         this.height = height;
         this.upperBound = width * height;
@@ -352,6 +362,10 @@ class HexGrid {
         return comps;
     }
 
+    allHexes() {
+        return new HexGroup(this.hexes.filter(x=>x));
+    }
+
     dump() {
         let str = "";
         for (let r = 0; r < this.height; ++r) {
@@ -372,5 +386,5 @@ class HexGrid {
     }
 }
 
-export { HexGrid };
+export { HexGrid, HexGroup };
 

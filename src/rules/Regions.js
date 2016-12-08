@@ -1,10 +1,10 @@
 //Region is a connected component on the map belonging to a signle faction
 
 import { Random } from 'lib/util';
-import { PawnType } from 'rules/Pawns';
 import IterableOn from 'lib/decorators/IterableOn';
+import { HexGroup } from 'lib/HexGrid';
 
-const NUMBER_OF_FACTIONS = 4;
+const MAX_NUMBER_OF_FACTIONS = 4;
 const MIN_SIZE_FOR_CAPITAL = 2;
 
 let lastRegionId = 0;
@@ -13,41 +13,92 @@ function generateRegionId() {
 }
 
 function Regions (spec) {
-    let { grid, pawns, log } = spec;
+    let { grid, log, actions, pawns } = spec;
 
     //private
     const _regions = [], //must be const in order not to break IterableOn
         hexRegion = [];
 
-
     //public
     let regions = {
-        randomize,
         factionOf,
         regionOf,
-        init,
-        byId
+        byId,
+        onCreated: new Phaser.Signal(/* region */),
+        onGainedCapital: new Phaser.Signal(/* region, hex */),
+        onLostCapital: new Phaser.Signal(/* region */),
+        onHexesChangedOwner: new Phaser.Signal(/* hexGroup, newRegion, prevRegion */),
+        onDestroyed: new Phaser.Signal(/* region */),
+        toDebugString,
     };
     IterableOn(regions,_regions);
     Object.freeze(regions);
 
     //implementation
 
-    function randomize() {
+    actions.addHandler('RANDOMIZE_REGIONS', (callback, numFactions=99) => {
+        numFactions = Math.min(numFactions, MAX_NUMBER_OF_FACTIONS);
         let hexFaction=[];
         grid.forEach((hex)=>{
-            hexFaction[hex.id] = Random.integer(1,NUMBER_OF_FACTIONS);
+            hexFaction[hex.id] = Random.integer(1,numFactions);
         });
         _regions.length = 0;
         grid.components((hex, prevHex) => hexFaction[hex.id] === hexFaction[prevHex.id])
-            .map(group=>new Region(hexFaction[group.pivot.id],group))
-            .forEach(region=>{
-                _regions.push(region);
-                region.hexes.forEach( hex=> {
-                    hexRegion[hex.id] = region;
-                });
+            .map(group=> {
+                let region = new Region(hexFaction[group.pivot.id]);
+                _regions[region.id] = region;
+                actions.execute('CAPTURE_HEXES', group, region);
             });
-    }
+        callback();
+    });
+
+    actions.addHandler('CAPTURE_HEXES', (callback, hexGroup, region) => {
+        let lostHexesByRegion = {};
+
+        hexGroup.forEach( hex=> {
+            let owner = hexRegion[hex.id];
+            if (owner) {
+                if (!lostHexesByRegion[owner.id]) lostHexesByRegion[owner.id]=new HexGroup();
+                lostHexesByRegion[owner.id].add(hex);
+            }
+            hexRegion[hex.id] = region;
+
+        });
+        if (region) {
+            region.hexes.addAll(hexGroup);
+            if (!region.hasCapital() && region.hexes.length >= MIN_SIZE_FOR_CAPITAL) {
+                region.pickNewCapital();
+            }
+        }
+
+        Object.keys(lostHexesByRegion).forEach(key => {
+            let region = regions.byId(key),
+                hexGroup = lostHexesByRegion[key];
+
+            region.hexes.subtract(hexGroup);
+            if (region.hasCapital() && region.hexes.length < MIN_SIZE_FOR_CAPITAL) {
+                actions.execute('CHANGE_REGION_CAPITAL', region, null, region.capital);
+            }
+            if (region.hexes.length===0) {
+                _regions[region.id]=null;
+                regions.onDestroyed.dispatch(region);
+            }
+        });
+        regions.onHexesChangedOwner.dispatch(hexGroup);
+        callback();
+    });
+
+    actions.addHandler('CHANGE_REGION_CAPITAL', (callback, region, newCapital) => {
+        const oldCapital = region.capital;
+        region.capital = newCapital;
+
+        if (!oldCapital && newCapital) {
+            regions.onGainedCapital.dispatch(region, newCapital);
+        } else if (oldCapital && !newCapital) {
+            regions.onLostCapital.dispatch(region);
+        }
+        callback();
+    });
 
     function byId(id) {
         return _regions[id];
@@ -62,17 +113,19 @@ function Regions (spec) {
         return hexRegion[hex.id];
     }
 
-    function init() {
-
+    function toDebugString() {
+        return regions.map(region => {
+            return `* ${region}`;
+        }).filter(x=>x).join('\n');
     }
    
     class Region {
-        constructor(faction,hexGroup) {
+        constructor(faction) {
             this._id = generateRegionId();
-            this._hexes = hexGroup;
+            this._hexes = new HexGroup();
             this.faction = faction;
             this.capital = null;
-            this.pickNewCapital();
+            regions.onCreated.dispatch(this);
         }
         
         get hexes() {
@@ -88,24 +141,18 @@ function Regions (spec) {
         }
         
         pickNewCapital() {
-            if (this.capital) this.capital.destroy();
-            if (this._hexes.length < MIN_SIZE_FOR_CAPITAL) {
-                //region too small to have capital
-                this.capital = null;
-                return;
-            }
-
-            const availableHexes = this._hexes.filter(hex=>!pawns.pawnAt(hex));
+            const availableHexes = this.hexes.filter(hex=>!pawns.pawnAt(hex));
+            const prevCapital = this.capital;
             if (availableHexes.length === 0) {
                 //TODO: clear some hex to make space for the new capital
-                this.capital = null;
+                actions.execute('CHANGE_REGION_CAPITAL', this, null, prevCapital);
             } else {
-                this.capital = pawns.placeAt(PawnType.TOWN,availableHexes.getRandomHex());
-            }
+                actions.execute('CHANGE_REGION_CAPITAL', this, availableHexes.getRandomHex(), prevCapital);
+            }            
         }
 
         toString() {
-            return `[Region #${this.id} (${this._hexes.length} hexes,`+(this.hasCapital()?`capital at ${this.capital.hex}`:"no capital")+")]";
+            return `[Region #${this.id} (${this._hexes.length} hexes,`+(this.hasCapital()?`capital at ${this.capital}`:"no capital")+")]";
         }
     }
 

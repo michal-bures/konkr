@@ -9,6 +9,7 @@ function Actions(spec) {
 
     const self = {
         execute,
+        create,
         undoLastAction,
         checkHandlers,
         addHandler,
@@ -19,18 +20,27 @@ function Actions(spec) {
     };
 
     const handlers = {
+        // Handled by multiple
+        'RESET_WORLD' : [],
+
+        // Handled by WorldGenerator
+        'GENERATE_LANDMASS': [], // (width, height)
+
         // Handled by Regions
-        'CREATE_REGION' : [], 
-        'ADD_HEXES_TO_REGION' : [], // (hexes, region)
-        'MODIFY_REGION_TREASURY': [], // (region, change)
+        'CAPTURE_HEXES': [], // (hexes, region)
+        'RANDOMIZE_REGIONS' :[],
+        'CHANGE_REGION_CAPITAL': [], // (region, hex, previousHex)
 
         // Handled by Economy
         'UPDATE_ECONOMY' : [], // (player)
-        'CHANGE_TREASURY' : [], // (region, amount)
+        'SET_INITIAL_TREASURY' : [], // ... reset treasury for all region in the world to an initial value based on size
+        'CHANGE_REGION_TREASURY' : [], // (region, amount)
         'BUY_UNIT' : [], // (unitType, hex)
 
         // Handled by Pawns
-        'CREATE_PAWN' : [], // (pawn, hex)
+        'CREATE_PAWN' : [], // (pawnType, hex)
+        'DESTROY_PAWN' : [], // (pawn)
+        'MOVE_PAWN' : [], // (pawn, hex)
 
         // Handled by Players
         'PLAYER_ACT' : [], // (player)
@@ -38,35 +48,41 @@ function Actions(spec) {
 
     Object.seal(handlers);
 
+    function create(actionName, ...args) {
+        return () => {
+            return execute(actionName, ...args);
+        };        
+    }
+
     function getNamedProxy(name) {
         return {
             execute: (id, ...args) => {
-                log.debug(`Action ${id} executed by ${name} with arguments`, ...args);
                 return execute(id, ...args);
             },
-            addHandler: (actionName, handler) => {
-                addHandler(actionName, handler, `${name}`);
+            create: self.create,
+            addHandler: (actionName, handler, comment) => {
+                addHandler(actionName, handler, `${name}${comment?': '+comment:''}`);
             },
             toString: () => '[Actions proxy: '+ name +']'
         };
     }
 
     // starts executing action and  returns promise
-    function execute(name, ...args) {
-        log.debug(`Executing ${name}`, ...args);
+    function execute(id, ...args) {
+        log.debug(`Executing ${id}`, ...args);
         return new Promise(resolve=>{
-            if (!handlers[name]) throw Error(`Call to unknown action '${name}'`);
-            if (!handlers[name].length) throw Error(`Action ${name} has no handlers`);
-            var tracker = new TaskTracker(`${name}(${args})`);
+            if (!handlers[id]) throw Error(`Call to unknown action '${id}'`);
+            if (!handlers[id].length) throw Error(`Action ${id} has no handlers`);
+            var tracker = new TaskTracker(`${id}(${args})`);
             executing.push(tracker);
-            async.parallel(handlers[name].map(({handler, description}) => (callback) => {
+            async.parallel(handlers[id].map(({handler, description}) => (callback) => {
                 let task = tracker.addTask(description);
                 handler(()=>{
                     task.done();
                     callback();
                 },...args);
             }),()=> {
-                log.debug(`Action ${name} finished executing.`);
+                log.debug(`Action ${id} finished executing.`);
                 executing.splice(executing.indexOf(tracker),1);
                 resolve();
             });
@@ -98,7 +114,7 @@ function Actions(spec) {
             Object.keys(handlers)
                   .map(key => `* ${key} => ${(handlers[key].length?handlers[key]
                         .map(({description})=>`[${description}]`).join(' ')
-                        :"N/A")}`).join("\n");
+                        :"N/A")}`).sort().join("\n");
         const pendingActions = executing.map( tracker => `* ${tracker.toDebugString()}`).join('\n');
 
         return `Pending Actions:

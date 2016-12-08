@@ -1,7 +1,7 @@
 import { HexGrid } from 'lib/HexGrid';
 import * as Renderer from 'ui/Renderer';
 import HexSelectionProxy from 'ui/HexSelectionProxy';
-import { worldGenPerlin, worldGenSolid } from 'rules/WorldGenerator';
+import LandGenerator from 'rules/LandGenerator';
 import Injector from 'lib/Injector';
 import Scrolling from 'ui/Scrolling';
 import RegionPanel from 'ui/RegionPanel';
@@ -36,7 +36,7 @@ function Play(game) {
 
     function init(spec) {
 
-        gameSpec = new Injector(spec,{
+        gameSpec = new spec.extend({
             // returns a modified clone of spec which has some modules customized for the specified name
             usingName: spec => (moduleName) => {
                 return spec.extend({ 
@@ -46,17 +46,18 @@ function Play(game) {
                         error: (...args) => console.error(`${moduleName}>`, ...args),
                         warn: (...args) => console.warn(`${moduleName}>`, ...args),
                         log: (...args) => console.log(`${moduleName}>`, ...args),
+                        info: (...args) => console.info(`${moduleName}>`, ...args),
                     }
                 });
             },
             debug: spec => new Renderer.DebugInfo(spec),
-            grid: () => new HexGrid(40,40),
-            pawns: spec => new Pawns(spec),
-            regions: spec => new Regions(spec),
+            grid: () => new HexGrid(),
+            pawns: spec => new Pawns(spec.usingName('pawns')),
+            regions: spec => new Regions(spec.usingName('regions')),
             economy: spec => new Economy(spec.usingName('economy')),
             actions: spec => new Actions(spec.usingName('actions')),
             warfare: spec => new Warfare(spec.usingName('warfare')),
-            generateWorld: () => worldGenPerlin,
+            landGen: spec => new LandGenerator(spec.usingName('landGen')),
             gameDirector: spec => new GameDirector(spec.usingName('gameDirector')),
             players: spec => new Players(spec.usingName('players')),
         });
@@ -74,11 +75,7 @@ function Play(game) {
     }
 
     function create() {
-
-        gameSpec.generateWorld(gameSpec);
-        gameSpec.regions.randomize();
         game.world.setBounds(0, 0, 3000, 3000);
-
 
         //display layers z-order
         game.world.add(gameUi.landSprites.group);          
@@ -86,29 +83,19 @@ function Play(game) {
         game.world.add(gameUi.pawnSprites.group);          
         game.world.add(gameUi.hexSelectionProxy.group);
         game.world.add(gameUi.uiRegionPanel.group);  
-        // A simple background    
-        /*
-        var bg = g.staticBackground.create(0, 0, CFG.world.background);
-        bg.width = game.width;
-        bg.scale.y = bg.scale.x;
-        bg.y=game.world.height-120-bg.height;*/
-        //bg.height = game.world.height;
-
         game.stage.backgroundColor='#d5dfef';
 
         // Keyboard shortcuts
 /*        var kEnter = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
         kEnter.onDown.add(function() {director.commitWord(); });
 */
-        log.info("Level initialization complete.");
-
         gameUi.gridOverlays.configureOverlay({
             name: 'defense',
             func: (hex) => { return gameSpec.warfare.defenseOf(hex)/5; }
         });
         gameUi.gridOverlays.show('defense');
-        //gameUi.actions.execute('NEXT_TURN');
-        game.canvas.onspecmenu = function (e) { 
+
+        game.canvas.oncontextmenu = function (e) { 
             e.preventDefault(); 
             gameUi.gridOverlays.group.visible = !gameUi.gridOverlays.group.visible;
         };
@@ -127,10 +114,15 @@ function Play(game) {
 
         gameSpec.actions.addHandler('UPDATE_ECONOMY', (callback) => {
             nextStateCallback = callback;
-        }, 'BREAKPOINT');
+        }, 'Manual confirmation');
         gameSpec.actions.addHandler('PLAYER_ACT', (callback) => {
             nextStateCallback = callback;
-        }, 'BREAKPOINT');
+        }, 'Manual confirmation');
+
+        gameSpec.actions.addHandler('RESET_WORLD', (callback, width, height) => {
+            gameSpec.grid.reset(width, height);
+            callback();
+        }, 'Reset grid');
 
         nextTurnButton.addToGroup(game.world);
         nextTurnButton.onInputUp.add(() => {
@@ -144,7 +136,12 @@ function Play(game) {
 
         setupDebugDiv();
         gameSpec.actions.checkHandlers();
-        gameSpec.gameDirector.run();
+        gameSpec.gameDirector.begin({
+            worldWidth: 30,
+            worldHeight: 30,
+        });
+
+        log.info("Level initialization complete.");
     }
 
     function setupDebugDiv() {

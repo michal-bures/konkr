@@ -25,6 +25,7 @@ function Economy(spec) {
     let regionTreasury = new WeakMap();
 
     const self = Object.freeze({
+        costOfPawnType,
         netIncomeOf,
         incomeOf,
         treasuryOf,
@@ -36,39 +37,57 @@ function Economy(spec) {
     });
 
     actions.addHandler('BUY_UNIT', (callback, unitType, hex)=> {
-        if (!PAWN_PURCHASE_COST.get(unitType)) throw Error(`Unit ${unitType} cannot be bought by a player.`);
-        
-        actions.execute('CHANGE_TREASURY',regions.regionOf(hex), -PAWN_PURCHASE_COST.get(unitType))
+        const cost = PAWN_PURCHASE_COST.get(unitType);
+        if (!cost) throw Error(`Unit ${unitType} cannot be bought by a player.`);
+        if (cost > treasuryOf(regions.regionOf(hex))) throw Error(`Region ${regions.regionOf(hex)} cannot afford to buy ${unitType}.`);
+
+        actions.execute('CHANGE_REGION_TREASURY',regions.regionOf(hex), -PAWN_PURCHASE_COST.get(unitType))
         .then(actions.execute('CREATE_PAWN',unitType,hex)
         .then(callback));
 
     });
 
-    actions.addHandler('CHANGE_TREASURY', (callback, region, amount) => {
-        regionTreasury.set(region, regionTreasury.get(region) + amount);
+    actions.addHandler('CHANGE_REGION_TREASURY', (callback, region, amount) => {
+        setTreasuryOf(region,treasuryOf(region) + amount);
         callback();
     });
 
+    actions.addHandler('CHANGE_REGION_CAPITAL', (callback, region, newCapital, oldCapital) => {
+        if (!newCapital || ! oldCapital) setTreasuryOf(region,0);
+        return callback();
+    });
+
+    actions.addHandler('SET_INITIAL_TREASURY', (callback) => {
+        regions.forEach(region=>{
+            setTreasuryOf(region,netIncomeOf(region)*5);
+        });
+        callback();
+    });    
+
     actions.addHandler('UPDATE_ECONOMY', (callback,player)=>{
         player.controlledRegions.forEach( (region) => {
-            const oldValue = regionTreasury.get(region) || 0;
+            const oldValue = treasuryOf(region) || 0;
             let newValue = oldValue + netIncomeOf(region);
             if (newValue < 0) {
                 newValue = 0;
                 self.onRegionBankrupt.dispatch(region);
                 actions.execute('KILL_EVERYTHING_IN_REGION', region);
             }
-            regionTreasury.set(region,newValue);
-            if (newValue != oldValue) {
-                self.onRegionTreasuryChanged.dispatch(region, newValue, oldValue);
-            }
+            setTreasuryOf(region,newValue);
         });
         return callback();
     });
 
+    function setTreasuryOf(region,value) {
+        const oldValue = treasuryOf(value);
+        if (value === oldValue) return;
+        regionTreasury.set(region,value);
+        self.onRegionTreasuryChanged.dispatch(region, value, oldValue);
+    }
+
     function toDebugString() {
         return regions.map(region => {
-            if (region.hasCapital()) return `* ${region.id}: ${regionTreasury.get(region) || 'N/A'} (${signedNumber(netIncomeOf(region))})`;
+            if (region.hasCapital()) return `* ${region.id}: ${treasuryOf(region) || 'N/A'} (${signedNumber(netIncomeOf(region))})`;
         }).filter(x=>x).join('\n');
     }
 
@@ -76,8 +95,8 @@ function Economy(spec) {
         return incomeOf(region) - expensesOf(region);
     }
 
-    function costOf(pawnType) {
-
+    function costOfPawnType(pawnType) {
+        return PAWN_PURCHASE_COST.get(pawnType) || 0;
     }
 
     function incomeOf(region) {

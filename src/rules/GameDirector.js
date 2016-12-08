@@ -6,23 +6,28 @@ function GameDirector({players, log, actions}) {
     let states = [];
 
     const self = Object.freeze({
-        run,
+        begin,
         toString,
         toDebugString
     });
 
-    function run() {
+    function begin({worldWidth, worldHeight, numFactions}) {
         if (states.length) throw Error("Director already running!");
+        actions.execute('RESET_WORLD',worldWidth,worldHeight)
+               .then(actions.create('GENERATE_LANDMASS'))
+               .then(actions.create('RANDOMIZE_REGIONS', numFactions))
+               .then(actions.create('SET_INITIAL_TREASURY'))
+               .then(normalGameLoop);
+    }
+
+    function normalGameLoop() {
         states = [];
         players.forEach(player => {
-            states.push(callback => actions.execute('UPDATE_ECONOMY', player).then(callback));
-            states.push(callback => actions.execute('PLAYER_ACT', player).then(callback));
+            states.push(actions.create('UPDATE_ECONOMY', player));
+            states.push(actions.create('PLAYER_ACT', player));
         });
-        async.series(states,(error)=>{
-            if (error) throw Error("Error in GameDirector main loop: "+ error);
-            states = [];
-            run();
-        });
+
+        states.reduce((previous, next) => previous().then(next)).then(normalGameLoop);
     }
 
     function toString() {

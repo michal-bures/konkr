@@ -17,7 +17,8 @@ function Pawns(spec) {
         pawnAt,
         forEach,
         placeAt,
-        onCreated: new Phaser.Signal(/* pawn */)
+        onCreated: new Phaser.Signal(/* pawn */),
+        onDestroyed: new Phaser.Signal(/* pawn */)
     });
 
     //private
@@ -29,9 +30,33 @@ function Pawns(spec) {
         if (pawnAt(hex)) throw Error("Cannot replace existing pawn"); //TODO: Implement
         const newPawn = placeAt(pawnType, hex);
         pawns.onCreated.dispatch(newPawn);
-        return callback();
+        return callback(newPawn);
     });
 
+    actions.addHandler("DESTROY_PAWN", (callback, pawn) => {
+        hexPawn[pawn.hex.id] = undefined;
+        delete _pawns[pawn.id];
+        pawns.onDestroyed.dispatch(pawn);
+        callback();
+    });
+
+    actions.addHandler("MOVE_PAWN", (callback, pawn, hex) => {
+        pawn.moveTo(hex);
+        callback();
+    });
+
+
+    actions.addHandler("CHANGE_REGION_CAPITAL", (callback, region, newCapital, prevCapital) => {
+        if (prevCapital && newCapital) {
+            return actions.execute("MOVE_PAWN", pawnAt(prevCapital), newCapital).then(callback);
+        } else if (prevCapital && !newCapital) {
+            return actions.execute("DESTROY_PAWN", pawnAt(prevCapital)).then(callback);
+        } else if (!prevCapital && newCapital) {
+            return actions.execute("CREATE_PAWN", PawnType.TOWN, newCapital).then(callback);
+        } else {
+            callback();
+        }
+    });
 
     function pawnAt(hex) {
         return hexPawn[hex.id] || null;
@@ -54,11 +79,6 @@ function Pawns(spec) {
             hexPawn[fromHex.id] = undefined;
             hexPawn[toHex.id] = pawn;
         });
-        newPawn.onDestroyed.add(()=> {
-            log.debug(`${newPawn} destroyed`);
-            hexPawn[newPawn.hex.id] = undefined;
-            delete _pawns[newPawn.id];
-        });
         return newPawn;
     }
 
@@ -70,7 +90,6 @@ function Pawns(spec) {
             this.pawnType = pawnType;
             this._hex = hex;
             this.onMoved = new Phaser.Signal();
-            this.onDestroyed = new Phaser.Signal();
         }
     
         moveTo(toHex) {
@@ -90,10 +109,6 @@ function Pawns(spec) {
 
         get id() {
             return this._id;
-        }
-
-        destroy() {
-            this.onDestroyed.dispatch();
         }
 
         toString() {

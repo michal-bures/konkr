@@ -44,11 +44,25 @@ function LandSprites(spec) {
         tileToSprite = {},
         highlightedTiles = [];
 
+    regions.onHexesChangedOwner.add((hexes) => {
+        hexes.forEach( hex => {
+            if (tileToSprite[hex]) {
+                tileToSprite[hex].refresh();
+            } else {
+                let sprite = new LandSprite(hex);
+                group.add(sprite);
+                tileToSprite[hex.id] = sprite;
+            }
+        });
+        group.sort('y', Phaser.Group.SORT_ASCENDING);
+    });
+
     class LandSprite extends Phaser.Image {
         constructor(tile) {
             const {x,y} = convertToWorldCoordinates(tile.position.x, tile.position.y);
             super(game, x, y, 'hex');
             this.frame=regions.factionOf(tile) || 0;
+            this.hex = tile;
             //log.debug(`Hex sprite for ${tile} created at ${x}:${y}`);
             /*
             var style = { font: "12px Courier New", fill: "white", align: "center"};
@@ -57,16 +71,12 @@ function LandSprites(spec) {
             this.label.lineSpacing = -6;
             this.label.anchor.set(0.5,0.5);
             this.addChild(this.label);*/
-            
+        }
+
+        refresh() {
+            this.frame=regions.factionOf(this.hex);
         }
     }
-
-    //initialization
-    grid.forEach((hex) => {
-        var sprite = new LandSprite(hex);
-        group.add(sprite);
-        tileToSprite[hex.id] = sprite;
-    });
 
     //implementation
 
@@ -110,6 +120,13 @@ class Pawns {
             this.group.add(sprite);
             this.pawnToSprite[pawn.id] = sprite;
         });
+
+        pawns.onDestroyed.add(pawn => {
+            const sprite = this.pawnToSprite[pawn.id];
+            if (!sprite) return;
+            this.pawnToSprite[pawn.id] = undefined;
+            sprite.destroy();
+        });
     }
 }
 
@@ -119,7 +136,7 @@ class PawnSprite extends Phaser.Sprite {
         super(game, x, y+PAWN_OFFSET_TOP, 'pawn');
         this.frame=pawn.pawnType.ordinal;
         this.pawn=pawn;
-        
+
 /*        var style = { font: "10px Courier New", fill: "white", align: "center"};
         this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,tile.id, style);
         this.label.lineSpacing = -6;
