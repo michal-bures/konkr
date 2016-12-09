@@ -41,8 +41,6 @@ function RegionPanel(spec) {
 
     mainContainer.addToGroup(group);
 
-    regions.on
-
     return Object.freeze({
         setRegion,
         get group() { return group; }

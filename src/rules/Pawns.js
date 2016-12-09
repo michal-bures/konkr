@@ -25,7 +25,6 @@ function Pawns(spec) {
     let hexPawn = [],
         _pawns = {};
 
-
     actions.addHandler("CREATE_PAWN", (callback, pawnType, hex) => {
         if (pawnAt(hex)) throw Error("Cannot replace existing pawn"); //TODO: Implement
         const newPawn = placeAt(pawnType, hex);
@@ -45,6 +44,10 @@ function Pawns(spec) {
         callback();
     });
 
+    actions.addHandler("CONQUER_HEX", (callback, hex, region, pawn) => {
+        pawn.moveTo(hex);
+        callback();
+    });
 
     actions.addHandler("CHANGE_REGION_CAPITAL", (callback, region, newCapital, prevCapital) => {
         if (prevCapital && newCapital) {

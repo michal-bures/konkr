@@ -4,7 +4,7 @@ import async from 'async';
 
 function Players(spec) {
 
-    let { actions, log, economy, pawns } = spec;
+    let { actions, log, economy, pawns, regions } = spec;
 
     class Player {
         constructor(name) {
@@ -29,22 +29,58 @@ function Players(spec) {
             super("GlobalRegionAI");
         }
 
-
-
         play(callback) {
-            async.eachSeries(getRegionsControlledBy(this), (region, nextRegion) => {
-                log.debug(`Evaluating region ${region}`);
-                async.whilst(()=>economy.treasuryOf(region) > 10 && economy.netIncomeOf(region) > 2, (next) => {
-                    log.debug(`Buying new unit on ${region} (${economy.treasuryOf(region)} gold left)`);
-                    const targetHex = region.hexes.filter(hex => !pawns.pawnAt(hex)).getRandomHex();
-                    if (!targetHex) return next();
-                    actions.execute('BUY_UNIT', PawnType.TROOP_1, targetHex).then(next);
-                },nextRegion);
-            }, callback);
+            getRegionsControlledBy(this).reduce((prevPromise, region) => {
+                return prevPromise.then(this.RegionAI(region).play);
+            },Promise.resolve())
+            .then(callback);
         }
+
+        RegionAI(region) {
+            let availableUnits = [];
+
+            return Object.freeze({
+                play
+            });
+
+            function play() {
+                log.debug(`Evaluating region ${region}`);
+                return buyUnits().then(attack);
+            }            
+
+            function refreshAvailUnits() {
+                availableUnits = pawns.select({
+                    hexes:region.hexes,
+                    type:PawnType.TROOP_1
+                });                
+            }
+
+            function attack() {
+                return new Promise(resolve=>{
+                    resolve();
+                });
+            }
+
+            function buyUnits() {
+                return new Promise(resolve=>{
+                    if (economy.treasuryOf(region) > 10 && economy.netIncomeOf(region) > 2) {
+                        log.debug(`Buying new unit on ${region} (${economy.treasuryOf(region)} gold left)`);
+                        const targetHex = region.hexes.filter(hex => !pawns.pawnAt(hex)).getRandomHex();
+                        if (!targetHex) return resolve();
+                        actions.execute('BUY_UNIT', PawnType.TROOP_1, targetHex)
+                            .then(buyUnits) //try to buy another unit
+                            .then(resolve);
+                    } else {
+                        resolve();
+                    }
+                });
+            }
+
+        }
+
+
     }
 
-    let { regions } = spec;
     const _players = [new GlobalRegionAI()];
     
     // public API

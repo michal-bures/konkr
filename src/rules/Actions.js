@@ -20,6 +20,10 @@ function Actions(spec) {
     };
 
     const handlers = {
+        // PLAYER ACTIONS
+        'CONQUER_HEX': [], // (hex, region, pawn)
+        'BUY_UNIT' : [], // (unitType, hex)
+
         // Handled by multiple
         'RESET_WORLD' : [],
 
@@ -27,7 +31,7 @@ function Actions(spec) {
         'GENERATE_LANDMASS': [], // (width, height)
 
         // Handled by Regions
-        'CAPTURE_HEXES': [], // (hexes, region)
+        'CHANGE_HEXES_REGION': [], // (hexes, region)
         'RANDOMIZE_REGIONS' :[],
         'CHANGE_REGION_CAPITAL': [], // (region, hex, previousHex)
 
@@ -35,7 +39,6 @@ function Actions(spec) {
         'UPDATE_ECONOMY' : [], // (player)
         'SET_INITIAL_TREASURY' : [], // ... reset treasury for all region in the world to an initial value based on size
         'CHANGE_REGION_TREASURY' : [], // (region, amount)
-        'BUY_UNIT' : [], // (unitType, hex)
 
         // Handled by Pawns
         'CREATE_PAWN' : [], // (pawnType, hex)

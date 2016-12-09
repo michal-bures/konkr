@@ -46,8 +46,8 @@ function LandSprites(spec) {
 
     regions.onHexesChangedOwner.add((hexes) => {
         hexes.forEach( hex => {
-            if (tileToSprite[hex]) {
-                tileToSprite[hex].refresh();
+            if (tileToSprite[hex.id]) {
+                tileToSprite[hex.id].refresh();
             } else {
                 let sprite = new LandSprite(hex);
                 group.add(sprite);

@@ -2,7 +2,7 @@
 
 import { Random } from 'lib/util';
 import IterableOn from 'lib/decorators/IterableOn';
-import { HexGroup } from 'lib/HexGrid';
+import { HexGroup } from 'lib/hexgrid/Hexagon';
 
 const MAX_NUMBER_OF_FACTIONS = 4;
 const MIN_SIZE_FOR_CAPITAL = 2;
@@ -36,26 +36,14 @@ function Regions (spec) {
 
     //implementation
 
-    actions.addHandler('RANDOMIZE_REGIONS', (callback, numFactions=99) => {
-        numFactions = Math.min(numFactions, MAX_NUMBER_OF_FACTIONS);
-        let hexFaction=[];
-        grid.forEach((hex)=>{
-            hexFaction[hex.id] = Random.integer(1,numFactions);
-        });
-        _regions.length = 0;
-        grid.components((hex, prevHex) => hexFaction[hex.id] === hexFaction[prevHex.id])
-            .map(group=> {
-                let region = new Region(hexFaction[group.pivot.id]);
-                _regions[region.id] = region;
-                actions.execute('CAPTURE_HEXES', group, region);
-            });
-        callback();
+    actions.addHandler('CONQUER_HEX', (callback, hex, region, pawn) => {
+        actions.execute('CHANGE_HEXES_REGION', hex, region).then(callback);
     });
 
-    actions.addHandler('CAPTURE_HEXES', (callback, hexGroup, region) => {
+    actions.addHandler('CHANGE_HEXES_REGION', (callback, hexOrGroup, region) => {
         let lostHexesByRegion = {};
 
-        hexGroup.forEach( hex=> {
+        hexOrGroup.forEach( hex=> {
             let owner = hexRegion[hex.id];
             if (owner) {
                 if (!lostHexesByRegion[owner.id]) lostHexesByRegion[owner.id]=new HexGroup();
@@ -65,7 +53,7 @@ function Regions (spec) {
 
         });
         if (region) {
-            region.hexes.addAll(hexGroup);
+            region.hexes.add(hexOrGroup);
             if (!region.hasCapital() && region.hexes.length >= MIN_SIZE_FOR_CAPITAL) {
                 region.pickNewCapital();
             }
@@ -75,16 +63,16 @@ function Regions (spec) {
             let region = regions.byId(key),
                 hexGroup = lostHexesByRegion[key];
 
-            region.hexes.subtract(hexGroup);
+            region.hexes.remove(hexGroup);
             if (region.hasCapital() && region.hexes.length < MIN_SIZE_FOR_CAPITAL) {
                 actions.execute('CHANGE_REGION_CAPITAL', region, null, region.capital);
             }
             if (region.hexes.length===0) {
-                _regions[region.id]=null;
+                delete _regions[region.id];
                 regions.onDestroyed.dispatch(region);
             }
         });
-        regions.onHexesChangedOwner.dispatch(hexGroup);
+        regions.onHexesChangedOwner.dispatch(hexOrGroup);
         callback();
     });
 
@@ -99,6 +87,24 @@ function Regions (spec) {
         }
         callback();
     });
+
+    actions.addHandler('RANDOMIZE_REGIONS', (callback, numFactions=99) => {
+        numFactions = Math.min(numFactions, MAX_NUMBER_OF_FACTIONS);
+        let hexFaction=[];
+        grid.forEach((hex)=>{
+            hexFaction[hex.id] = Random.integer(1,numFactions);
+        });
+        _regions.length = 0;
+        grid.components((hex, prevHex) => hexFaction[hex.id] === hexFaction[prevHex.id])
+            .map(group=> {
+                let region = new Region(hexFaction[group.pivot.id]);
+                _regions[region.id] = region;
+                actions.execute('CHANGE_HEXES_REGION', group, region);
+            });
+        callback();
+    });
+
+
 
     function byId(id) {
         return _regions[id];

@@ -1,4 +1,4 @@
-import { HexGrid } from 'lib/HexGrid';
+import { HexGrid } from 'lib/hexgrid/HexGrid';
 import * as Renderer from 'ui/Renderer';
 import HexSelectionProxy from 'ui/HexSelectionProxy';
 import LandGenerator from 'rules/LandGenerator';
