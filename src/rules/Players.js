@@ -4,7 +4,7 @@ import async from 'async';
 
 function Players(spec) {
 
-    let { actions, log, economy, pawns, regions } = spec;
+    let { actions, log, economy, pawns, regions, warfare } = spec;
 
     class Player {
         constructor(name) {
@@ -38,6 +38,7 @@ function Players(spec) {
 
         RegionAI(region) {
             let availableUnits = [];
+            let availableHexes = [];
 
             return Object.freeze({
                 play
@@ -45,19 +46,28 @@ function Players(spec) {
 
             function play() {
                 log.debug(`Evaluating region ${region}`);
-                return buyUnits().then(attack);
+                return buyUnits().then(refreshAvailUnits).then(attack);
             }            
 
             function refreshAvailUnits() {
-                availableUnits = pawns.select({
-                    hexes:region.hexes,
-                    type:PawnType.TROOP_1
-                });                
+                return new Promise(resolve => {
+                    availableUnits = pawns.select({
+                        hexes:region.hexes,
+                        type:PawnType.TROOP_1
+                    });                
+                    resolve();
+                });
             }
 
             function attack() {
                 return new Promise(resolve=>{
-                    resolve();
+                    if (!availableUnits.length) return resolve();
+                    //TODO dont recalculate on every call
+                    availableHexes = region.neighbours().filter(hex => warfare.defenseOf(hex) === 0);
+                    if (!availableHexes.length) return resolve();
+                    actions.execute('CONQUER_HEX', availableHexes.shift(), region, availableUnits.shift())
+                           .then(attack) //nice, now try to attack some more
+                           .then(resolve);
                 });
             }
 

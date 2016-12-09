@@ -15,6 +15,7 @@ function Pawns(spec) {
     // public
     let pawns = Object.freeze({
         pawnAt,
+        select,
         forEach,
         placeAt,
         onCreated: new Phaser.Signal(/* pawn */),
@@ -66,8 +67,28 @@ function Pawns(spec) {
     }
 
     function forEach(fn) {
-        Object.keys(_pawns).forEach(key => fn(_pawns[key]));
+        for (const pawn in _pawns) {
+            fn(pawn);
+        }
     }
+
+    function select({type,hexes}) {
+        const filterFunction = (pawn=> {
+            if (type && pawn.pawnType !== type) return false;
+            return true;
+        });
+
+        if (hexes) {
+            //iterate over hexes, probably faster than over all pawns
+            return hexes.filter(hex => filterFunction(pawnAt(hex)));
+        } else {
+            let ret = [];
+            for (const pawn in _pawns) {
+                if (filterFunction(pawn)) ret.push(pawn);
+            }
+            return ret;
+        }
+    } 
 
     function placeAt(pawnType,hex) {
         if (pawnAt(hex)) {
