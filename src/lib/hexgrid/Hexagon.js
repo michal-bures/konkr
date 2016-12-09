@@ -38,9 +38,10 @@ class HexGroup {
 
     _findNewPivot() {
         if (!this.length) return NullHex;
-        let first;
-        for (first in this.members) break;
-        this._pivot = first;
+        for (key in this.members) {
+            this._pivot = this.members[key];
+            return;
+        }
     }
 
     get pivot() {

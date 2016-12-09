@@ -54,8 +54,10 @@ function Players(spec) {
                     availableUnits = pawns.select({
                         hexes:region.hexes,
                         type:PawnType.TROOP_1
-                    });                
+                    });
+                    log.debug("AVAIL UNITS", availableUnits);
                     resolve();
+
                 });
             }
 
@@ -63,9 +65,9 @@ function Players(spec) {
                 return new Promise(resolve=>{
                     if (!availableUnits.length) return resolve();
                     //TODO dont recalculate on every call
-                    availableHexes = region.neighbours().filter(hex => warfare.defenseOf(hex) === 0);
+                    availableHexes = region.hexes.neighbours().filter(hex => warfare.defenseOf(hex) === 0);
                     if (!availableHexes.length) return resolve();
-                    actions.execute('CONQUER_HEX', availableHexes.shift(), region, availableUnits.shift())
+                    actions.execute('CONQUER_HEX', availableHexes.getRandomHex(), region, availableUnits.shift())
                            .then(attack) //nice, now try to attack some more
                            .then(resolve);
                 });

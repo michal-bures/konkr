@@ -78,16 +78,19 @@ function Pawns(spec) {
             return true;
         });
 
+        let ret = [];
         if (hexes) {
             //iterate over hexes, probably faster than over all pawns
-            return hexes.filter(hex => filterFunction(pawnAt(hex)));
+            hexes.forEach(hex => {
+                const pawn = pawnAt(hex);
+                if (pawn && filterFunction(pawn)) ret.push(pawn);
+            });
         } else {
-            let ret = [];
             for (const pawn in _pawns) {
                 if (filterFunction(pawn)) ret.push(pawn);
             }
-            return ret;
         }
+        return ret;
     } 
 
     function placeAt(pawnType,hex) {
@@ -117,8 +120,8 @@ function Pawns(spec) {
         }
     
         moveTo(toHex) {
-            if (!this.pawns.pawnAt(toHex)) {
-                throw new Error(`Tried to move ${this} from ${this._hex} to ${toHex}, but an existing pawn ${this.pawns.pawnAt(toHex)} is in the way.`);
+            if (pawns.pawnAt(toHex)) {
+                throw new Error(`Tried to move ${this} from ${this._hex} to ${toHex}, but an existing pawn ${pawns.pawnAt(toHex)} is in the way.`);
             } else if (!toHex.exists()) {
                 throw new Error(`Tried to move ${this} from ${this._hex} to a nonexistent hex.`);
             }
