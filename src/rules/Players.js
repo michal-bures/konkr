@@ -68,6 +68,7 @@ function Players(spec) {
                     actions.schedule('CONQUER_HEX', availableHexes.getRandomHex(), region, availableUnits.shift());
                            //.then(attack) //nice, now try to attack some more
                            //.then(resolve);
+                    resolve();
                 });
             }
 
@@ -80,6 +81,7 @@ function Players(spec) {
                         actions.schedule('BUY_UNIT', PawnType.TROOP_1, targetHex);
                             //.then(buyUnits) //try to buy another unit
                             //.then(resolve);
+                        resolve();
                     } else {
                         resolve();
                     }

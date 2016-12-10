@@ -127,7 +127,7 @@ function Actions(spec) {
         // if any actions scheduled from this action will be aborted as well
         function reject(reason) {
             resolution = 'rejected: '+reason;
-            actionRejected(self);
+            actionRejected(self, reason);
         }
 
         function enableUndo(func) {
@@ -174,9 +174,9 @@ function Actions(spec) {
             planned.unshift(scheduledByCurrentAction.pop());
         }
         if (!planned.length) return;
-        
+
         guards.reduce((previousPromise, guard) => previousPromise.then(() => {
-            guard(lastAction, planned[0]);
+            return guard(lastAction, planned[0]);
         }), Promise.resolve()).then(() => {
             activeAction = planned.shift();
             activeAction.start();
@@ -202,6 +202,8 @@ function Actions(spec) {
             log.debug(`Unscheduled ${scheduledByCurrentAction.length} dependent action(s)`);
             scheduledByCurrentAction.length=0;
         }
+        activeAction = null;
+        executeNext(action);
     }
 
     //check that all actions have handlers
@@ -235,7 +237,7 @@ function Actions(spec) {
         const tPlanned = planned.map(action => ` ⌛ ${action}`).join('\n');
         const tActionTypes = 
             Object.keys(handlers)
-                  .map(key => `* ${key} => ${handlers[key]}`).sort().join('\n');
+                  .map(key => `* ${key} => ${handlers[key].description}`).sort().join('\n');
 
         return `${tHistory}
 ${tCurrent}

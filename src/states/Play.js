@@ -117,9 +117,15 @@ function Play(game) {
 
         let nextStateCallbacks = [];
 
-        gameSpec.actions.attachGuard((prevAction, nextAction) => new Promise(resolve => {{
-            nextStateCallbacks.push(resolve);
-        }}));
+        gameSpec.actions.attachGuard((prevAction, nextAction) => new Promise(resolve => {
+            
+            switch (prevAction) {
+                case 'PLAYER_ACT':
+                    return nextStateCallbacks.push(resolve);
+                default:
+                    resolve();
+            }
+        }));
 
 
 

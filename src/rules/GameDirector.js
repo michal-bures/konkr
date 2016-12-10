@@ -29,7 +29,7 @@ function GameFlow({players, log, actions}) {
     actions.setHandler('CHECK_VICTORY_CONDITIONS', (action)=>{
         // Winning?? No such thing
         action.schedule('START_NEW_TURN');
-        //action.resolve();
+        action.resolve();
     });
 
     function toString() {
