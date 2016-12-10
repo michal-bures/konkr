@@ -55,66 +55,44 @@ function Pawns(spec) {
     let hexPawn = [],
         _pawns = [];
 
-    actions.addHandler("CREATE_PAWN", (callback, pawnType, hex) => {
-        if (pawnAt(hex)) throw Error("Cannot replace existing pawn"); //TODO: Implement
+    actions.setHandler("CREATE_PAWN", (action, pawnType, hex) => {
+        if (pawnAt(hex)) return action.reject("Cannot replace existing pawn"); //TODO: Implement
         const newPawn = placeAt(pawnType, hex);
         pawns.onCreated.dispatch(newPawn);
-        return callback(newPawn);
+        return action.resolve();
     });
 
-    actions.addHandler("DESTROY_PAWN", (callback, pawn) => {
+    actions.setHandler("DESTROY_PAWN", (action, pawn) => {
         delete hexPawn[pawn.hex.id];
         delete _pawns[pawn.id];
-        log.debug("pawn "+ pawn + " was totally 100% destroyed ",_pawns);
         pawns.onDestroyed.dispatch(pawn);
-        callback();
+        action.resolve();
     });
 
-    actions.addHandler("KILL_TROOPS_IN_REGION", (callback, region) => {
-        const killList = pawns.select({
-            hexes: region.hexes,
-        }).filter(pawn => pawn.pawnType.isTroop());
-
-        killList.reduce((prevPromise, pawn) => 
-            prevPromise
-            .then(actions.create("DESTROY_PAWN", pawn))
-            .then(actions.create("CREATE_PAWN", PawnType.GRAVE, pawn.hex)),
-            Promise.resolve()
-        ).then(callback);
-    });
-
-
-    actions.addHandler("MOVE_PAWN", (callback, pawn, hex) => {
+    actions.setHandler("MOVE_PAWN", (action, pawn, hex) => {
         movePawn(pawn, hex);
-        callback();
+        action.resolve();
     });
 
-    actions.addHandler("CONQUER_HEX", (callback, hex, region, pawn) => {
-        function doMove() {
-            return new Promise(resolve => {
-                movePawn(pawn, hex);
-                resolve();
+    actions.setHandler("KILL_TROOPS_IN_REGION", (action, region) => {
+        pawns.select({ hexes: region.hexes, })
+            .filter(pawn => pawn.pawnType.isTroop())
+            .map(pawn => {
+                action.schedule("DESTROY_PAWN", pawn);
+                action.schedule("CREATE_PAWN", PawnType.GRAVE, pawn.hex);
             });
-        }
-        if (pawnAt(hex)) {
-            actions.execute("DESTROY_PAWN", pawnAt(hex)).then(doMove)
-            .then(callback);
-        } else {
-            doMove()
-            .then(callback);
-        }
+        action.resolve();
     });
 
-    actions.addHandler("CHANGE_REGION_CAPITAL", (callback, region, newCapital, prevCapital) => {
+    actions.setHandler("CHANGE_REGION_CAPITAL", (action, region, newCapital, prevCapital) => {
         if (prevCapital && newCapital) {
-            return actions.execute("MOVE_PAWN", pawnAt(prevCapital), newCapital).then(callback);
+            action.schedule("MOVE_PAWN", pawnAt(prevCapital), newCapital);
         } else if (prevCapital && !newCapital) {
-            return actions.execute("DESTROY_PAWN", pawnAt(prevCapital)).then(callback);
+            action.schedule("DESTROY_PAWN", pawnAt(prevCapital));
         } else if (!prevCapital && newCapital) {
-            return actions.execute("CREATE_PAWN", PawnType.TOWN, newCapital).then(callback);
-        } else {
-            callback();
+            action.schedule("CREATE_PAWN", PawnType.TOWN, newCapital);
         }
+        action.resolve();
     });
 
     function pawnAt(hex) {

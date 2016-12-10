@@ -2,10 +2,10 @@ import noisejs from 'noisejs';
 
 
 function LandGenerator({actions, grid, log}) {
-    actions.addHandler('GENERATE_LANDMASS', (callback)=> {
+    actions.setHandler('GENERATE_LANDMASS', action=> {
         worldGenPerlin();
-        callback();
-    },'Generate random hex grid');
+        action.resolve();
+    });
 
     return Object.freeze({});
 

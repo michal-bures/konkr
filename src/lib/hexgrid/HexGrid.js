@@ -138,9 +138,14 @@ class HexGrouping {
 
 class HexGrid {
 
-    constructor(width=0, height=0) {
+    constructor({actions}, width=0, height=0) {
         this.hexes = [];
         this.reset(width, height);
+
+        actions.setHandler('RESET_HEXGRID', (action, width, height) => {
+            this.reset(width, height);
+            action.resolve();
+        });
     }
 
     reset(width, height) {

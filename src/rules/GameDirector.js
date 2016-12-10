@@ -1,49 +1,46 @@
 import { assertDefined } from 'lib/util';
 import async from 'async';
 
-function GameDirector({players, log, actions}) {
+function GameFlow({players, log, actions}) {
     
-    let states = [];
-
     const self = Object.freeze({
-        begin,
         toString,
         toDebugString
     });
 
-    function begin({worldWidth, worldHeight, numFactions}) {
-        if (states.length) throw Error("Director already running!");
-        actions.execute('RESET_WORLD',worldWidth,worldHeight)
-               .then(actions.create('GENERATE_LANDMASS'))
-               .then(actions.create('RANDOMIZE_REGIONS', numFactions))
-               .then(actions.create('SET_INITIAL_TREASURY'))
-               .then(normalGameLoop);
-    }
+    actions.setHandler('START_NEW_GAME',  (action, {worldWidth, worldHeight, numFactions}) => {
+        action.schedule('RESET_HEXGRID', worldWidth, worldHeight);
+        action.schedule('GENERATE_LANDMASS');
+        action.schedule('RANDOMIZE_REGIONS');
+        action.schedule('SET_INITIAL_TREASURY');
+        action.schedule('START_NEW_TURN');
+        action.resolve();
+    });
 
-    function normalGameLoop() {
-        states = [];
+    actions.setHandler('START_NEW_TURN', (action) => {
         players.forEach(player => {
-            states.push(actions.create('UPDATE_ECONOMY', player));
-            states.push(actions.create('PLAYER_ACT', player));
+            action.schedule('UPDATE_ECONOMY', player);
+            action.schedule('PLAYER_ACT', player);
         });
+        action.schedule('CHECK_VICTORY_CONDITIONS');
+        action.resolve();
+    });
 
-        states.reduce((previous, next) => previous().then(next)).then(normalGameLoop);
-    }
+    actions.setHandler('CHECK_VICTORY_CONDITIONS', (action)=>{
+        // Winning?? No such thing
+        action.schedule('START_NEW_TURN');
+        //action.resolve();
+    });
 
     function toString() {
-        return `[GameDirector: states ${states}]`;
+        return `[GameFlow]`;
     }
 
     function toDebugString() {
-/* return `
-* States: 
-${states.map((state,index)=>((index===currentStateIndex?" -> ":"    ")+state.toString())).join("\n")}
-* Pending tasks:
-    ${(tasks?tasks.waitingFor.map(task => task.toString()).join('\n    '):'')}`;*/
         return "";
     }
 
     return self;
 }
 
-export default GameDirector;
+export default GameFlow;

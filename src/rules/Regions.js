@@ -37,11 +37,16 @@ function Regions (spec) {
 
     //implementation
 
-    actions.addHandler('CONQUER_HEX', (callback, hex, region, pawn) => {
-        actions.execute('CHANGE_HEXES_REGION', new HexGroup(hex), region).then(callback);
+    actions.setHandler('CONQUER_HEX', (action, hex, region, pawn) => {
+        if (pawns.pawnAt(hex)) {
+            action.schedule('DESTROY_PAWN', pawns.pawnAt(hex));
+        }
+        action.schedule('CHANGE_HEXES_REGION', new HexGroup(hex), region);
+        action.schedule('MOVE_PAWN',pawn, hex);
+        action.resolve();
     });
 
-    actions.addHandler('CHANGE_HEXES_REGION', (callback, hexOrGroup, receivingRegion) => {
+    actions.setHandler('CHANGE_HEXES_REGION', (action, hexOrGroup, receivingRegion) => {
         let lostHexesByRegion = {};
 
         // capture the hexes and keep track of which regions have lost some hexes
@@ -52,7 +57,6 @@ function Regions (spec) {
                 lostHexesByRegion[owner.id].add(hex);
             }
             hexRegion[hex.id] = receivingRegion;
-
         });
  
         // update all regions that have lost hexes in this transaction
@@ -61,31 +65,22 @@ function Regions (spec) {
         });
         if (receivingRegion) {
             receivingRegion.hexes.add(hexOrGroup);
+            // check if any regions shoudl merge with the region that gained land
+            checkForRegionMerging(hexOrGroup);
+            // check if region gained capital
             if (!receivingRegion.hasCapital() && receivingRegion.hexes.length >= MIN_SIZE_FOR_CAPITAL) {
                 receivingRegion.pickNewCapital();
             }
-            // check if any regions shoudl merge with the region that gained land
-            checkForRegionMerging(hexOrGroup);
+
             regions.onChanged.dispatch(receivingRegion);
         }
+
+
         regions.onHexesChangedOwner.dispatch(hexOrGroup);
-        callback();
-
+        action.resolve();
     });
 
-    actions.addHandler('CHANGE_REGION_CAPITAL', (callback, region, newCapital) => {
-        const oldCapital = region.capital;
-        region.capital = newCapital;
-
-        if (!oldCapital && newCapital) {
-            regions.onGainedCapital.dispatch(region, newCapital);
-        } else if (oldCapital && !newCapital) {
-            regions.onLostCapital.dispatch(region);
-        }
-        callback();
-    });
-
-    actions.addHandler('RANDOMIZE_REGIONS', (callback, numFactions=99) => {
+    actions.setHandler('RANDOMIZE_REGIONS', (action, numFactions=99) => {
         numFactions = Math.min(numFactions, MAX_NUMBER_OF_FACTIONS);
         let hexFaction=[];
         grid.forEach((hex)=>{
@@ -96,9 +91,9 @@ function Regions (spec) {
             .map(group=> {
                 let region = new Region(hexFaction[group.pivot.id]);
                 _regions[region.id] = region;
-                actions.execute('CHANGE_HEXES_REGION', group, region);
+                actions.schedule('CHANGE_HEXES_REGION', group, region);
             });
-        callback();
+        action.resolve();
     });
 
 
@@ -139,7 +134,7 @@ function Regions (spec) {
     function hexesRemovedFromRegion(region, hexGroup) {
         region.hexes.remove(hexGroup);
         if (region.hasCapital() && region.hexes.length < MIN_SIZE_FOR_CAPITAL) {
-            actions.execute('CHANGE_REGION_CAPITAL', region, null, region.capital);
+            actions.schedule('CHANGE_REGION_CAPITAL', region, null, region.capital);
         }
         if (region.hexes.length===0) {
             delete _regions[region.id];
@@ -190,9 +185,13 @@ function Regions (spec) {
             const prevCapital = this.capital;
             if (availableHexes.length === 0) {
                 //TODO: clear some hex to make space for the new capital
-                actions.execute('CHANGE_REGION_CAPITAL', this, null, prevCapital);
+                this.capital = null;
+                if (prevCapital) regions.onLostCapital.dispatch(this, prevCapital);
+                actions.schedule('CHANGE_REGION_CAPITAL', this, null, prevCapital);
             } else {
-                actions.execute('CHANGE_REGION_CAPITAL', this, availableHexes.getRandomHex(), prevCapital);
+                this.capital = availableHexes.getRandomHex();
+                if (!prevCapital) regions.onGainedCapital.dispatch(this, this.capital);
+                actions.schedule('CHANGE_REGION_CAPITAL', this, this.capital, prevCapital);
             }            
         }
 

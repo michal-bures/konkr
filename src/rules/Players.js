@@ -65,9 +65,9 @@ function Players(spec) {
                     //TODO dont recalculate on every call
                     availableHexes = region.hexes.neighbours().filter(hex => warfare.defenseOf(hex) === 0);
                     if (!availableHexes.length) return resolve();
-                    actions.execute('CONQUER_HEX', availableHexes.getRandomHex(), region, availableUnits.shift())
-                           .then(attack) //nice, now try to attack some more
-                           .then(resolve);
+                    actions.schedule('CONQUER_HEX', availableHexes.getRandomHex(), region, availableUnits.shift());
+                           //.then(attack) //nice, now try to attack some more
+                           //.then(resolve);
                 });
             }
 
@@ -77,9 +77,9 @@ function Players(spec) {
                         log.debug(`Buying new unit on ${region} (${economy.treasuryOf(region)} gold left)`);
                         const targetHex = region.hexes.filter(hex => !pawns.pawnAt(hex)).getRandomHex();
                         if (!targetHex) return resolve();
-                        actions.execute('BUY_UNIT', PawnType.TROOP_1, targetHex)
-                            .then(buyUnits) //try to buy another unit
-                            .then(resolve);
+                        actions.schedule('BUY_UNIT', PawnType.TROOP_1, targetHex);
+                            //.then(buyUnits) //try to buy another unit
+                            //.then(resolve);
                     } else {
                         resolve();
                     }
@@ -97,8 +97,8 @@ function Players(spec) {
     let self = {};
     IterableOn(self, _players);
 
-    actions.addHandler('PLAYER_ACT', (callback, player) => {
-        player.play(callback);
+    actions.setHandler('PLAYER_ACT', (action, player) => {
+        player.play(action.resolve);
     });
 
     function getRegionsControlledBy(player) {

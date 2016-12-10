@@ -51,7 +51,7 @@ function Play(game) {
                 });
             },
             debug: spec => new Renderer.DebugInfo(spec),
-            grid: () => new HexGrid(),
+            grid: spec => new HexGrid(spec),
             pawns: spec => new Pawns(spec.usingName('pawns')),
             regions: spec => new Regions(spec.usingName('regions')),
             economy: spec => new Economy(spec.usingName('economy')),
@@ -117,20 +117,11 @@ function Play(game) {
 
         let nextStateCallbacks = [];
 
-        function breakAfter(...args) {
-            args.forEach(action => {
-                gameSpec.actions.addHandler(action, (callback) => {
-                   nextStateCallbacks.push(callback);
-                });
-            });
-        }
+        gameSpec.actions.attachGuard((prevAction, nextAction) => new Promise(resolve => {{
+            nextStateCallbacks.push(resolve);
+        }}));
 
-        breakAfter('UPDATE_ECONOMY');
 
-        gameSpec.actions.addHandler('RESET_WORLD', (callback, width, height) => {
-            gameSpec.grid.reset(width, height);
-            callback();
-        }, 'Reset grid');
 
         nextTurnButton.addToGroup(game.world);
         nextTurnButton.onInputUp.add(() => {
@@ -143,7 +134,7 @@ function Play(game) {
 
         setupDebugDiv();
         gameSpec.actions.checkHandlers();
-        gameSpec.gameDirector.begin({
+        gameSpec.actions.schedule('START_NEW_GAME',{
             worldWidth: 20,
             worldHeight: 20,
         });

@@ -36,54 +36,60 @@ function Economy(spec) {
         toDebugString
     });
 
-    actions.addHandler('BUY_UNIT', (callback, unitType, hex)=> {
+    /// ACTION HANDLERS
+
+    actions.setHandler('BUY_UNIT', (action, unitType, hex)=> {
         const cost = PAWN_PURCHASE_COST.get(unitType);
-        if (!cost) throw Error(`Unit ${unitType} cannot be bought by a player.`);
-        if (cost > treasuryOf(regions.regionOf(hex))) throw Error(`Region ${regions.regionOf(hex)} cannot afford to buy ${unitType}.`);
+        if (!cost) return action.reject(`Unit ${unitType} cannot be bought by a player.`);
+        if (cost > treasuryOf(regions.regionOf(hex))) return action.reject(`Region ${regions.regionOf(hex)} cannot afford to buy ${unitType}.`);
 
-        actions.execute('CHANGE_REGION_TREASURY',regions.regionOf(hex), -PAWN_PURCHASE_COST.get(unitType))
-        .then(actions.execute('CREATE_PAWN',unitType,hex)
-        .then(callback));
-
+        action.schedule('CHANGE_REGION_TREASURY',regions.regionOf(hex), -PAWN_PURCHASE_COST.get(unitType));
+        action.schedule('CREATE_PAWN',unitType,hex);
+        action.resolve();
     });
 
-    actions.addHandler('CHANGE_REGION_TREASURY', (callback, region, amount) => {
+    actions.setHandler('CHANGE_REGION_TREASURY', (action, region, amount) => {
         setTreasuryOf(region,treasuryOf(region) + amount);
-        callback();
+        action.resolve();
     });
 
-    actions.addHandler('CHANGE_REGION_CAPITAL', (callback, region, newCapital, oldCapital) => {
-        if (!newCapital || ! oldCapital) setTreasuryOf(region,0);
-        return callback();
-    });
-
-    actions.addHandler('SET_INITIAL_TREASURY', (callback) => {
+    actions.setHandler('SET_INITIAL_TREASURY', action => {
         regions.forEach(region=>{
             setTreasuryOf(region,netIncomeOf(region)*5);
         });
-        callback();
+        action.resolve();
     });    
 
-    actions.addHandler('UPDATE_ECONOMY', (callback,player)=>{
+    actions.setHandler('SET_REGION_TREASURY', (action, region, amount) => {
+        setTreasuryOf(region,amount);
+        action.resolve();
+    });
+
+    actions.setHandler('UPDATE_ECONOMY', (action,player)=>{
         player.controlledRegions.forEach( (region) => {
             const oldValue = treasuryOf(region) || 0;
             let newValue = oldValue + netIncomeOf(region);
             if (newValue < 0) {
                 newValue = 0;
                 self.onRegionBankrupt.dispatch(region);
-                actions.execute('KILL_TROOPS_IN_REGION', region);
+                actions.schedule('KILL_TROOPS_IN_REGION', region);
             }
-            setTreasuryOf(region,newValue);
+            setTreasuryOf(region, newValue);
         });
-        return callback();
+        action.resolve();
     });
 
-    function setTreasuryOf(region,value) {
-        const oldValue = treasuryOf(region);
-        if (value === oldValue) return;
-        regionTreasury.set(region,value);
-        self.onRegionTreasuryChanged.dispatch(region, value, oldValue);
-    }
+    /// ACTION TRIGGERS
+
+    regions.onLostCapital.add(region=>{
+        actions.schedule('SET_REGION_TREASURY',region,0);
+    });
+
+    regions.onGainedCapital.add(region=>{
+        actions.schedule('SET_REGION_TREASURY',region,0);
+    });
+
+    // PUBLIC METHODS
 
     function toDebugString() {
         return regions.map(region => {
@@ -121,6 +127,16 @@ function Economy(spec) {
         if (!pawn) return 0;
         return PAWN_UPKEEP.get(pawn.pawnType) || 0;
     }
+
+    // PRIVATE METHODS
+
+    function setTreasuryOf(region,value) {
+        const oldValue = treasuryOf(region);
+        if (value === oldValue) return;
+        regionTreasury.set(region,value);
+        self.onRegionTreasuryChanged.dispatch(region, value, oldValue);
+    }
+
 
     return self;
 }
