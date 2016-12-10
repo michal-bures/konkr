@@ -2,11 +2,11 @@ import { HexGrid } from 'lib/hexgrid/HexGrid';
 import * as Renderer from 'ui/Renderer';
 import HexSelectionProxy from 'ui/HexSelectionProxy';
 import LandGenerator from 'rules/LandGenerator';
-import Injector from 'lib/Injector';
 import Scrolling from 'ui/Scrolling';
 import RegionPanel from 'ui/RegionPanel';
 import GridOverlays from 'ui/GridOverlays';
 import UI from 'lib/controls/UI';
+import UIManager from 'ui/UIManager';
 
 import GameDirector from 'rules/GameDirector';
 import Players from 'rules/Players';
@@ -60,11 +60,13 @@ function Play(game) {
             landGen: spec => new LandGenerator(spec.usingName('landGen')),
             gameDirector: spec => new GameDirector(spec.usingName('gameDirector')),
             players: spec => new Players(spec.usingName('players')),
+            ui: spec => new UIManager(spec.usingName('ui')),
         });
 
         gameUi = gameSpec.extend({
             landSprites: spec => new Renderer.LandSprites(spec),
             regionBorders: spec => new Renderer.RegionBorders(spec),
+            selRegionHighlight: spec => new Renderer.SelectedRegionHighlight(spec),
             pawnSprites: spec => new Renderer.Pawns(spec),
             hexSelectionProxy: spec => new HexSelectionProxy(spec),
             scrolling: spec => new Scrolling(spec),
@@ -81,6 +83,7 @@ function Play(game) {
         //display layers z-order
         game.world.add(gameUi.landSprites.group);          
         game.world.add(gameUi.regionBorders.group);  
+        game.world.add(gameUi.selRegionHighlight.group);
         game.world.add(gameUi.gridOverlays.group);  
         game.world.add(gameUi.pawnSprites.group);          
         game.world.add(gameUi.hexSelectionProxy.group);

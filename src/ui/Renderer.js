@@ -4,15 +4,15 @@ import { OrderedMap, assertDefined } from 'lib/util';
 
 
 
-const HEX_WIDTH = 64;
-const HEX_HEIGHT = 74;
+const HEX_WIDTH = 32;
+const HEX_HEIGHT = 38;
 const HALF_HEX_HEIGHT = Math.floor(HEX_HEIGHT/2);
 const HALF_HEX_WIDTH = Math.floor(HEX_WIDTH/2);
 
 const HEX_EDGE_SIZE = Math.floor(HEX_HEIGHT/2);
 
-const LINE_HEIGHT = Math.floor(HEX_HEIGHT * 3/4);
-const HALF_LINE_HEIGHT = Math.floor(HEX_HEIGHT * 3/8);
+const LINE_HEIGHT = 28;//Math.floor(HEX_HEIGHT * 3/4);
+const HALF_LINE_HEIGHT = 14.5;//Math.floor(HEX_HEIGHT * 3/8);
 
 const OFFSET_TOP = 10 + Math.floor((HEX_HEIGHT-LINE_HEIGHT)/2);
 const OFFSET_LEFT = 10;
@@ -22,7 +22,7 @@ function fixateTopLeftBoundary(graphics,x=0,y=0) {
     let prevAlpha = graphics.fillAlpha;
     let prevLW = graphics.lineWidth;
     graphics.fillAlpha = 0;
-    graphics.lineWidth =  0;
+    graphics.lineWidth = 0;
     graphics.moveTo(x,y);
     graphics.lineTo(x,y);
     graphics.fillAlpha = prevAlpha;
@@ -30,61 +30,33 @@ function fixateTopLeftBoundary(graphics,x=0,y=0) {
 }
 
 function convertToWorldCoordinates(x,y) {
-    return [ OFFSET_LEFT + HEX_WIDTH + x * HEX_WIDTH, OFFSET_TOP + y * LINE_HEIGHT + HALF_LINE_HEIGHT];
+    return [ Math.floor(OFFSET_LEFT + HEX_WIDTH + x * HEX_WIDTH), Math.floor(OFFSET_TOP + y * LINE_HEIGHT + HALF_LINE_HEIGHT)];
 }
 
-function drawBorderBetween(graphics, hex1, hex2) {
-    assertDefined(graphics,hex1, hex2);
+let HEX_POLYGON = [[-0.5,-0.25], [0,-0.5], [0.5,-0.25], [0.5,0.25], [0,0.5], [-0.5,0.25], [-0.5,-0.25]];
+HEX_POLYGON = HEX_POLYGON.map(([x,y])=>[Math.floor(x*HEX_WIDTH),Math.floor(y*HEX_HEIGHT)]);
 
-    graphics.lineStyle(1,0xff0000,0.5);
-    drawInnerHex(graphics,hex1);
-
-    const [x1,y1] = [hex1.position.x, hex1.position.y];
-    const [x2,y2] = [hex2.position.x, hex2.position.y];
-
-    const cx = x1 + (x2 - x1)/2;
-    const cy = y1 + (y2 - y1)/2;
-
-    const conv = HEX_WIDTH/HEX_HEIGHT;
-
-    let dx = x2 - cx;
-    let dy = y2 - cy;
-
-    log.debug(`DIFF ${dx},${dx} CONV ${conv}`);
-
-
-    //dx=0;
-    //dy=0;
-    dx=dx*2;
-    dy=dy*2;
-
-
-    const [wx1,wy1] = convertToWorldCoordinates(cx,cy);
-    const [wx2,wy2] = convertToWorldCoordinates(cx-dy*conv,cy+dx*(1/conv));
-
-    const [a1x,a1y] = convertToWorldCoordinates(x1,y1);
-    const [a2x,a2y] = convertToWorldCoordinates(x2,y2);
-    graphics.lineStyle(1, 0x0000ff, 1);
-    graphics.moveTo(a1x, a1y);
-    graphics.lineTo(a2x, a2y);
-    graphics.endFill();
-
-    graphics.lineStyle(2, 0xffd900, 1);
-    graphics.moveTo(wx1, wy1);
-    graphics.lineTo(wx2, wy2);
+function drawHexBorders(graphics, hex, func=()=> true) {
+    const [baseX,baseY] = convertToWorldCoordinates(hex.position.x, hex.position.y);
+    graphics.moveTo(baseX+HEX_POLYGON[0][0],baseY+HEX_POLYGON[0][1]);
+    HEX_POLYGON.forEach((vertex, index) => {
+        if (index === 0) return;
+        if (func(index-1)) {
+            graphics.lineTo(baseX+vertex[0],baseY+vertex[1]);
+        } else {
+            graphics.moveTo(baseX+vertex[0],baseY+vertex[1]);
+        }
+    });
     graphics.endFill();
 }
 
 function drawInnerHex(graphics, hex, scale=1) {
-    drawOnHex(graphics, hex, scale, 
-        [[-1,-0.5], [0,-1], [1,-0.5], [1,0.5], [0,1], [-1,0.5]]);
+    drawOnHex(graphics, hex, scale, HEX_POLYGON);
 }
 
 function drawOnHex(graphics, hex, scale, path) {
     const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
-    const H = HEX_HEIGHT/2;
-    const W = HEX_WIDTH/2;
-    graphics.drawPolygon(path.map(p=>[(x + W*(p[0]*scale)), (y + H*(p[1]*scale))]));
+    graphics.drawPolygon(path.map(p=>[(x + (p[0]*scale)), (y + (p[1]*scale))]));
 }
 
 function LandSprites(spec) {
@@ -221,7 +193,7 @@ class PawnSprite extends Phaser.Sprite {
 
     updatePosition() {
         const [x,y] = convertToWorldCoordinates(this.pawn.hex.position.x, this.pawn.hex.position.y);
-        this.game.add.tween(this).to( { x: x, y: y+PAWN_OFFSET_TOP }, 500, "Linear", true);
+        this.game.add.tween(this).to( { x: x, y: Math.floor(y+PAWN_OFFSET_TOP/2) }, 500, "Linear", true);
     }
 }
 
@@ -239,21 +211,17 @@ class RegionBorders {
         this.needsRedraw = false;        
         if (this.sprite) this.sprite.destroy();
         const graphics = this.game.add.graphics(0, 0);
-        fixateTopLeftBoundary(graphics, 0,0);
-
         graphics.beginFill(0x000000);
-        graphics.lineStyle(2, 0xffd900, 1);
+        graphics.lineStyle(1, 0x202020, 1);
         graphics.fillAlpha=1;
         graphics.endFill();
         this.regions.forEach(region=>{
             region.hexes.border().forEach(hex => {
-                hex.neighbours().forEach(hex2 => {
-                    if (hex2.exists() && (hex.position.y % 4 === 2) && (hex.position.x % 4 === 3) && this.regions.regionOf(hex2) !== region) drawBorderBetween(graphics, hex, hex2);
-                });
+                drawHexBorders(graphics, hex, i=> i<3 && hex.neighbour(i) && !region.hexes.contains(hex.neighbour(i)));
             });
         });
-
-        this.sprite = this.game.add.sprite(0, 0, graphics.generateTexture());
+        const {x,y} = graphics.getBounds();
+        this.sprite = this.game.add.sprite(x, y, graphics.generateTexture());
         this.group.add(this.sprite);
         graphics.destroy();
     }
@@ -263,6 +231,38 @@ class RegionBorders {
             this.redraw();
         }
     }
+}
+
+function SelectedRegionHighlight({game,ui}) {
+    let group = game.add.group(),
+        sprite = null;
+
+    ui.onSelectedRegionChanged.add(redraw);
+    ui.onRegionSelected.add(redraw);
+
+    return Object.freeze({
+        get group() { return group; }
+    });
+
+    function redraw(region) {
+        if (sprite) {
+            sprite.destroy();
+            sprite = null;
+        }
+        if (!region) return;
+        const graphics = game.add.graphics(0,0);
+        graphics.beginFill(0x000000);
+        graphics.lineStyle(2, 0xffff00, 1);
+        graphics.fillAlpha=1;
+        graphics.endFill();
+        region.hexes.borderIncludingShoreline().forEach(hex => {
+            drawHexBorders(graphics, hex, i => !hex.neighbour(i) || !region.hexes.contains(hex.neighbour(i)));
+        });
+        const {x,y} = graphics.getBounds();
+        sprite = game.add.sprite(x,y, graphics.generateTexture());
+        graphics.destroy();
+    }
+
 }
 
 
@@ -292,6 +292,7 @@ export {
     LandSprites, 
     Pawns,
     RegionBorders,
+    SelectedRegionHighlight,
     DebugInfo,
     HEX_WIDTH,
     HEX_HEIGHT,

@@ -27,7 +27,8 @@ function Regions (spec) {
         onCreated: new Phaser.Signal(/* region */),
         onGainedCapital: new Phaser.Signal(/* region, hex */),
         onLostCapital: new Phaser.Signal(/* region */),
-        onHexesChangedOwner: new Phaser.Signal(/* hexGroup, newRegion, prevRegion */),
+        onHexesChangedOwner: new Phaser.Signal(/* hexGroup */),
+        onChanged: new Phaser.Signal(/* region */),
         onDestroyed: new Phaser.Signal(/* region */),
         toDebugString,
     };
@@ -37,43 +38,39 @@ function Regions (spec) {
     //implementation
 
     actions.addHandler('CONQUER_HEX', (callback, hex, region, pawn) => {
-        actions.execute('CHANGE_HEXES_REGION', hex, region).then(callback);
+        actions.execute('CHANGE_HEXES_REGION', new HexGroup(hex), region).then(callback);
     });
 
-    actions.addHandler('CHANGE_HEXES_REGION', (callback, hexOrGroup, region) => {
+    actions.addHandler('CHANGE_HEXES_REGION', (callback, hexOrGroup, receivingRegion) => {
         let lostHexesByRegion = {};
 
+        // capture the hexes and keep track of which regions have lost some hexes
         hexOrGroup.forEach( hex=> {
             let owner = hexRegion[hex.id];
             if (owner) {
                 if (!lostHexesByRegion[owner.id]) lostHexesByRegion[owner.id]=new HexGroup();
                 lostHexesByRegion[owner.id].add(hex);
             }
-            hexRegion[hex.id] = region;
+            hexRegion[hex.id] = receivingRegion;
 
         });
-        if (region) {
-            region.hexes.add(hexOrGroup);
-            if (!region.hasCapital() && region.hexes.length >= MIN_SIZE_FOR_CAPITAL) {
-                region.pickNewCapital();
-            }
-        }
-
+ 
+        // update all regions that have lost hexes in this transaction
         Object.keys(lostHexesByRegion).forEach(key => {
-            let region = regions.byId(key),
-                hexGroup = lostHexesByRegion[key];
-
-            region.hexes.remove(hexGroup);
-            if (region.hasCapital() && region.hexes.length < MIN_SIZE_FOR_CAPITAL) {
-                actions.execute('CHANGE_REGION_CAPITAL', region, null, region.capital);
-            }
-            if (region.hexes.length===0) {
-                delete _regions[region.id];
-                regions.onDestroyed.dispatch(region);
-            }
+            hexesRemovedFromRegion(regions.byId(key), lostHexesByRegion[key]);
         });
+        if (receivingRegion) {
+            receivingRegion.hexes.add(hexOrGroup);
+            if (!receivingRegion.hasCapital() && receivingRegion.hexes.length >= MIN_SIZE_FOR_CAPITAL) {
+                receivingRegion.pickNewCapital();
+            }
+            // check if any regions shoudl merge with the region that gained land
+            checkForRegionMerging(hexOrGroup);
+            regions.onChanged.dispatch(receivingRegion);
+        }
         regions.onHexesChangedOwner.dispatch(hexOrGroup);
         callback();
+
     });
 
     actions.addHandler('CHANGE_REGION_CAPITAL', (callback, region, newCapital) => {
@@ -110,8 +107,50 @@ function Regions (spec) {
         return _regions[id];
     }
 
+    function checkForRegionMerging(hexOrGroup) {
+        if (!hexOrGroup.length) return;
+        hexOrGroup.border().forEach(hex1 => {
+            let region1 = regionOf(hex1);
+            if (!region1) return;
+            hex1.neighbours().forEach(hex2 => {
+                let region2 = regionOf(hex2);
+                if (!region2) return;
+                log.debug(`Merge regions ${region1} and ${region2}?`);
+                if (region1 !== region2 && region1.faction === region2.faction) {
+                    hexOrGroup.add(region2.hexes); // so that the added hexes are later included in onHexesChangedOwner event
+                    if (region1.length>region2.length) {
+                        absorbRegion(region1, region2);
+                    } else {
+                        absorbRegion(region2, region1);
+                    }
+                }   
+            });
+        });
+    }
+
+    function absorbRegion(sourceRegion, receivingRegion) {
+        log.debug(`Region ${sourceRegion} was absorbed into ${receivingRegion}, ${sourceRegion.faction}=${receivingRegion.faction}`);
+        sourceRegion.hexes.forEach(hex => hexRegion[hex.id] = receivingRegion);
+        receivingRegion.hexes.add(sourceRegion.hexes);
+        hexesRemovedFromRegion(sourceRegion, sourceRegion.hexes);
+    }
+
+    // for internal use only!! Does NOT update hexRegion
+    function hexesRemovedFromRegion(region, hexGroup) {
+        region.hexes.remove(hexGroup);
+        if (region.hasCapital() && region.hexes.length < MIN_SIZE_FOR_CAPITAL) {
+            actions.execute('CHANGE_REGION_CAPITAL', region, null, region.capital);
+        }
+        if (region.hexes.length===0) {
+            delete _regions[region.id];
+            regions.onDestroyed.dispatch(region);
+        } else {
+            regions.onChanged.dispatch(region);
+        }
+    }
+
     function factionOf(hex) {
-        if (regionOf(hex)===undefined) return 0;
+        if (!regionOf(hex)) return 0;
         return regionOf(hex).faction;
     }
 
@@ -158,7 +197,7 @@ function Regions (spec) {
         }
 
         toString() {
-            return `[Region #${this.id} (${this._hexes.length} hexes,`+(this.hasCapital()?`capital at ${this.capital}`:"no capital")+")]";
+            return `[Region #${this.id} (${this.faction} ,${this._hexes.length} hexes,`+(this.hasCapital()?`capital at ${this.capital}`:"no capital")+")]";
         }
     }
 

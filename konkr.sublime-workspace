@@ -136,11 +136,90 @@
 	"buffers":
 	[
 		{
+			"file": "src/ui/HexSelectionProxy.js",
+			"settings":
+			{
+				"buffer_size": 3902,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ui/UIManager.js",
+			"settings":
+			{
+				"buffer_size": 798,
+				"encoding": "UTF-8",
+				"line_ending": "Windows",
+				"name": "class UIState() {"
+			}
+		},
+		{
+			"file": "src/lib/Injector.js",
+			"settings":
+			{
+				"buffer_size": 1961,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/index.js",
+			"settings":
+			{
+				"buffer_size": 5294,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
 			"file": "src/ui/Renderer.js",
 			"settings":
 			{
-				"buffer_size": 6904,
+				"buffer_size": 8876,
 				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/lib/AssetManager.js",
+			"settings":
+			{
+				"buffer_size": 971,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/rules/LandGenerator.js",
+			"settings":
+			{
+				"buffer_size": 1562,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/rules/Pawns.js",
+			"settings":
+			{
+				"buffer_size": 6118,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/rules/Regions.js",
+			"settings":
+			{
+				"buffer_size": 5204,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/lib/decorators/IterableOn.js",
+			"settings":
+			{
+				"buffer_size": 394,
 				"line_ending": "Windows"
 			}
 		},
@@ -148,7 +227,26 @@
 			"file": "src/states/Play.js",
 			"settings":
 			{
-				"buffer_size": 6384,
+				"buffer_size": 6678,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "Searching 25 files for \"ui\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\.jshintrc:\n   14      \"inspect\",\n   15      \"navigator\",\n   16:     \"requirejs\",\n   17      \"XMLHttpRequest\",\n   18      \n   ..\n   34      \"Tile\",\n   35    \t\"World\",\n   36:   \t\"WordBuilder\",\n   37      \"WorldObject\",\n   38      \"UI\",\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\AssetManager.js:\n    2  /* globals -AssetManager */\n    3  \n    4: import { HEX_WIDTH, HEX_HEIGHT } from 'ui/Renderer';\n    5  \n    6  function AssetManager(spec) {\n    .\n   26  \n   27  AssetManager.images = {\n   28:     'paneBackground' : ['assets/ui/paneBackground.png']\n   29  };\n   30  \n   ..\n   32      'hex' : ['assets/hex.png', HEX_WIDTH, 42],\n   33      'pawn' : ['assets/pawn.png', 32,48],\n   34:     'nextTurnButton' : ['assets/ui/nextTurnButton.png', 67,29]\n   35  };\n   36  \n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\LandGenerator.js:\n   32              largest = comps.getLargestGroup();\n   33              ++tries;\n   34:             if (tries > 50) throw Error('Failed to generate suitable world after 50 iterations');\n   35          } while (largest.length < MIN_SIZE);\n   36  \n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\states\\Play.js:\n    1  import { HexGrid } from 'lib/hexgrid/HexGrid';\n    2: import * as Renderer from 'ui/Renderer';\n    3: import HexSelectionProxy from 'ui/HexSelectionProxy';\n    4  import LandGenerator from 'rules/LandGenerator';\n    5: import Scrolling from 'ui/Scrolling';\n    6: import RegionPanel from 'ui/RegionPanel';\n    7: import GridOverlays from 'ui/GridOverlays';\n    8  import UI from 'lib/controls/UI';\n    9: import UIManager from 'ui/UIManager';\n   10  \n   11  import GameDirector from 'rules/GameDirector';\n   ..\n   64  \n   65          gameUi = gameSpec.extend({\n   66:             ui: spec => new UIManager(spec.usingName('ui')),\n   67              landSprites: spec => new Renderer.LandSprites(spec),\n   68              regionBorders: spec => new Renderer.RegionBorders(spec),\n   ..\n   70              hexSelectionProxy: spec => new HexSelectionProxy(spec),\n   71              scrolling: spec => new Scrolling(spec),\n   72:             uiRegionPanel: spec => new RegionPanel(spec.usingName('uiRegionPanel')),\n   73              gridOverlays: spec => new GridOverlays(spec),\n   74          });\n   ..\n   86          game.world.add(gameUi.pawnSprites.group);          \n   87          game.world.add(gameUi.hexSelectionProxy.group);\n   88:         game.world.add(gameUi.uiRegionPanel.group);  \n   89          game.stage.backgroundColor='#d5dfef';\n   90  \n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\GridOverlays.js:\n    1  import { assertDefined } from 'lib/util';\n    2: import { drawInnerHex } from 'ui/Renderer';\n    3  \n    4  function GridOverlays({game, grid, log, regions}) {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\HexSelectionProxy.js:\n    1: import { HEX_WIDTH, LINE_HEIGHT, OFFSET_TOP, OFFSET_LEFT } from 'ui/Renderer';\n    2  \n    3  function HexSelectionProxy(spec) {\n    4:     let {game,grid,debug,landSprites,log,regions,pawns,ui, warfare} = spec;\n    5  \n    6      let active = false,\n    .\n   28          surface.events.onInputDown.add(() => {\n   29              const hex = getHexUnderCursor();\n   30:             if (regions.regionOf(hex)) ui.selectRegion(regions.regionOf(hex));\n   31          });\n   32          return surface;\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\RegionPanel.js:\n    3  \n    4  function RegionPanel(spec) {\n    5:     let { game, log, economy, ui } = spec;\n    6  \n    7      let group = game.add.group(),\n    .\n   41      mainContainer.addToGroup(group);\n   42  \n   43:     ui.onRegionSelected.add(region => {\n   44          setRegion(region);\n   45      });\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n   74          tileToSprite = {},\n   75          highlightedTiles = [],\n   76:         requiresSorting = false; // true => need to resort group before next render\n   77  \n   78      regions.onHexesChangedOwner.add((hexes) => {\n   ..\n   84                  group.add(sprite);\n   85                  tileToSprite[hex.id] = sprite;\n   86:                 requiresSorting = true;\n   87              }\n   88          });\n   ..\n   90  \n   91      function render() {\n   92:         if (requiresSorting) {\n   93:             requiresSorting = false;\n   94              group.sort('y', Phaser.Group.SORT_ASCENDING);\n   95          }\n\n27 matches across 8 files\n",
+			"settings":
+			{
+				"buffer_size": 4397,
+				"line_ending": "Windows",
+				"name": "Find Results",
+				"scratch": true
+			}
+		},
+		{
+			"file": "src/ui/RegionPanel.js",
+			"settings":
+			{
+				"buffer_size": 2223,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -157,7 +255,7 @@
 			"file": "src/ui/GridOverlays.js",
 			"settings":
 			{
-				"buffer_size": 1693,
+				"buffer_size": 2071,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -166,7 +264,16 @@
 			"file": "src/lib/hexgrid/Hexagon.js",
 			"settings":
 			{
-				"buffer_size": 4435,
+				"buffer_size": 4754,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/lib/hexgrid/HexGrid.js",
+			"settings":
+			{
+				"buffer_size": 5816,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -179,8 +286,8 @@
 	"build_varint": "",
 	"command_palette":
 	{
-		"height": 173.0,
-		"last_filter": "linter all ",
+		"height": 392.0,
+		"last_filter": "",
 		"selected_items":
 		[
 			[
@@ -379,6 +486,7 @@
 	[
 		"/C/Users/Embair/dev/www/konkr/src",
 		"/C/Users/Embair/dev/www/konkr/src/lib",
+		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid",
 		"/C/Users/Embair/dev/www/konkr/src/rules",
 		"/C/Users/Embair/dev/www/konkr/src/states",
 		"/C/Users/Embair/dev/www/konkr/src/ui",
@@ -386,6 +494,9 @@
 	],
 	"file_history":
 	[
+		"/C/Users/Embair/dev/www/konkr/src/rules/Players.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/Renderer.js",
+		"/C/Users/Embair/dev/www/konkr/src/lib/AssetManager.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/Pawns.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/HexSelectionProxy.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/RegionPanel.js",
@@ -393,7 +504,6 @@
 		"/C/Users/Embair/dev/www/konkr/src/rules/Economy.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/Actions.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/Regions.js",
-		"/C/Users/Embair/dev/www/konkr/src/rules/Players.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/GridOverlays.js",
 		"/C/Users/Embair/dev/www/konkr/konkr.sublime-project",
 		"/C/Program Files/Git/mingw64/share/doc/git-doc/git-push.html",
@@ -403,8 +513,6 @@
 		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid/Hexagon.js",
 		"/C/Users/Embair/dev/www/konkr/static/index.html",
 		"/C/Users/Embair/dev/www/konkr/src/lib/decorators/IterableOn.js",
-		"/C/Users/Embair/dev/www/konkr/src/ui/Renderer.js",
-		"/C/Users/Embair/dev/www/konkr/src/lib/AssetManager.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/HexGrid.js",
 		"/C/Users/Embair/dev/www/konkr/static/styles/main.css",
 		"/C/Users/Embair/dev/www/konkr/src/lib/util.js",
@@ -547,6 +655,34 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"ui",
+			"onInput",
+			"onInputUp",
+			"LINE_HEIGHT",
+			"HALF_LINE_HEIGHT",
+			"convertToWorldCoordinates",
+			"NullHex",
+			"1",
+			"0.5",
+			"1",
+			"dx",
+			"drawBorderBetween",
+			"setTopLeftBoundary",
+			"drawBorderBetween",
+			"convertToWorldCoordinates",
+			"group",
+			"gridOverlays",
+			"overlay",
+			"convertToWorld",
+			"convertTo",
+			"convertToWorldCoordinates",
+			"this.regions.forEach",
+			"_regions",
+			"forEach",
+			"} = converto",
+			"const {x,y}",
+			"convertToWorldCoordinates",
+			"OrderedMap",
 			"drawBorderBetween",
 			"border",
 			"pawns",
@@ -646,35 +782,7 @@
 			"signal",
 			"regionOf",
 			"factionOf",
-			"ACTIONS",
-			"convertToWorldCoordinates",
-			"super",
-			"super(",
-			"super'",
-			"_regions =",
-			"_props",
-			"padding",
-			"10",
-			"fixedToCamera",
-			".x",
-			"setPlacement",
-			"createDisplayObject",
-			"this.parent",
-			"parent.",
-			"duplicate",
-			"constructor",
-			"createDisplayObject",
-			"tileSelectionProxy",
-			"TileSelectionProxy",
-			"OFFSET_LEFT",
-			"this.game",
-			"pointer",
-			"size",
-			"get size",
-			"this.",
-			"this.events",
-			"LandSprite",
-			"landSprites"
+			"ACTIONS"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -682,6 +790,11 @@
 		"regex": false,
 		"replace_history":
 		[
+			"null",
+			"0.5",
+			"0.25",
+			"0.5",
+			"const [x,y]",
 			"pawn",
 			"MultiRegionAI",
 			"hexOrGroup",
@@ -804,12 +917,7 @@
 			"cooldownPeriod",
 			"_dirty",
 			"RewardCollector",
-			"LootCollector",
-			"Assassinate",
-			"this.distance",
-			"getThreat",
-			"Damage",
-			"wordBuilder.tokens"
+			"LootCollector"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -820,86 +928,24 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 4,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "src/ui/Renderer.js",
+					"file": "src/ui/HexSelectionProxy.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6904,
+						"buffer_size": 3902,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6125,
-								6125
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 2314.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "src/states/Play.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6384,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								6354,
-								6354
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 2160.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "src/ui/GridOverlays.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1693,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1408,
-								1408
+								1010,
+								1010
 							]
 						],
 						"settings":
@@ -913,24 +959,54 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
-					"file": "src/lib/hexgrid/Hexagon.js",
+					"buffer": 1,
+					"file": "src/ui/UIManager.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4435,
+						"buffer_size": 798,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1238,
-								1238
+								588,
+								588
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"auto_name": "class UIState() {",
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/lib/Injector.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1961,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								875,
+								875
 							]
 						],
 						"settings":
@@ -941,10 +1017,527 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2070.0,
+						"translation.y": 90.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "src/index.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5294,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 270.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "src/ui/Renderer.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8876,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6907,
+								6907
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2685.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "src/lib/AssetManager.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 971,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								875,
+								875
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 12,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "src/rules/LandGenerator.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1562,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								161,
+								161
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "src/rules/Pawns.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6118,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1440.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "src/rules/Regions.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5204,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								774,
+								774
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 180.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "src/lib/decorators/IterableOn.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 394,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 15,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "src/states/Play.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6678,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3360,
+								3360
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 825.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4397,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										152,
+										154
+									],
+									[
+										262,
+										264
+									],
+									[
+										459,
+										461
+									],
+									[
+										602,
+										604
+									],
+									[
+										791,
+										793
+									],
+									[
+										1049,
+										1051
+									],
+									[
+										1285,
+										1287
+									],
+									[
+										1337,
+										1339
+									],
+									[
+										1446,
+										1448
+									],
+									[
+										1493,
+										1495
+									],
+									[
+										1543,
+										1545
+									],
+									[
+										1632,
+										1634
+									],
+									[
+										1784,
+										1786
+									],
+									[
+										1826,
+										1828
+									],
+									[
+										2140,
+										2142
+									],
+									[
+										2195,
+										2197
+									],
+									[
+										2470,
+										2472
+									],
+									[
+										2696,
+										2698
+									],
+									[
+										2909,
+										2911
+									],
+									[
+										3035,
+										3037
+									],
+									[
+										3253,
+										3255
+									],
+									[
+										3478,
+										3480
+									],
+									[
+										3609,
+										3611
+									],
+									[
+										3835,
+										3837
+									],
+									[
+										4100,
+										4102
+									],
+									[
+										4228,
+										4230
+									],
+									[
+										4266,
+										4268
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"detect_indentation": false,
+							"line_numbers": false,
+							"output_tag": 1,
+							"result_base_dir": "",
+							"result_file_regex": "^([^ \t].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1080.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "src/ui/RegionPanel.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2223,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								378,
+								378
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"file": "src/ui/GridOverlays.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2071,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1878,
+								1878
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 14,
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "src/lib/hexgrid/Hexagon.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4754,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4195,
+								4195
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2194.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 13,
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"file": "src/lib/hexgrid/HexGrid.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5816,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4710,
+								4710
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1594.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
 					"type": "text"
 				}
 			]
@@ -1002,6 +1595,10 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"region",
+				"src\\rules\\Regions.js"
+			],
 			[
 				"hexa",
 				"src\\lib\\hexgrid\\Hexagon.js"

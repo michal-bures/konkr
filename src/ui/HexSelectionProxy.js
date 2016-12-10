@@ -1,7 +1,7 @@
 import { HEX_WIDTH, LINE_HEIGHT, OFFSET_TOP, OFFSET_LEFT } from 'ui/Renderer';
 
 function HexSelectionProxy(spec) {
-    let {game,grid,debug,landSprites,log,regions,pawns,uiRegionPanel, warfare} = spec;
+    let {game,grid,debug,landSprites,log,regions,pawns,ui, warfare} = spec;
 
     let active = false,
         image = initImage(),
@@ -27,17 +27,20 @@ function HexSelectionProxy(spec) {
         surface.events.onInputOut.add(() => active = false);
         surface.events.onInputDown.add(() => {
             const hex = getHexUnderCursor();
-            uiRegionPanel.setRegion(regions.regionOf(hex));
+            if (hex && regions.regionOf(hex)) {
+                ui.selectRegion(regions.regionOf(hex));
+            }
         });
         return surface;
     }
 
     function toDebugString() {
         const hex = getHexUnderCursor();
+        if (!hex) return `Under cursor: (nothing)`;
 
         return `Under cursor: ${hex}
-Faction: ${regions.factionOf(hex)}
-Region:  ${regions.regionOf(hex)}
+Faction: ${regions && regions.factionOf(hex)}
+Region:  ${regions && regions.regionOf(hex)}
 Pawn: ${pawns.pawnAt(hex)}
 Defense: ${warfare.defenseOf(hex)}`;
     }

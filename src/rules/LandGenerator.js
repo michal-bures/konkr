@@ -3,7 +3,7 @@ import noisejs from 'noisejs';
 
 function LandGenerator({actions, grid, log}) {
     actions.addHandler('GENERATE_LANDMASS', (callback)=> {
-        worldGenSolid();
+        worldGenPerlin();
         callback();
     },'Generate random hex grid');
 

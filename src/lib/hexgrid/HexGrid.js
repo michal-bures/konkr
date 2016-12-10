@@ -1,6 +1,6 @@
 import log from 'loglevel';
 import expect from 'expect';
-import { Hexagon, HexGroup, NullHex } from 'lib/hexgrid/Hexagon';
+import { Hexagon, HexGroup, null } from 'lib/hexgrid/Hexagon';
 
 // A coordinates in the hexagonal grid.
 // automatically converts between three coordinate systems
@@ -158,14 +158,14 @@ class HexGrid {
     }
 
     getHexByAxial(r,c) {
-        if (c >= this.width - 0.5 + r/2 || c - r/2 <= -1) return NullHex;
-        if (r >= this.height) return NullHex;
+        if (c >= this.width - 0.5 + r/2 || c - r/2 <= -1) return null;
+        if (r >= this.height) return null;
         const i = r * this.width + c - Math.floor(r/2);
-        return this.hexes[i] || NullHex;
+        return this.hexes[i] || null;
     }
 
     getHexById(id) {
-        return this.hexes[id] || NullHex;
+        return this.hexes[id] || null;
     }
 
     forEach(fn) {

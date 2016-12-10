@@ -29,7 +29,7 @@ AssetManager.images = {
 };
 
 AssetManager.spritesheets = {
-    'hex' : ['assets/hex.png', HEX_WIDTH, 84],
+    'hex' : ['assets/hex.png', HEX_WIDTH, 42],
     'pawn' : ['assets/pawn.png', 32,48],
     'nextTurnButton' : ['assets/ui/nextTurnButton.png', 67,29]
 };

@@ -1,7 +1,9 @@
 import IterableOn from 'lib/decorators/IterableOn';
 import { Random } from 'lib/util';
 
-const HEX_ADJACENCY_VECTORS = [[-1,-1],[-1,0],[0,1],[1,1],[1,0],[0,-1]];
+
+const DIRECTION =             {0:'UP_LEFT',1:'UP_RIGHT',2:'RIGHT',3:'DOWN_RIGHT',4:'DOWN_LEFT', 5:'LEFT'};
+const HEX_ADJACENCY_VECTORS = [  [-1,-1],    [-1,0],      [0,1],    [1,1],         [1,0],       [0,-1]];
 
 const NullHex = {
     toString: () => "[Null Hex]",
@@ -48,8 +50,15 @@ class HexGroup {
         return this._pivot;
     }
 
-    border() {
-        return this.filter( hex => hex.neighbours().filter(h2 => !this.contains(h2)).length>0);
+    border(includeShoreline=false) {
+        return this.filter( hex => {
+            if (includeShoreline && hex.neighbours().length<6) return true;
+            return hex.neighbours().filter(h2 => !this.contains(h2)).length>0;
+        });
+    }
+
+    borderIncludingShoreline() {
+        return this.border(true);
     }
 
     neighbours() {
@@ -165,6 +174,13 @@ class Hexagon {
             .filter((hex) => hex && condition(hex));        
     }
 
+    border() { return this; }
+    borderIncludingShoreline() { return this; }
+
+    neighbour(direction) {
+        return this.grid.getHexByAxial(this.position.r+HEX_ADJACENCY_VECTORS[direction][0],this.position.c+HEX_ADJACENCY_VECTORS[direction][1]);
+    }
+
     floodFill(condition) {
         const res = new HexGroup([this]);
         res.floodFill(condition);
@@ -186,6 +202,8 @@ class Hexagon {
     get id() {
         return this.position.index;
     }
+
+    get length() { return 1; }
 
     exists() { return true; }
 }

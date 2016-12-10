@@ -2,12 +2,12 @@ import UI from 'lib/controls/UI';
 import { assertDefined } from 'lib/util';
 
 function RegionPanel(spec) {
-    let { game, log, economy, regions } = spec;
+    let { game, log, economy, ui } = spec;
 
     let group = game.add.group(),
         currrentRegion = null;
 
-    let ui = new UI(spec,{
+    let controls = new UI(spec,{
         name: 'mainContainer',
         component: 'pane',
         hAlign: 'center',
@@ -35,14 +35,16 @@ function RegionPanel(spec) {
         mainContainer, 
         regionNameLabel,
         economyLabel
-    } = ui;
+    } = controls;
 
     assertDefined(mainContainer, regionNameLabel, economyLabel);
-
     mainContainer.addToGroup(group);
 
+    ui.onRegionSelected.add(region => {
+        setRegion(region);
+    });
+
     return Object.freeze({
-        setRegion,
         get group() { return group; }
     });
 
@@ -55,6 +57,7 @@ function RegionPanel(spec) {
     function setRegion(region) {
         if (!region) {
             regionNameLabel.text = '';
+            economyLabel.text = '';
         } else {
             regionNameLabel.text = `Region #${region.id}`;
             const treasury = economy.treasuryOf(region);
