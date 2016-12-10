@@ -3,18 +3,18 @@ import noisejs from 'noisejs';
 
 function LandGenerator({actions, grid, log}) {
     actions.addHandler('GENERATE_LANDMASS', (callback)=> {
-        worldGenPerlin();
+        worldGenSolid();
         callback();
     },'Generate random hex grid');
 
     return Object.freeze({});
 
-    function worldGenSolid({grid,log}) {
+    function worldGenSolid() {
         grid.fillWith((p)=> true);
     }
 
     function worldGenPerlin() {
-        const MIN_SIZE = 150;
+        const MIN_SIZE = 20;
         const SMOOTHNESS = 8;
         const WATER_LEVEL = 0.7;
 

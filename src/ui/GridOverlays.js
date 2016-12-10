@@ -1,19 +1,23 @@
 import { assertDefined } from 'lib/util';
 import { drawInnerHex } from 'ui/Renderer';
 
-function GridOverlays({game, grid, log}) {
+function GridOverlays({game, grid, log, regions}) {
     
     let overlays = {},
         group = game.add.group(),
-        currentOverlay = null;
+        currentOverlay = null,
+        dirty = true;
 
     const self = Object.freeze({
         configureOverlay,
         show,
         refresh,
         hide,
+        render,
         get group() { return group; }
     });
+
+    regions.onHexesChangedOwner.add(() => dirty=true);
 
     function configureOverlay(overlayDefinition) {
         assertDefined(overlayDefinition, overlayDefinition.name);
@@ -31,6 +35,7 @@ function GridOverlays({game, grid, log}) {
     }
 
     function refresh() {
+        dirty = false;
         if (currentOverlay) {
             currentOverlay.refresh();
         }
@@ -40,11 +45,14 @@ function GridOverlays({game, grid, log}) {
         group.removeChildren();
     }
 
+    function render() {
+        if (dirty) refresh();
+    }
+
     class Overlay {
         constructor({name, func, color, min, max}) {
             this.sprite = null;
             this.func = func;
-            refresh();
         }
 
         refresh() {
@@ -52,17 +60,21 @@ function GridOverlays({game, grid, log}) {
             const graphics = game.add.graphics(0, 0);
 
             graphics.beginFill(0x000000);
-            graphics.fillAlpha=1;
-            graphics.drawRect(0, 0, 10, 10);
+            graphics.fillAlpha=0;
+            graphics.drawRect(0,0,1,1);
+            graphics.fillAlpha=0.7;
 
             grid.forEach(hex=>{
                 drawInnerHex(graphics,hex, this.func(hex));
             });
 
-            this.sprite = game.add.sprite(0, 0, graphics.generateTexture());
+            if (this.sprite) {
+                this.sprite.loadTexture(graphics.generateTexture());
+            } else {
+                this.sprite = game.add.sprite(0, 0, graphics.generateTexture());
+            }
             graphics.destroy();
         }
-
     }
 
     return self;

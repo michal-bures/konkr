@@ -57,7 +57,7 @@ Defense: ${warfare.defenseOf(hex)}`;
 
         let centerX, centerY;
 
-        //debug.set("pointer-at",x.toFixed(2) + "," +y.toFixed(2));
+        debug.set("pointer-at",x.toFixed(2) + "," +y.toFixed(2));
 
         if (Math.floor(y) % 2) {
             //A

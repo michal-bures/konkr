@@ -23,7 +23,7 @@ class HexGroup {
     constructor(hexes) {
         this.members=[];
         this._length = 0;
-        this._pivot = NullHex;
+        this._pivot = null;
         Object.seal(this);
         if (hexes) this.add(hexes);
     }
@@ -37,8 +37,8 @@ class HexGroup {
     }
 
     _findNewPivot() {
-        if (!this.length) return NullHex;
-        for (key in this.members) {
+        if (!this.length) return null;
+        for (const key in this.members) {
             this._pivot = this.members[key];
             return;
         }
@@ -61,10 +61,10 @@ class HexGroup {
     }
 
     getRandomHex() {
-        if (!this.length) return NullHex;
+        if (!this.length) return null;
         let i = Random.integer(0, this._length-1);
         let n = 0;
-        var res = NullHex;
+        var res = null;
         this.members.some(hex => { 
             if( n++ === i) {
                 res = hex;
@@ -81,7 +81,7 @@ class HexGroup {
     add(hexOrGroup) {
         hexOrGroup.forEach(hex=>{
             if (this.members[hex.id]) return false;
-            if (!this._pivot.exists()) this._pivot = hex;
+            if (!this._pivot) this._pivot = hex;
             this.members[hex.id] = hex;
             ++this._length;
             return true;
@@ -162,7 +162,7 @@ class Hexagon {
         const {r,c} = this.position;
         return HEX_ADJACENCY_VECTORS
             .map((change) => this.grid.getHexByAxial(r+change[0], c+change[1]))
-            .filter((hex) => hex.exists() && condition(hex));        
+            .filter((hex) => hex && condition(hex));        
     }
 
     floodFill(condition) {

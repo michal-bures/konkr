@@ -71,7 +71,7 @@ function Economy(spec) {
             if (newValue < 0) {
                 newValue = 0;
                 self.onRegionBankrupt.dispatch(region);
-                actions.execute('KILL_EVERYTHING_IN_REGION', region);
+                actions.execute('KILL_TROOPS_IN_REGION', region);
             }
             setTreasuryOf(region,newValue);
         });
@@ -79,7 +79,7 @@ function Economy(spec) {
     });
 
     function setTreasuryOf(region,value) {
-        const oldValue = treasuryOf(value);
+        const oldValue = treasuryOf(region);
         if (value === oldValue) return;
         regionTreasury.set(region,value);
         self.onRegionTreasuryChanged.dispatch(region, value, oldValue);

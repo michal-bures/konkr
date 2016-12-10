@@ -45,8 +45,8 @@ function Play(game) {
                         debug: (...args) => console.debug(`${moduleName}>`, ...args),
                         error: (...args) => console.error(`${moduleName}>`, ...args),
                         warn: (...args) => console.warn(`${moduleName}>`, ...args),
-                        log: (...args) => console.log(`${moduleName}>`, ...args),
-                        info: (...args) => console.info(`${moduleName}>`, ...args),
+                        log: console.log,
+                        info: console.info,
                     }
                 });
             },
@@ -64,6 +64,7 @@ function Play(game) {
 
         gameUi = gameSpec.extend({
             landSprites: spec => new Renderer.LandSprites(spec),
+            regionBorders: spec => new Renderer.RegionBorders(spec),
             pawnSprites: spec => new Renderer.Pawns(spec),
             hexSelectionProxy: spec => new HexSelectionProxy(spec),
             scrolling: spec => new Scrolling(spec),
@@ -79,6 +80,7 @@ function Play(game) {
 
         //display layers z-order
         game.world.add(gameUi.landSprites.group);          
+        game.world.add(gameUi.regionBorders.group);  
         game.world.add(gameUi.gridOverlays.group);  
         game.world.add(gameUi.pawnSprites.group);          
         game.world.add(gameUi.hexSelectionProxy.group);
@@ -110,14 +112,17 @@ function Play(game) {
             vOffset: 10,
         });
 
-        let nextStateCallback = null;
+        let nextStateCallbacks = [];
 
-        gameSpec.actions.addHandler('UPDATE_ECONOMY', (callback) => {
-            nextStateCallback = callback;
-        }, 'Manual confirmation');
-        gameSpec.actions.addHandler('PLAYER_ACT', (callback) => {
-            nextStateCallback = callback;
-        }, 'Manual confirmation');
+        function breakAfter(...args) {
+            args.forEach(action => {
+                gameSpec.actions.addHandler(action, (callback) => {
+                   nextStateCallbacks.push(callback);
+                });
+            });
+        }
+
+        breakAfter('UPDATE_ECONOMY');
 
         gameSpec.actions.addHandler('RESET_WORLD', (callback, width, height) => {
             gameSpec.grid.reset(width, height);
@@ -126,9 +131,8 @@ function Play(game) {
 
         nextTurnButton.addToGroup(game.world);
         nextTurnButton.onInputUp.add(() => {
-            if (nextStateCallback) {
-                nextStateCallback();
-                nextStateCallback = null;
+            if (nextStateCallbacks.length) {
+                nextStateCallbacks.pop()();
             }
         });
 
@@ -137,8 +141,8 @@ function Play(game) {
         setupDebugDiv();
         gameSpec.actions.checkHandlers();
         gameSpec.gameDirector.begin({
-            worldWidth: 30,
-            worldHeight: 30,
+            worldWidth: 20,
+            worldHeight: 20,
         });
 
         log.info("Level initialization complete.");
@@ -165,7 +169,7 @@ function Play(game) {
 
     function preload() {
         game.time.advancedTiming = true;
-        game.time.desiredFps = 120;
+        game.time.desiredFps = 60;
     }
 
     function update() {
@@ -173,6 +177,9 @@ function Play(game) {
     }
 
     function render() {
+        gameUi.landSprites.render();
+        gameUi.regionBorders.render();
+        gameUi.gridOverlays.render();
     }
 }
 

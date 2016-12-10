@@ -55,9 +55,7 @@ function Players(spec) {
                         hexes:region.hexes,
                         type:PawnType.TROOP_1
                     });
-                    log.debug("AVAIL UNITS", availableUnits);
                     resolve();
-
                 });
             }
 
@@ -75,7 +73,7 @@ function Players(spec) {
 
             function buyUnits() {
                 return new Promise(resolve=>{
-                    if (economy.treasuryOf(region) > 10 && economy.netIncomeOf(region) > 2) {
+                    if (economy.treasuryOf(region) > 10 && economy.netIncomeOf(region)+economy.treasuryOf(region)/10 > 2) {
                         log.debug(`Buying new unit on ${region} (${economy.treasuryOf(region)} gold left)`);
                         const targetHex = region.hexes.filter(hex => !pawns.pawnAt(hex)).getRandomHex();
                         if (!targetHex) return resolve();

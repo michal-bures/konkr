@@ -1,0 +1,1096 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"requi",
+				"requiresSorting"
+			],
+			[
+				"w",
+				"waitingFor"
+			],
+			[
+				"onBefo",
+				"onBeforeStateChange"
+			],
+			[
+				"currentS",
+				"currentStateIndex"
+			],
+			[
+				"overlay",
+				"overlayDefinition"
+			],
+			[
+				"tile",
+				"tileSelectionProxy"
+			],
+			[
+				"sprite",
+				"spritesheets"
+			],
+			[
+				"tobE",
+				"toBeGreaterThan"
+			],
+			[
+				"add",
+				"addUntilFull"
+			],
+			[
+				"set",
+				"setVisible"
+			],
+			[
+				"token",
+				"token-agent-jump"
+			],
+			[
+				"_update",
+				"_updatePositionsScheduled"
+			],
+			[
+				"collide",
+				"collidesWithPlayer"
+			],
+			[
+				"WOR",
+				"WORLD_SHIFT_EASING"
+			],
+			[
+				"dist",
+				"distanceTraveled"
+			],
+			[
+				"get",
+				"getThreat"
+			],
+			[
+				"lbl",
+				"lblLifes"
+			],
+			[
+				"on",
+				"onLoadingProgress"
+			],
+			[
+				"dic",
+				"dictionaryReady"
+			],
+			[
+				"cu",
+				"currentTile"
+			],
+			[
+				"object",
+				"objectSpawner"
+			],
+			[
+				"destroy",
+				"destroyTokenFromTray"
+			],
+			[
+				"toBe",
+				"toBeGreaterThan"
+			],
+			[
+				"startin",
+				"startingTile"
+			],
+			[
+				"proto",
+				"prototype"
+			],
+			[
+				"player",
+				"playerCharacterOffset"
+			],
+			[
+				"character",
+				"playerCharacterOffset"
+			],
+			[
+				"Tok",
+				"TokenState"
+			],
+			[
+				"que",
+				"queuedTokens"
+			],
+			[
+				"incom",
+				"incomingTokens"
+			],
+			[
+				"pro",
+				"prototype"
+			],
+			[
+				"generate",
+				"generateToken"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "src/ui/Renderer.js",
+			"settings":
+			{
+				"buffer_size": 6904,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/states/Play.js",
+			"settings":
+			{
+				"buffer_size": 6384,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ui/GridOverlays.js",
+			"settings":
+			{
+				"buffer_size": 1693,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/lib/hexgrid/Hexagon.js",
+			"settings":
+			{
+				"buffer_size": 4435,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 173.0,
+		"last_filter": "linter all ",
+		"selected_items":
+		[
+			[
+				"linter all ",
+				"SublimeLinter: Show All Errors"
+			],
+			[
+				"linter",
+				"SublimeLinter: Lint This View"
+			],
+			[
+				"sublimelin",
+				"SublimeLinter: Toggle Linter"
+			],
+			[
+				"install p",
+				"Package Control: Install Package"
+			],
+			[
+				"Remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"SublimeLinter",
+				"SublimeLinter: Toggle Linter"
+			],
+			[
+				"Upgr",
+				"Package Control: Upgrade/Overwrite All Packages"
+			],
+			[
+				"Package Control: up",
+				"Package Control: Upgrade Package"
+			],
+			[
+				"sublimelinter",
+				"SublimeLinter: Toggle Linter"
+			],
+			[
+				"sublim",
+				"SublimeLinter: Toggle Linter"
+			],
+			[
+				"toggle linter",
+				"SublimeLinter: Toggle Linter"
+			],
+			[
+				"sublimelinter:",
+				"SublimeLinter: Toggle Linter"
+			],
+			[
+				"linter:",
+				"SublimeLinter: Lint This View"
+			],
+			[
+				"linters",
+				"SublimeLinter: Show All Errors"
+			],
+			[
+				"SublimeLin",
+				"SublimeLinter: Choose Mark Style"
+			],
+			[
+				"SublimeLinter Choo",
+				"SublimeLinter: Choose Mark Style"
+			],
+			[
+				"linter settin",
+				"Preferences: SublimeLinter Settings – User"
+			],
+			[
+				"jshint",
+				"JSHint"
+			],
+			[
+				"settings",
+				"Preferences: Settings"
+			],
+			[
+				"Babel",
+				"Preferences: Babel – Default"
+			],
+			[
+				"install pack",
+				"Package Control: Install Package"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"linter ",
+				"SublimeLinter: Choose Lint Mode"
+			],
+			[
+				"lineter",
+				"SublimeLinter: Choose Lint Mode"
+			],
+			[
+				"enable",
+				"SublimeLinter: Enable Linting"
+			],
+			[
+				"settings ",
+				"Preferences: Settings"
+			],
+			[
+				"linter:di",
+				"SublimeLinter: Disable Linting"
+			],
+			[
+				"linter:enabl",
+				"SublimeLinter: Enable Linting"
+			],
+			[
+				"linter:disab",
+				"SublimeLinter: Disable Linting"
+			],
+			[
+				"jshin",
+				"JSHint"
+			],
+			[
+				"install packa",
+				"Package Control: Install Package"
+			],
+			[
+				"linter: ena",
+				"SublimeLinter: Enable Linter"
+			],
+			[
+				"linter: disabl",
+				"SublimeLinter: Disable Linter"
+			],
+			[
+				"preference",
+				"Preferences: Settings - Default"
+			],
+			[
+				"linter cle",
+				"SublimeLinter: Clear Caches"
+			],
+			[
+				"prefs lin",
+				"Preferences: SublimeLinter Settings – User"
+			],
+			[
+				"lin",
+				"SublimeLinter: Next Error"
+			],
+			[
+				"linter lint",
+				"SublimeLinter: Toggle Linter"
+			],
+			[
+				"Linter",
+				"SublimeLinter: Lint This View"
+			],
+			[
+				"Install P",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Add Channel"
+			],
+			[
+				"package",
+				"Preferences: Browse Packages"
+			],
+			[
+				"package ",
+				"Preferences: Browse Packages"
+			]
+		],
+		"width": 528.0
+	},
+	"console":
+	{
+		"height": 200.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '2915d1851351e5ee549c20394736b442' + '8bc59f460fa1548d1514676163dafc88'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/C/Users/Embair/dev/www/konkr/src",
+		"/C/Users/Embair/dev/www/konkr/src/lib",
+		"/C/Users/Embair/dev/www/konkr/src/rules",
+		"/C/Users/Embair/dev/www/konkr/src/states",
+		"/C/Users/Embair/dev/www/konkr/src/ui",
+		"/C/Users/Embair/dev/www/konkr/static"
+	],
+	"file_history":
+	[
+		"/C/Users/Embair/dev/www/konkr/src/rules/Pawns.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/HexSelectionProxy.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/RegionPanel.js",
+		"/C/Users/Embair/dev/www/konkr/src/states/Play.js",
+		"/C/Users/Embair/dev/www/konkr/src/rules/Economy.js",
+		"/C/Users/Embair/dev/www/konkr/src/rules/Actions.js",
+		"/C/Users/Embair/dev/www/konkr/src/rules/Regions.js",
+		"/C/Users/Embair/dev/www/konkr/src/rules/Players.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/GridOverlays.js",
+		"/C/Users/Embair/dev/www/konkr/konkr.sublime-project",
+		"/C/Program Files/Git/mingw64/share/doc/git-doc/git-push.html",
+		"/C/Program Files/Git/mingw64/share/doc/git-doc/git-config.html",
+		"/C/Program Files/Git/mingw64/share/doc/git-doc/git-clone.html",
+		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid/HexGrid.js",
+		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid/Hexagon.js",
+		"/C/Users/Embair/dev/www/konkr/static/index.html",
+		"/C/Users/Embair/dev/www/konkr/src/lib/decorators/IterableOn.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/Renderer.js",
+		"/C/Users/Embair/dev/www/konkr/src/lib/AssetManager.js",
+		"/C/Users/Embair/dev/www/konkr/src/lib/HexGrid.js",
+		"/C/Users/Embair/dev/www/konkr/static/styles/main.css",
+		"/C/Users/Embair/dev/www/konkr/src/lib/util.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/Scrolling.js",
+		"/C/Users/Embair/dev/www/konkr/src/lib/Injector.js",
+		"/C/Users/Embair/dev/www/konkr/src/rules/WorldGenerator.js",
+		"/C/Users/Embair/dev/www/konkr/src/lib/controls/UI.js",
+		"/C/Users/Embair/dev/www/konkr/src/index.js",
+		"/C/Users/Embair/dev/www/angrywords/js/angrywords.js",
+		"/C/Users/Embair/dev/www/konkr/src/rules/Warfare.js",
+		"/C/Users/Embair/dev/www/angrywords/js/lib/Tokens.js",
+		"/C/Users/Embair/dev/www/angrywords/index.html",
+		"/C/Users/Embair/dev/www/konkr/gulpfile.js",
+		"/C/Users/Embair/dev/www/konkr/.gitignore",
+		"/C/Users/Embair/dev/www/konkr/src/lib/WorldGenerator.js",
+		"/C/Users/Embair/dev/www/konkr/src/lib/LandTile.js",
+		"/C/Users/Embair/dev/www/konkr/src/.jshintrc",
+		"/C/Users/Embair/AppData/Roaming/Sublime Text 3/Packages/Default/Preferences.sublime-settings",
+		"/C/Users/Embair/AppData/Roaming/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/C/Users/Embair/dev/www/konkr/src/lib/ui/TileSelectionProxy.js",
+		"/C/Users/Embair/dev/www/konkr/src/lib/Renderer.js",
+		"/C/Users/Embair/dev/www/konkr/package.json",
+		"/C/Users/Embair/dev/www/angrywords/js/lib/AssetManager.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/SearchBox.js",
+		"/C/Users/Embair/dev/www/angrywords/js/lib/Const.js",
+		"/C/Users/Embair/dev/www/hexwar/phaser-es6-boilerplate/gulpfile.js",
+		"/C/Users/Embair/dev/www/hexwar/phaser-es6-boilerplate/static/index.html",
+		"/C/Users/Embair/dev/www/hexwar/phaser-es6-boilerplate/src/konkr.js",
+		"/C/Users/Embair/dev/www/hexwar/phaser-es6-boilerplate/src/index.js",
+		"/C/Users/Embair/dev/www/konkr/js/konkr.js",
+		"/C/Users/Embair/dev/www/hexwar/phaser-es6-boilerplate/package.json",
+		"/C/Users/Embair/dev/www/konkr/js/lib/HexGrid.js",
+		"/C/Users/Embair/dev/www/konkr/index.html",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/index.js",
+		"/C/Users/Embair/dev/www/practice/trackerApp/trackerapp/server.js",
+		"/C/Users/Embair/dev/www/hexwar/phaser-es6-boilerplate/src/states/GameState.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/package.json",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/SortableTable.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/FilterEditor.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/Stats.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/model/Filter.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/model/Tweet.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/__snapshots__/App.test.js.snap",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/App.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/server/server.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/README.md",
+		"/C/Users/Embair/dev/www/practice/trackerApp/package.json",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/reducers/index.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/actions/index.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/App.test.js",
+		"/C/Users/Embair/dev/www/practice/trackerApp/trackerapp/http-listener.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/index.css",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/Tweet.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/filters.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/reducers/model/Filter.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/reducers/model/Tweet.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/reducers/model/filters.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/reducers/app.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/actions/fetchTweets.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/TweetsTable.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/globals.js",
+		"/C/Users/Embair/dev/www/practice/tmp/public/index.html",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/filters.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/FilterEditor",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/Filters.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/node_modules/assert/assert.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/SearchBox.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/App.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/App.css",
+		"/C/Users/Embair/AppData/Roaming/Sublime Text 3/Packages/User/SublimeLinter.sublime-settings",
+		"/C/Users/Embair/dev/www/practice/twitterapp/node_modules/react-scripts/scripts/start.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/node_modules/react-scripts/config/webpack.config.dev.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/node_modules/react-scripts/package.json",
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/App.test.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/public/index.html",
+		"/C/Users/Embair/dev/www/practice/trackerApp/http-listener.js",
+		"/C/Users/Embair/dev/www/practice/trackerApp/server.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/server.js",
+		"/C/Users/Embair/dev/www/practice/twitterapp/scripts/start.js",
+		"/C/Users/Embair/AppData/Roaming/Sublime Text 3/Packages/Babel/Babel.sublime-settings",
+		"/C/Users/Embair/dev/www/practice/twitterapp/.eslint",
+		"/C/Users/Embair/dev/www/practice/trackerApp/trackerapp/package.json",
+		"/C/Users/Embair/dev/www/practice/trackerApp/trackerapp/.jshintrc",
+		"/C/Users/Embair/dev/www/practice/trackerApp/trackerapp/spec/support/jasmine.json",
+		"/C/Users/Embair/dev/www/practice/trackerApp/trackerapp/spec/http-listener.spec.js",
+		"/C/Users/Embair/dev/www/practice/trackerApp/node_modules/redis/node_modules/redis-commands/commands.json",
+		"/C/Users/Embair/dev/www/practice/trackerApp/node_modules/node-getopt/package.json",
+		"/C/Users/Embair/dev/www/practice/trackerApp/.jshintrc",
+		"/C/Users/Embair/dev/www/practice/trackerApp/trackerapp/README.md",
+		"/C/Users/Embair/dev/www/practice/trackerApp/trackerapp/trackdata.txt",
+		"/C/Users/Embair/dev/www/practice/trackerApp/spec/http-listener.spec.js",
+		"/C/Users/Embair/dev/www/practice/trackerApp/node_modules/node-getopt/index.js",
+		"/C/Users/Embair/dev/www/practice/trackerApp/benchmark.js",
+		"/C/Users/Embair/dev/www/practice/counterApp/spec/worker.spec.js",
+		"/C/Users/Embair/dev/www/practice/counterApp/worker.js",
+		"/C/Users/Embair/dev/www/practice/counterApp/.jshintrc",
+		"/C/Users/Embair/dev/www/practice/counterApp/package.json",
+		"/C/Users/Embair/dev/www/practice/counterApp/server.js",
+		"/C/Users/Embair/dev/www/practice/counterApp/benchmark.js",
+		"/C/Users/Embair/dev/www/practice/counterApp/redis-server.js",
+		"/C/Users/Embair/dev/www/practice/counterApp/node_modules/jasmine/lib/command.js",
+		"/C/Users/Embair/dev/www/practice/counterApp/node_modules/redis-server/redis-server.js",
+		"/C/Users/Embair/dev/www/practice/counterApp/util.js",
+		"/C/Users/Embair/dev/www/practice/counterApp/benchmark.html",
+		"/C/Users/Embair/dev/www/practice/counterApp/spec/support/jasmine.json",
+		"/C/Users/Embair/dev/www/practice/counterApp/spec/counterApp.spec.js",
+		"/C/Users/Embair/dev/www/angrywords/js/lib/util.js",
+		"/C/Users/Embair/dev/www/practice/counterApp/counterApp.js",
+		"/C/Users/Embair/dev/www/practice/counterApp/main.js"
+	],
+	"find":
+	{
+		"height": 34.0
+	},
+	"find_in_files":
+	{
+		"height": 90.0,
+		"where_history":
+		[
+			"C:\\Users\\Embair\\dev\\www\\konkr\\src\t",
+			"C:\\Users\\Embair\\dev\\www\\konkr\\src",
+			"C:\\Users\\Embair\\dev\\www\\konkr",
+			"C:\\Users\\Embair\\dev\\www\\konkr\\src",
+			"C:\\Users\\Embair\\dev\\www\\konkr",
+			"C:\\Users\\Embair\\dev\\www\\konkrt",
+			"C:\\Users\\Embair\\dev\\www\\practice\\twitterapp\\src",
+			"C:\\Users\\Embair\\dev\\www\\practice\\twitterapp",
+			"C:\\Users\\Embair\\dev\\www\\practice\\counterApp",
+			"C:\\Users\\Embair\\dev\\www\\practice\\node_modules\\redis",
+			"C:\\Users\\Embair\\dev\\www\\angrywords\\js",
+			"C:\\Users\\Embair\\dev\\www\\angrywords\\js\\lib",
+			"C:\\Users\\Embair\\dev\\www\\angrywords\\js\\lib\\*.js",
+			"C:\\Users\\Embair\\dev\\www\\angrywords\\js",
+			"<open folders>",
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+			"drawBorderBetween",
+			"border",
+			"pawns",
+			"CHANGE_HEXES_REGION",
+			"CONQUER",
+			"hexPawn",
+			"_pawns",
+			"toDebugString",
+			"exists()",
+			"NullHex",
+			"Buying new unit",
+			"BUY_UNIT",
+			"_pawns",
+			"placeAt",
+			"_pawns",
+			"forEach",
+			"pawns",
+			"placeAt",
+			"_pawns",
+			"pawnAt",
+			"hexPawn",
+			"onDestroyer",
+			"log.debug",
+			"AVAIL",
+			"AVAIL_UNITS",
+			"formHex",
+			"this",
+			"PIVOT",
+			"_findNewPivot",
+			"remove(",
+			"this._pivot =",
+			"PIVOT",
+			".exists(",
+			"_findNewPivot",
+			"availableUnits",
+			"filter",
+			"select",
+			"select(",
+			"GlobalRegionAI",
+			"hexGroup",
+			"CAPTURE_HEXES",
+			"HEX",
+			"getOwnerOf",
+			"NullHex",
+			"addAll",
+			"super",
+			"lib/HexGrid",
+			"HexGroup",
+			"lib/HexGrid",
+			"addAll",
+			"subtract",
+			"NullHex",
+			"ADD_ALL",
+			"getRegionsControlledBy",
+			"controlled",
+			"onDestroy",
+			"removeAll",
+			"CAPTURE_HEXES",
+			"previousRegion",
+			"pickNewCapital",
+			"name",
+			"treasuryOf",
+			"onCreated",
+			"setRegionTreasury",
+			"getRegionTreasury",
+			"regionTreasury.get",
+			"capital at",
+			"CREATE_PAWN",
+			"action",
+			"calculate and apply",
+			"PLAYER_ACT",
+			"setHandler",
+			"players",
+			"treasury",
+			"EconomyUpdate",
+			"extended spec",
+			"log.",
+			"context",
+			"tailoredSpec",
+			"spec",
+			"this",
+			"this.",
+			"debug",
+			"leaving state",
+			"addTask",
+			"createJob",
+			"TasksTracker",
+			"jobs",
+			"RequestForComments",
+			"rfc",
+			"nextState",
+			"onResolved",
+			"_regions",
+			"IterableOn",
+			"Phaser.Signal",
+			"_resolved",
+			"signal",
+			"regionOf",
+			"factionOf",
+			"ACTIONS",
+			"convertToWorldCoordinates",
+			"super",
+			"super(",
+			"super'",
+			"_regions =",
+			"_props",
+			"padding",
+			"10",
+			"fixedToCamera",
+			".x",
+			"setPlacement",
+			"createDisplayObject",
+			"this.parent",
+			"parent.",
+			"duplicate",
+			"constructor",
+			"createDisplayObject",
+			"tileSelectionProxy",
+			"TileSelectionProxy",
+			"OFFSET_LEFT",
+			"this.game",
+			"pointer",
+			"size",
+			"get size",
+			"this.",
+			"this.events",
+			"LandSprite",
+			"landSprites"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"pawn",
+			"MultiRegionAI",
+			"hexOrGroup",
+			"CHANGE_HEXES_REGION",
+			"add",
+			"region",
+			"id",
+			"setTreasuryOf",
+			"treasuryOf",
+			"getRegionTreasury",
+			"create",
+			"UpdateEconomy",
+			"spec",
+			"tailoredContext",
+			"context",
+			"self",
+			"",
+			"addTask",
+			"TaskTracker",
+			"tasks",
+			"JobsTracker",
+			"jobs",
+			"newState",
+			"_constructors",
+			"this.parentContainer",
+			"hexSelectionProxy",
+			"HexSelectionProxy",
+			"game",
+			"length",
+			"",
+			"surface.events",
+			"_pawns",
+			"Region",
+			"",
+			"pawns",
+			"hexPawn",
+			"",
+			"OrderedMap",
+			"name",
+			"._resolved",
+			"'ui",
+			"'rules",
+			"from 'lib/ui/Renderer'",
+			"hexGroup",
+			"HexGroup",
+			"members",
+			"_rowSize",
+			"rowSize",
+			"",
+			"GroundTileSprite",
+			"_hexesPerRow",
+			"let",
+			"\"",
+			"Filter",
+			"state.merge({",
+			"state.merge ({",
+			"statsModalVisible",
+			"showStats",
+			"filterValues",
+			"filters",
+			"tweets",
+			"this.fetching",
+			"",
+			"this.props.tweets",
+			"this.props.error",
+			"this.props.fetching",
+			"this.props.filters",
+			")",
+			"mockTweet(",
+			"actualValue",
+			"orderedList",
+			"SortableTable",
+			"sortIndicator",
+			"tweetData.",
+			"searchString",
+			"renderResults",
+			"mainView",
+			"resultsBrowser",
+			"user",
+			"requestAuthToken",
+			"TOKEN",
+			"SERVICE_URL+'",
+			"DB.COUNT",
+			"assert.equal",
+			"gracefulShutdown",
+			"dumpStream",
+			"dbClient",
+			"DUMP_FILE",
+			"console.log",
+			"REDIS_PORT",
+			"dbClient",
+			"dumpStream",
+			"ext",
+			"worker.",
+			"worker",
+			"Worker",
+			"server-worker.js",
+			"ServerWorker",
+			"'",
+			"Worker",
+			"self._dbClient",
+			"srv",
+			"this",
+			"_storage",
+			"dumpFile",
+			"redisServerPort",
+			"expectResponseFunc",
+			"resetCounter",
+			"'",
+			"dbFields.COUNT",
+			"dbFields.count",
+			"dbField.count",
+			"redis",
+			"fileBrowser",
+			"'",
+			"this.type.maxLevel",
+			"this.type.minLevel",
+			"this.type.maxLevel",
+			"this.type.minLevel",
+			"cooldownPeriod",
+			"_dirty",
+			"RewardCollector",
+			"LootCollector",
+			"Assassinate",
+			"this.distance",
+			"getThreat",
+			"Damage",
+			"wordBuilder.tokens"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "src/ui/Renderer.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6904,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6125,
+								6125
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2314.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "src/states/Play.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6384,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6354,
+								6354
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2160.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/ui/GridOverlays.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1693,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1408,
+								1408
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "src/lib/hexgrid/Hexagon.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4435,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1238,
+								1238
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2070.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 23.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 100.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "konkr.sublime-project",
+	"replace":
+	{
+		"height": 62.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"hexa",
+				"src\\lib\\hexgrid\\Hexagon.js"
+			],
+			[
+				"pawns.",
+				"src\\rules\\Pawns.js"
+			],
+			[
+				"actions",
+				"src\\rules\\Actions.js"
+			],
+			[
+				"econ",
+				"src\\rules\\Economy.js"
+			],
+			[
+				"regions",
+				"src\\rules\\Regions.js"
+			],
+			[
+				"play",
+				"src\\states\\Play.js"
+			],
+			[
+				"rendere",
+				"src\\ui\\Renderer.js"
+			],
+			[
+				"render",
+				"src\\ui\\Renderer.js"
+			],
+			[
+				"pawns",
+				"src\\rules\\Pawns.js"
+			],
+			[
+				"util.",
+				"src\\lib\\util.js"
+			],
+			[
+				"regios",
+				"src\\rules\\Regions.js"
+			],
+			[
+				"econom",
+				"rules\\Economy.js"
+			],
+			[
+				"hexgrid",
+				"lib\\HexGrid.js"
+			],
+			[
+				"index",
+				"C:\\Users\\Embair\\dev\\www\\angrywords\\index.html"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 226.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+		"max_columns": 1
+	}
+}

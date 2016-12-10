@@ -44,6 +44,7 @@ function Actions(spec) {
         'CREATE_PAWN' : [], // (pawnType, hex)
         'DESTROY_PAWN' : [], // (pawn)
         'MOVE_PAWN' : [], // (pawn, hex)
+        'KILL_TROOPS_IN_REGION': [], // (region)
 
         // Handled by Players
         'PLAYER_ACT' : [], // (player)
@@ -72,7 +73,7 @@ function Actions(spec) {
 
     // starts executing action and  returns promise
     function execute(id, ...args) {
-        log.debug(`Executing ${id}`, ...args);
+        log.debug(`Executing ${id} with arguments ${args}`);
         return new Promise(resolve=>{
             if (!handlers[id]) throw Error(`Call to unknown action '${id}'`);
             if (!handlers[id].length) throw Error(`Action ${id} has no handlers`);
