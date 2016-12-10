@@ -46,7 +46,8 @@ function Players(spec) {
 
             function play() {
                 log.debug(`Evaluating region ${region}`);
-                return buyUnits().then(refreshAvailUnits).then(attack);
+                //return buyUnits().then(refreshAvailUnits).then(attack);
+                return new Promise(resolve=>resolve());
             }            
 
             function refreshAvailUnits() {

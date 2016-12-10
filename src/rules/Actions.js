@@ -14,7 +14,7 @@ function Actions(spec) {
         schedule,
         undoLastAction,
         checkHandlers,
-        toString,
+        toString, 
         toDebugString,
         getNamedProxy,
         onAction,

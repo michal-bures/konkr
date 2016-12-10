@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   inkscape:label="Pozadí"
+   version="1.1"
+   inkscape:version="0.48.4 r"
+   sodipodi:docname="Nový dokument 15">
+  <defs
+     id="defs3764" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="62.423768"
+     inkscape:cy="484.84017"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="true"
+     inkscape:snap-bbox="true"
+     inkscape:snap-nodes="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1">
+    <inkscape:grid
+       type="xygrid"
+       id="grid3778"
+       empspacing="5"
+       visible="true"
+       enabled="true"
+       snapvisiblegridlinesonly="true"
+       originx="0px"
+       spacingx="16px"
+       spacingy="16px" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata3767">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Vrstva 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="-302.07422"
+       y="217.63956"
+       id="text3770"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3772"
+         x="-302.07422"
+         y="217.63956">Actions</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="51.42857"
+       y="88.076469"
+       id="text3774"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3776"
+         x="51.42857"
+         y="88.076469">Action delegation hierarchy</tspan></text>
+    <rect
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:1.02093399;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+       id="rect3780"
+       width="158.97906"
+       height="574.97913"
+       x="-319.48953"
+       y="172.87265" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text3782"
+       y="220.36221"
+       x="-128"
+       style="font-size:40px;font-style:normal;font-weight:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         y="220.36221"
+         x="-128"
+         id="tspan3784"
+         sodipodi:role="line">Regions</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="187.99997"
+       y="300.36221"
+       id="text3786"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3788"
+         x="187.99997"
+         y="300.36221">Pawns</tspan></text>
+    <rect
+       y="172.87265"
+       x="-143.48953"
+       height="286.97906"
+       width="302.97906"
+       id="rect3790"
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:1.02093399;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text3792"
+       y="220.36221"
+       x="188"
+       style="font-size:40px;font-style:normal;font-weight:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         y="220.36221"
+         x="188"
+         id="tspan3794"
+         sodipodi:role="line">Economy</tspan></text>
+    <rect
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:1.02093399;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+       id="rect3796"
+       width="222.97906"
+       height="62.979095"
+       x="176.51047"
+       y="172.87265" />
+    <rect
+       y="252.87265"
+       x="176.51047"
+       height="62.979095"
+       width="222.97906"
+       id="rect3798"
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:1.02093399;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="-128"
+       y="524.36218"
+       id="text3800"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3802"
+         x="-128"
+         y="524.36218">GameFlow</tspan></text>
+    <rect
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:1.02093399;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+       id="rect3804"
+       width="302.97906"
+       height="62.979095"
+       x="-143.48953"
+       y="476.87265" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text3806"
+       y="604.36218"
+       x="-128"
+       style="font-size:40px;font-style:normal;font-weight:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         y="604.36218"
+         x="-128"
+         id="tspan3808"
+         sodipodi:role="line">WorldGenerator</tspan></text>
+    <rect
+       y="556.87268"
+       x="-143.48953"
+       height="62.979095"
+       width="302.97906"
+       id="rect3810"
+       style="color:#000000;fill:none;stroke:#000000;stroke-width:1.02093399;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new" />
+  </g>
+</svg>

@@ -115,7 +115,7 @@ function build() {
                 ]
             ]
         })
-        .transform(babelify)
+        //.transform(babelify)) //TODO: Uncomment for production
         .bundle().on('error', function(error) {
             gutil.log(gutil.colors.red('[Build Error]', error.message));
             this.emit('end');
@@ -152,8 +152,6 @@ function serve() {
     });
 
 }
-
-
 gulp.task('cleanBuild', cleanBuild);
 gulp.task('copyStatic', ['cleanBuild'], copyStatic);
 gulp.task('copyPhaser', ['copyStatic'], copyPhaser);

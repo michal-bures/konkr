@@ -118,12 +118,11 @@ function Play(game) {
         let nextStateCallbacks = [];
 
         gameSpec.actions.attachGuard((prevAction, nextAction) => new Promise(resolve => {
-            
-            switch (prevAction) {
+            switch (prevAction && prevAction.name) {
                 case 'PLAYER_ACT':
                     return nextStateCallbacks.push(resolve);
                 default:
-                    resolve();
+                    setTimeout(resolve,10);
             }
         }));
 
@@ -141,8 +140,8 @@ function Play(game) {
         setupDebugDiv();
         gameSpec.actions.checkHandlers();
         gameSpec.actions.schedule('START_NEW_GAME',{
-            worldWidth: 20,
-            worldHeight: 20,
+            worldWidth: 10,
+            worldHeight: 10,
         });
 
         log.info("Level initialization complete.");
