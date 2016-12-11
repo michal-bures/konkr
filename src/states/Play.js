@@ -1,26 +1,19 @@
-import { HexGrid } from 'lib/hexgrid/HexGrid';
 import * as Renderer from 'ui/Renderer';
 import HexSelectionProxy from 'ui/HexSelectionProxy';
-import LandGenerator from 'rules/LandGenerator';
 import Scrolling from 'ui/Scrolling';
 import RegionPanel from 'ui/RegionPanel';
 import GridOverlays from 'ui/GridOverlays';
 import UI from 'lib/controls/UI';
-import UIManager from 'ui/UIManager';
 
-import GameFlow from 'rules/GameFlow';
-import Players from 'rules/Players';
-import Regions from 'rules/Regions';
-import Economy from 'rules/Economy';
-import Pawns from 'rules/Pawns';
-import Actions from 'rules/Actions';
-import Warfare from 'rules/Warfare';
-import AI from 'ai/AI';
+import UIManager from 'ui/UIManager';
+import GameState from 'rules/GameState';
+
 
 function Play(game) { 
 
     let log = console;
-    let gameSpec = null,
+    let gameState = null,
+        gameSpec = null,
         gameUi = null,
         debugTabName='actions',
         lastDebugContent='';
@@ -37,42 +30,19 @@ function Play(game) {
 
     function init(spec) {
 
-        gameSpec = new spec.extend({
-            // returns a modified clone of spec which has some modules customized for the specified name
-            useName: spec => (moduleName) => {
-                return spec.extend({ 
-                    actions: () => spec.actions && spec.actions.getNamedProxy(moduleName),
-                    log: () => spec.log && {
-                        debug: (...args) => console.debug(`${moduleName}>`, ...args),
-                        error: (...args) => console.error(`${moduleName}>`, ...args),
-                        warn: (...args) => console.warn(`${moduleName}>`, ...args),
-                        log: console.log,
-                        info: console.info,
-                    }
-                });
-            },
-            debug: spec => new Renderer.DebugInfo(spec),
-            grid: spec => new HexGrid(spec),
-            pawns: spec => new Pawns(spec.useName('pawns')),
-            regions: spec => new Regions(spec.useName('regions')),
-            economy: spec => new Economy(spec.useName('economy')),
-            actions: spec => new Actions(spec.useName('actions')),
-            warfare: spec => new Warfare(spec.useName('warfare')),
-            landGen: spec => new LandGenerator(spec.useName('landGen')),
-            gameDirector: spec => new GameFlow(spec.useName('gameDirector')),
-            players: spec => new Players(spec.useName('players')),
-            ui: spec => new UIManager(spec.useName('ui')),
-            ai: spec => new AI(spec.useName('ai'))
-        });
+        gameState = new GameState(spec);
+        gameSpec = gameState.spec;
 
         gameUi = gameSpec.extend({
+            ui: spec => new UIManager(spec),
+            debug: spec => new Renderer.DebugInfo(spec),
             landSprites: spec => new Renderer.LandSprites(spec),
             regionBorders: spec => new Renderer.RegionBorders(spec),
             selRegionHighlight: spec => new Renderer.SelectedRegionHighlight(spec),
             pawnSprites: spec => new Renderer.Pawns(spec),
             hexSelectionProxy: spec => new HexSelectionProxy(spec),
             scrolling: spec => new Scrolling(spec),
-            uiRegionPanel: spec => new RegionPanel(spec.useName('uiRegionPanel')),
+            uiRegionPanel: spec => new RegionPanel(spec),
             gridOverlays: spec => new GridOverlays(spec),
         });
         log = spec.log;
@@ -143,9 +113,9 @@ function Play(game) {
         setupDebugDiv();
         gameSpec.actions.checkHandlers();
         gameSpec.actions.schedule('START_NEW_GAME',{
-            worldWidth: 10,
-            worldHeight: 10,
-            numFactions: 2,
+            worldWidth: 30,
+            worldHeight: 30,
+            numFactions: 4,
         });
 
         log.info("Level initialization complete.");

@@ -2,10 +2,12 @@ import UI from 'lib/controls/UI';
 import { assertDefined } from 'lib/util';
 
 function RegionPanel(spec) {
-    let { game, log, economy, ui } = spec;
+    let { log, game, economy, ui, regions } = spec;
+
+    log.debug(spec.toDebugString());
 
     let group = game.add.group(),
-        currrentRegion = null;
+        currentRegion = null;
 
     let controls = new UI(spec,{
         name: 'mainContainer',
@@ -44,6 +46,14 @@ function RegionPanel(spec) {
         setRegion(region);
     });
 
+    regions.onChanged.add(refreshIfMatchingCurrentRegion);
+    economy.onRegionTreasuryChanged.add(refreshIfMatchingCurrentRegion);
+
+    function refreshIfMatchingCurrentRegion(region) {
+        if(region === currentRegion) setRegion(region);
+    }
+
+
     return Object.freeze({
         get group() { return group; }
     });
@@ -55,6 +65,7 @@ function RegionPanel(spec) {
     }
 
     function setRegion(region) {
+        currentRegion = region;
         if (!region) {
             regionNameLabel.text = '';
             economyLabel.text = '';

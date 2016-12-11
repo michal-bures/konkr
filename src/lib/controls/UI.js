@@ -144,7 +144,7 @@ class Pane extends UIComponent {
 class Label extends UIComponent {
     createDisplayObject({text}) {
         var style = { font: "12pt Arial", fill: "black"};
-        return this.game.add.text(0, 0, text || this.name,style);
+        return this.game.add.text(0, 0, text || '',style);
     }
 
     get text() {
