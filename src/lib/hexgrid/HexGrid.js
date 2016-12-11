@@ -73,15 +73,30 @@ class GridPoint {
 
 class HexGrid {
 
-    constructor({actions}, width=0, height=0) {
+    constructor({actions, src}, width=0, height=0) {
         this.hexes = [];
-        this.reset(width, height);
+        if (src) {
+            const src = initialState;
+            this.reset(src.width, src.height);
+            this.fillWith(point => src.hexes[point.index]);
+        } else {
+            this.reset(width, height);
+        }
 
         actions.setHandler('RESET_HEXGRID', (action, width, height) => {
             this.reset(width, height);
             action.resolve();
         });
     }
+
+    storeState() {
+        return {
+            w: this.width,
+            h: this.height,
+            hexes: this.hexes.map(hex=>(hex?'1':'0')).join('')
+        };
+    }
+
 
     reset(width, height) {
         this.hexes.length = 0;

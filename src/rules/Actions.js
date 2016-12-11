@@ -3,6 +3,9 @@ import ActionsProvider from 'lib/ActionsProvider';
 function Actions(spec) {
     return new ActionsProvider(spec, "Actions", [
 
+        // WARNING: remember that all objects passed as action parameters must be either basic types, 
+        // or provide toJSON method
+
         // Handled by GameFlow
         'START_NEW_GAME',
         'START_NEW_TURN',

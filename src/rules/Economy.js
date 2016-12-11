@@ -15,8 +15,17 @@ function Economy(spec) {
         upkeepOfPawn,
         onRegionTreasuryChanged: new Phaser.Signal(/* region, newValue, oldValue */),
         onRegionBankrupt: new Phaser.Signal(/* region */),
-        toDebugString
+        toDebugString,
+        storeState() {
+            let ret = {};
+            regions.forEach(r=> {
+                if (treasuryOf(r)!==0) ret[r.id] = treasuryOf(r);
+            });
+            return ret;
+        }
     });
+
+
 
     /// ACTION HANDLERS
 

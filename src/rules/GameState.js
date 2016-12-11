@@ -9,7 +9,7 @@ import LandGenerator from 'rules/LandGenerator';
 import AI from 'ai/AI';
 
 function GameState(spec) {
-    let {log} = spec;
+    let {log, initialState} = spec;
     
     let gameStateSpec = spec.extend({
         useName: spec => (moduleName) => {
@@ -34,14 +34,30 @@ function GameState(spec) {
         players: spec => new Players(spec.useName('players')),
         ai: spec => new AI(spec.useName('ai'))
     });
+    let {actions, players} = gameStateSpec;
 
     const self = Object.freeze({
         get spec() { return gameStateSpec; },
         toString,
-        toDebugString
+        toDebugString,
+        toJSON
     });
 
-    let {actions, players} = gameStateSpec;
+    function toJSON() {
+        let obj = {};
+        ['grid','pawns','regions','economy',/*'actions',*/'players'].forEach(moduleName=> {
+            log.debug("Saving "+moduleName);
+            obj[moduleName] = gameStateSpec[moduleName].storeState();
+        });
+        return obj;
+    }
+/*
+    actions.setHandler('STORE_STATE', (action, container) => {
+    });
+
+    actions.setHandler('LOAD_STATE', (action) => {
+
+    })*/
 
     actions.setHandler('START_NEW_GAME',  (action, {worldWidth, worldHeight, numFactions}) => {
         action.schedule('RESET_HEXGRID', worldWidth, worldHeight);

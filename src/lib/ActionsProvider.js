@@ -1,13 +1,8 @@
 function ActionsProvider(spec, providerName, actionList) {
     let {log} = spec;
-    let history = [],
-        activeAction = null, // action currently running
-        onAction = new Phaser.Signal(/* taskTracker, name, ...args */),
-        scheduledByCurrentAction = [], // actions added during the exectuion of the current action
-        planned = [], // stack of planned actions
-        guards = [];  // async function that have to return promise after each action and before 
-                      //next action on the stack is started
 
+
+    // public
     const actions = {
         attachGuard,
         setHandler,
@@ -17,8 +12,23 @@ function ActionsProvider(spec, providerName, actionList) {
         toString, 
         toDebugString,
         getNamedProxy,
-        onAction,
+        storeState() {
+            return {
+                prePlanned: prePlanned.map(a=>a.toJSON()),
+                planned: planned.map(a=>a.toJSON()),
+            };
+        }
     };
+
+    // private
+    let history = [],
+        activeAction = null, // action currently running
+        prePlanned = [], // actions added during the execution of the current action
+        planned = [], // stack of planned actions
+        guards = [];  // async function that have to return promise after each action and before 
+                      //next action on the stack is started
+
+
 
     let handlers = {
         // Special Actions (handled here)
@@ -46,6 +56,11 @@ function ActionsProvider(spec, providerName, actionList) {
 
     function attachGuard(guardFunc) {
         guards.push(guardFunc);
+        return {
+            detach() {
+                guards.splice(guards.indexOf(guardFunc),1);
+            }
+        };
     }
 
     function ScheduledAction (name, ...args) {
@@ -59,6 +74,7 @@ function ActionsProvider(spec, providerName, actionList) {
             resolve,
             reject,
             enableUndo,
+            toJSON,
             get name() { return name; },
             toString,
             issuer:null,            
@@ -100,6 +116,18 @@ function ActionsProvider(spec, providerName, actionList) {
             undoFunc = func;
         }
 
+        function toJSON() {
+            log.debug(`converting ${self} to JSON`);
+            return [name].concat(args.map(a=>{
+                if (typeof a === 'object') {
+                    if (!a.toJSON) throw Error(`Failed to serialize ${self}, Argument '${a}' lacks toJSON() method`);
+                    return a.toJSON(); //TODO: Need to store argument type as well for reconstruction
+                } else {
+                    return a;
+                }
+            }));
+        }
+
         function toString() {
             return `[${name}(${args})${self.issuer?` issued by ${self.issuer}`:''}]`;
         }
@@ -128,15 +156,15 @@ function ActionsProvider(spec, providerName, actionList) {
             planned.push(newAction);
             executeNext();
         } else {
-            scheduledByCurrentAction.push(newAction);
+            prePlanned.push(newAction);
         }
         return newAction;
     }
 
     function executeNext(lastAction) {
         if (activeAction) throw Error(`executeNext() called while another action is still active`);
-        while (scheduledByCurrentAction.length) {
-            planned.unshift(scheduledByCurrentAction.pop());
+        while (prePlanned.length) {
+            planned.unshift(prePlanned.pop());
         }
         if (!planned.length) return;
 
@@ -163,9 +191,9 @@ function ActionsProvider(spec, providerName, actionList) {
 
     function actionRejected(action, message) {
         log.warn(`Action ${action} rejected: ${message}`);
-        if (scheduledByCurrentAction.length) {
-            log.debug(`Unscheduled ${scheduledByCurrentAction.length} dependent action(s)`);
-            scheduledByCurrentAction.length=0;
+        if (prePlanned.length) {
+            log.debug(`Unscheduled ${prePlanned.length} dependent action(s)`);
+            prePlanned.length=0;
         }
         activeAction = null;
         executeNext(action);
@@ -198,7 +226,7 @@ function ActionsProvider(spec, providerName, actionList) {
     function toDebugString() {
         const tHistory = history.map(action => ` ✓ ${action}`).join('\n');
         const tCurrent = activeAction ? `▶▶ ${activeAction}` : '▶▶ (idle)';
-        const tPrePlanned = scheduledByCurrentAction.map(action => ` └─ ⌛ ${action}`).join('\n');
+        const tPrePlanned = prePlanned.map(action => ` └─ ⌛ ${action}`).join('\n');
         const tPlanned = planned.map(action => ` ⌛ ${action}`).join('\n');
         const tActionTypes = 
             Object.keys(handlers)

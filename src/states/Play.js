@@ -47,6 +47,7 @@ function Play(game) {
         });
         log = spec.log;
         window.c = gameUi;
+        window.gameState = gameState;
     }
 
     function create() {
@@ -95,7 +96,8 @@ function Play(game) {
                     return nextStateCallbacks.push(resolve);
                 default:
                     //return nextStateCallbacks.push(resolve);
-                    setTimeout(resolve,10);
+                    //setTimeout(resolve,0);
+                    resolve();
             }
         }));
 

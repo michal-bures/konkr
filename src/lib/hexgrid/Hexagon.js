@@ -251,6 +251,12 @@ class HexGroup {
         }
     }
 
+    toJSON() {
+        let ret = [];
+        this.forEach(hex=>ret.push(hex.id));
+        return ret;
+    }
+
     toString() {
         return `[HexGroup (${this.length}): ${this.members.map(hex=>`#${hex.id}`).filter(a=>a!==undefined).join(",")}]`;
     }
@@ -267,6 +273,7 @@ class Hexagon {
     toString() {
         return `[Hex #${this.id} (${this.position.r},${this.position.c})]`;
     }
+
 
     neighbours(condition=()=>true) {
         const {r,c} = this.position;

@@ -31,6 +31,8 @@ function Regions (spec) {
         onChanged: new Phaser.Signal(/* region */),
         onDestroyed: new Phaser.Signal(/* region */),
         toDebugString,
+        storeState: () => _regions.map(r=>r.toJSON()),
+
     };
     IterableOn(regions,_regions);
     Object.freeze(regions);
@@ -210,6 +212,15 @@ function Regions (spec) {
                 if (!prevCapital) regions.onGainedCapital.dispatch(this, this.capital);
                 actions.schedule('CHANGE_REGION_CAPITAL', this, this.capital, prevCapital);
             }            
+        }
+
+        toJSON() {
+            return {
+                id: this._id,
+                hexes: this._hexes.toJSON(),
+                faction: this.faction,
+                capital: this.capital && this.capital.id
+            };
         }
 
         toString() {

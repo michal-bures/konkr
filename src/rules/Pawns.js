@@ -59,7 +59,7 @@ function generatePawnId() {
 }
 
 function Pawns(spec) {
-    let { actions, log } = spec;
+    let { actions, log, src } = spec;
     
     // public
     let pawns = {
@@ -67,6 +67,7 @@ function Pawns(spec) {
         select,
         forEach,
         toDebugString,
+        storeState: () => _pawns.map(pawn=>pawn.toJSON()),
         onCreated: new Phaser.Signal(/* pawn */),
         onDestroyed: new Phaser.Signal(/* pawn */),
         onMoved: new Phaser.Signal(/* pawn, hex */)
@@ -81,6 +82,10 @@ function Pawns(spec) {
     //private
     let hexPawn = [],
         _pawns = [];
+
+    if (src) {
+        throw Error('Not implemented');
+    }
 
     actions.setHandler("CREATE_PAWN", (action, pawnType, hex) => {
         if (pawnAt(hex)) return action.reject("Cannot replace existing pawn"); //TODO: Implement
@@ -210,6 +215,14 @@ function Pawns(spec) {
             this._hex = hex;
         }
     
+        toJSON() {
+            return {
+                id: this._id,
+                type: this.pawnType.name,
+                hex: this.hex && this.hex.id,
+            };
+        }
+
         set hex(hex) {
             this._hex = hex;
         }

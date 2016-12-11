@@ -33,6 +33,10 @@ function Players(spec) {
             super("Global AI");
         }
 
+        toJSON() {
+            return "GlobalAIPlayer";
+        }
+
         play() {
             regions.forEach(region => actions.schedule('AI_MANAGE_REGION', this, region));
             //TODO: What if two owned regions get merged while playing?
@@ -41,15 +45,26 @@ function Players(spec) {
 
     const _players = [new GlobalAIPlayer()];
     
-    // public API
-    let self = {};
-    IterableOn(self, _players);
-    Object.freeze(self);
-
     let activePlayer = null,
         grabbedPawn = null,
         grabbedPawnRegion = null,
-        movedUnits = null;
+        movedUnits = {};
+
+    // public API
+    let self = {
+        storeState() {
+            return {
+                players: _players.map(player=>player.toJSON()),
+                activePlayer: activePlayer && activePlayer.toJSON(),
+                grabbedPawn: grabbedPawn && grabbedPawn.toJSON(),
+                grabbedPawnRegion: grabbedPawnRegion && grabbedPawnRegion.toJSON(),
+                movedUnits: Object.keys(movedUnits),
+            };
+        }
+    };
+    IterableOn(self, _players);
+    Object.freeze(self);
+
 
 
     actions.setHandler('START_PLAYER_TURN', (action, player) => {
