@@ -2,8 +2,6 @@ import log from 'loglevel';
 import expect from 'expect';
 import { OrderedMap, assertDefined } from 'lib/util';
 
-
-
 const HEX_WIDTH = 32;
 const HEX_HEIGHT = 38;
 const HALF_HEX_HEIGHT = Math.floor(HEX_HEIGHT/2);

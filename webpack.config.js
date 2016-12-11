@@ -57,7 +57,7 @@ module.exports = {
   },
   resolve: {
     root : [
-        path.resolve('./src'),
+        path.resolve(__dirname,'src'),
     ],
     alias: {
       'phaser': phaser,

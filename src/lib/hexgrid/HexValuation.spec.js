@@ -1,18 +1,18 @@
-import { ManualValuation } from 'lib/hexgrid/HexValuation';
+import Valuation from 'lib/hexgrid/HexValuation';
 
-describe("ManualValuation", () => {
+describe("Valuation.Manual", () => {
 
     function hex(id) {
         return { id:id };
     }
 
     it("returns default value", () => {
-        let vals = new ManualValuation(5);
+        let vals = new Valuation.Manual(5);
         expect(vals.get(hex(1))).toEqual(5);
     });
 
     it("orders pops values in descending order by default", () => {
-        let vals = new ManualValuation(0);
+        let vals = new Valuation.Manual(0);
 
         vals.set(hex(3), 3);
         vals.set(hex(4), 4);
@@ -29,7 +29,7 @@ describe("ManualValuation", () => {
     });
 
     it("supports custom heap function", () => {
-        let vals = new ManualValuation(0, (a,b) => b-a);
+        let vals = new Valuation.Manual(0, (a,b) => a-b);
 
         vals.set(hex(1), 1);
         vals.set(hex(2), 2);
@@ -41,7 +41,7 @@ describe("ManualValuation", () => {
     });
 
     it ("allows overwriting values", () => {
-        let vals = new ManualValuation(0);
+        let vals = new Valuation.Manual(0);
 
         vals.set(hex(1), 'old');
         vals.set(hex(1), 'new');

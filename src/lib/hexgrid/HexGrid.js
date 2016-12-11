@@ -1,6 +1,6 @@
 import log from 'loglevel';
 import expect from 'expect';
-import { Hexagon, HexGroup, null } from 'lib/hexgrid/Hexagon';
+import { Hexagon, HexGroup } from 'lib/hexgrid/Hexagon';
 
 // A coordinates in the hexagonal grid.
 // automatically converts between three coordinate systems
