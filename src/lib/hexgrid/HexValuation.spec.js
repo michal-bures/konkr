@@ -40,15 +40,16 @@ describe("Valuation.Manual", () => {
         expect(vals.pop()).toEqual({hex: hex(3), val: 3});
     });
 
-    it ("allows overwriting values", () => {
+    it ("supports udpating values", () => {
         let vals = new Valuation.Manual(0);
 
-        vals.set(hex(1), 'old');
-        vals.set(hex(1), 'new');
+        vals.set(hex(1), 1);
+        vals.set(hex(2), 2);
+        vals.set(hex(3), 3);
+        vals.set(hex(1), 10);
 
-        expect(vals.get(hex(1))).toEqual({hex: hex(1), val: 'new'});
-        expect(vals.pop()).toEqual({hex: hex(1), val: 'new'});
-        expect(vals.pop()).toEqual(null);
-
+        expect(vals.get(hex(1))).toEqual({hex: hex(1), val: 10});
+        expect(vals.pop()).toEqual({hex: hex(1), val: 10});
+        expect(vals.pop()).toEqual({hex: hex(3), val: 3});
     });
 });
