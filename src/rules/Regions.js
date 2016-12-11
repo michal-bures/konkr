@@ -56,6 +56,7 @@ function Regions (spec) {
         Object.keys(lostHexesByRegion).forEach(key => {
             hexesRemovedFromRegion(regions.byId(key), lostHexesByRegion[key]);
         });
+
         if (receivingRegion) {
             receivingRegion.hexes.add(hexOrGroup);
             // check if any regions shoudl merge with the region that gained land
@@ -81,11 +82,7 @@ function Regions (spec) {
         });
         _regions.length = 0;
         grid.components((hex, prevHex) => hexFaction[hex.id] === hexFaction[prevHex.id])
-            .map(group=> {
-                let region = new Region(hexFaction[group.pivot.id]);
-                _regions[region.id] = region;
-                actions.schedule('CHANGE_HEXES_REGION', group, region);
-            });
+            .forEach((group) => createRegion(group, hexFaction[group.pivot.id]));
         action.resolve();
     });
 
@@ -123,9 +120,29 @@ function Regions (spec) {
         hexesRemovedFromRegion(sourceRegion, sourceRegion.hexes);
     }
 
-    // for internal use only!! Does NOT update hexRegion
+    // for internal use from HEXES_CHANGED_OWNER only!! Does NOT update hexRegion
     function hexesRemovedFromRegion(region, hexGroup) {
         region.hexes.remove(hexGroup);
+
+        // check if region is still connected
+        let comps = region.hexes.components();
+
+        if (comps.length > 1) {
+            // Oh shit boys, we have a split over here
+            if (region.hasCapital()) {
+                comps.remove(comps.getOwnerOf(region.capital));
+                // the component with capital is staying in this region
+            } else {
+                comps.popLargestGroup(); // the largest component is staying in this region
+            }
+
+            // assign any disconnected components to standalone regions
+            let comp;
+            while (!!(comp = comps.popLargestGroup())) {
+                createRegion(comp, region.faction);
+            }
+        }
+
         if (region.hasCapital() && region.hexes.length < MIN_SIZE_FOR_CAPITAL) {
             actions.schedule('CHANGE_REGION_CAPITAL', region, null, region.capital);
         }
@@ -135,6 +152,13 @@ function Regions (spec) {
         } else {
             regions.onChanged.dispatch(region);
         }
+    }
+
+    // for internal use only!!
+    function createRegion(hexGroup, faction) {
+        let region = new Region(faction);
+        _regions[region.id] = region;
+        actions.schedule('CHANGE_HEXES_REGION', hexGroup, region);
     }
 
     function factionOf(hex) {

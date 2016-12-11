@@ -1,6 +1,6 @@
 import log from 'loglevel';
 import expect from 'expect';
-import { Hexagon, HexGroup } from 'lib/hexgrid/Hexagon';
+import { Hexagon, HexGroup, HexGroupSet } from 'lib/hexgrid/Hexagon';
 
 // A coordinates in the hexagonal grid.
 // automatically converts between three coordinate systems
@@ -71,71 +71,6 @@ class GridPoint {
 
 }
 
-class HexGrouping {
-    constructor() {
-        this.groups = {};
-        this.membership = [];
-        this._length = 0;
-    }
-
-    add(hexOrGroup, key) {
-        hexOrGroup.forEach(hex => {
-            if (this.membership[hex.id]) {
-                if (this.membership[hex.id] === key) return;
-                this.groups[key].remove(hex);
-            } else {
-                ++this._length;
-            }
-            if (!this.groups[key]) this.groups[key] = new HexGroup();
-            this.groups[key].add(hex);
-            this.membership[hex.id] = key;
-        });
-    }
-
-    getOwnerOf(hex) {
-        expect(hex).toExist();
-        return this.membership[hex.id];
-    }
-
-    forEach(fn) {
-        for (const key in this.groups) {
-            fn(this.groups[key],key);
-        }
-    }
-
-    map(fn) {
-        let res = [];
-        this.forEach((group,key)=>res.push(fn(group,key)));
-        return res;
-    }
-
-    getLargestGroup() {
-        var max = 0;
-        var res = null;
-        this.forEach(hexGroup => {
-            if (hexGroup.length > max) {
-                max = hexGroup.length;
-                res = hexGroup;
-            }
-        });
-        return res;
-    }
-
-    get length() {
-        return this._length;
-    }
-
-    toString() {
-        let total=0;
-        let str = Object.keys(this.groups).map((key) => {
-            const len = this.groups[key].length;
-            total += len;
-            return `${key}(${len})`;
-        }).join(", ");
-        return `[HexGrouping (${total}): ${str}]`;
-    }
-}
-
 class HexGrid {
 
     constructor({actions}, width=0, height=0) {
@@ -186,7 +121,7 @@ class HexGrid {
     }
 
     components(condition=()=>true) {
-        let comps = new HexGrouping();
+        let comps = new HexGroupSet();
         let compNumber = 1;
         this.forEach(hex => {
             if (!comps.getOwnerOf(hex)) {

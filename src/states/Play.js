@@ -143,9 +143,9 @@ function Play(game) {
         setupDebugDiv();
         gameSpec.actions.checkHandlers();
         gameSpec.actions.schedule('START_NEW_GAME',{
-            worldWidth: 30,
-            worldHeight: 30,
-            numFactions: 4,
+            worldWidth: 10,
+            worldHeight: 10,
+            numFactions: 2,
         });
 
         log.info("Level initialization complete.");
