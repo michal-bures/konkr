@@ -10,7 +10,7 @@ function Adhoc(valuationFunc) {
     }
 }
 
-function Manual(defaultValue, heapFunction = (a,b)=> a.val - b.val) {
+function Manual(defaultValue, heapFunction = (a,b)=> b.val - a.val) {
     let data = {},
         heap = new Heap(heapFunction);
 
@@ -27,7 +27,7 @@ function Manual(defaultValue, heapFunction = (a,b)=> a.val - b.val) {
     });
 
     function get(hex) {
-        if (data[hex.id] === undefined) {
+        if (data[hex.id] !== undefined) {
             return data[hex.id];
         } else {
             return defaultValue;
@@ -35,8 +35,14 @@ function Manual(defaultValue, heapFunction = (a,b)=> a.val - b.val) {
     }
 
     function set(hex, value) {
-        data[hex.id] = value;
-        heap.push({hex: hex, val:value});
+        if (data[hex.id]) {
+            data[hex.id].val = value;
+            heap.updateItem(data[hex.id]);
+        } else {
+            const entry = {hex: hex, val:value};
+            data[hex.id] = entry;
+            heap.push(entry);
+        }
     }
 
     function reset() {
