@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"Action",
+				"ActionsProvider"
+			],
+			[
 				"scheduled",
 				"scheduledByCurrentAction"
 			],
@@ -153,10 +157,132 @@
 			}
 		},
 		{
+			"contents": "import ActionsProvider from 'lib/ActionsProvider';\n\nfunction Actions(spec) {\n    return new ActionsProvider(spec, \"Actions\", [\n\n        // Handled by GameFlow\n        'START_NEW_GAME',\n        'START_NEW_TURN',\n        'CHECK_VICTORY_CONDITIONS',\n\n        // PLAYER ACTIONS\n        'CONQUER_HEX', // (hex, region, pawn)\n        'BUY_UNIT' , // (unitType, hex)\n\n        // Handled by HexGrid\n        'RESET_HEXGRID' ,\n\n        // Handled by WorldGenerator\n        'GENERATE_LANDMASS', // (width, height)\n\n        // Handled by Regions\n        'CHANGE_HEXES_REGION', // (hexes, region)\n        'RANDOMIZE_REGIONS',\n        'CHANGE_REGION_CAPITAL', // (region, hex, previousHex)\n\n        // Handled by Economy\n        'UPDATE_ECONOMY' , // (player)\n        'SET_INITIAL_TREASURY' , // ... reset treasury for all region in the world to an initial value based on size\n        'SET_REGION_TREASURY' ,\n        'CHANGE_REGION_TREASURY' , // (region, amount)\n\n        // Handled by Pawns\n        'CREATE_PAWN' , // (pawnType, hex)\n        'DESTROY_PAWN' , // (pawn)\n        'MOVE_PAWN' , // (pawn, hex)\n        'KILL_TROOPS_IN_REGION', // (region)\n\n        // Handled by Players\n        'PLAYER_ACT' , // (player)\n    ]);\n}\n\nexport default Actions;",
+			"file": "src/rules/Actions.js",
+			"file_size": 9008,
+			"file_write_time": 131258878614231670,
+			"settings":
+			{
+				"buffer_size": 1239,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "\n\nfunction RegionAI(spec, region) {\n    let availableUnits = [];\n    let availableHexes = [];\n\n    let aiMethods = new ActionsProvider(spec, 'Actions', [\n        'FIND_OPPORTUNITIES',\n        'ATTACK'\n    ]);\n\n    return Object.freeze({\n        play\n    });\n\n    function play() {\n        log.debug(`Evaluating region ${region}`);\n        //return buyUnits().then(refreshAvailUnits).then(attack);\n\n    }            \n\n    function refreshAvailUnits() {\n        return new Promise(resolve => {\n            availableUnits = pawns.select({\n                hexes:region.hexes,\n                type:PawnType.TROOP_1\n            });\n            resolve();\n        });\n    }\n\n    function attack() {\n        return new Promise(resolve=>{\n            if (!availableUnits.length) return resolve();\n            //TODO dont recalculate on every call\n            availableHexes = region.hexes.neighbours().filter(hex => warfare.defenseOf(hex) === 0);\n            if (!availableHexes.length) return resolve();\n            actions.schedule('CONQUER_HEX', availableHexes.getRandomHex(), region, availableUnits.shift());\n                   //.then(attack) //nice, now try to attack some more\n                   //.then(resolve);\n            resolve();\n        });\n    }\n\n    function buyUnits() {\n        return new Promise(resolve=>{\n            if (economy.treasuryOf(region) > 10 && economy.netIncomeOf(region)+economy.treasuryOf(region)/10 > 2) {\n                log.debug(`Buying new unit on ${region} (${economy.treasuryOf(region)} gold left)`);\n                const targetHex = region.hexes.filter(hex => !pawns.pawnAt(hex)).getRandomHex();\n                if (!targetHex) return resolve();\n                actions.schedule('BUY_UNIT', PawnType.TROOP_1, targetHex);\n                    //.then(buyUnits) //try to buy another unit\n                    //.then(resolve);\n                resolve();\n            } else {\n                resolve();\n            }\n        });\n    }\n}\n\n\n/*\nfunction AI(spec) {\n    return new ActionsProvider(spec, \"AI\", {\n\n    });\n}*/",
+			"file": "src/ai/RegionAI.js",
+			"file_size": 24,
+			"file_write_time": 131259115655242449,
+			"settings":
+			{
+				"buffer_size": 2050,
+				"encoding": "UTF-8",
+				"line_ending": "Windows",
+				"name": "class BasicAI {"
+			}
+		},
+		{
+			"file": "src/lib/hexgrid/HexGrid.js",
+			"settings":
+			{
+				"buffer_size": 5982,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/lib/hexgrid/HexValuation.js",
+			"settings":
+			{
+				"buffer_size": 1224,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "spec/support/jasmine.json",
+			"settings":
+			{
+				"buffer_size": 221,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "module.exports = function (config) {\n  config.set({\n    autoWatch: true,\n    browsers: ['PhantomJS'],\n    files: [\n      'src/*_spec.js'\n    ],\n    frameworks: [\n      'jasmine',\n      'sinon'\n    ],\n    reporters: ['spec', 'coverage'],\n    preprocessors: {\n      'src/*_spec.js': [ 'webpack', 'coverage' ]\n    },\n    webpack: {\n      module: {\n        loaders: [\n          {\n            test: /\\.js/,\n            include: /src/,\n            loader: 'babel',\n            query: {\n              plugins: [ 'transform-runtime' ],\n              presets: [ 'es2015' ]\n            }\n          }\n        ]\n      },\n      cache: true,\n      resolve: {\n        extensions: ['', '.js'],\n        modulesDirectories: ['node_modules']\n      }\n    },\n    webpackServer: {\n      noInfo: true\n    },\n    coverageReporter: {\n      reporters: [\n        { type: 'lcovonly', subdir: '.', file: 'lcov.info' }\n      ]\n    }\n  })\n}\n",
+			"file": "/C/Users/Embair/dev/www/tmp/es6-client-boilerplate/karma.config.js",
+			"file_size": 955,
+			"file_write_time": 131259185390448462,
+			"settings":
+			{
+				"buffer_size": 910,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "var path = require('path')\n\nmodule.exports = {\n  entry: {\n    app: [ './src/main.js' ]\n  },\n  output: {\n    path: path.join(__dirname, 'dist'),\n    filename: '[name].js',\n    chunkFilename: '[id].js'\n  },\n  module: {\n    loaders: [\n      {\n        test: /\\.js/,\n        include: /src/,\n        loader: 'babel',\n        query: {\n          plugins: [ 'transform-runtime' ],\n          presets: [ 'es2015' ]\n        }\n      }\n    ]\n  },\n  resolve: {\n    extensions: ['', '.js'],\n    moduleDirectories: ['node_modules']\n  },\n  plugins: []\n}\n",
+			"file": "/C/Users/Embair/dev/www/tmp/es6-client-boilerplate/webpack.config.js",
+			"file_size": 566,
+			"file_write_time": 131259185390683491,
+			"settings":
+			{
+				"buffer_size": 536,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "{\n  \"name\": \"es6-client-boilerplate\",\n  \"version\": \"0.0.3\",\n  \"description\": \"starting point for client-side es6 projects\",\n  \"main\": \"index.js\",\n  \"scripts\": {\n    \"lint\": \"standard\",\n    \"pretest\": \"npm run lint\",\n    \"test\": \"karma start ./karma.config.js --single-run\",\n    \"watch\": \"karma start ./karma.config.js\",\n    \"build\": \"webpack --config webpack.production.config.js\"\n  },\n  \"repository\": {\n    \"type\": \"git\",\n    \"url\": \"https://github.com/rjz/es6-client-boilerplate\"\n  },\n  \"keywords\": [],\n  \"author\": \"RJ Zaworski <rj@rjzaworski.com>\",\n  \"license\": \"MIT\",\n  \"bugs\": {\n    \"url\": \"https://github.com/rjz/es6-client-boilerplate/issues\"\n  },\n  \"devDependencies\": {\n    \"babel-core\": \"6.3.13\",\n    \"babel-loader\": \"6.2.0\",\n    \"babel-plugin-transform-runtime\": \"6.3.13\",\n    \"babel-preset-es2015\": \"6.3.13\",\n    \"babel-runtime\": \"6.3.13\",\n    \"jasmine\": \"2.3.1\",\n    \"jasmine-core\": \"2.3.0\",\n    \"karma\": \"0.13.15\",\n    \"karma-babel-preprocessor\": \"6.0.1\",\n    \"karma-coverage\": \"0.5.2\",\n    \"karma-es6-shim\": \"0.1.3\",\n    \"karma-jasmine\": \"0.3.6\",\n    \"karma-phantomjs-launcher\": \"0.2.1\",\n    \"karma-sinon\": \"1.0.4\",\n    \"karma-spec-reporter\": \"0.0.20\",\n    \"karma-webpack\": \"1.7.0\",\n    \"object-assign\": \"3.0.0\",\n    \"phantomjs\": \"1.9.17\",\n    \"sinon\": \"1.14.1\",\n    \"standard\": \"5.3.1\",\n    \"webpack\": \"1.12.9\"\n  }\n}\n",
+			"file": "/C/Users/Embair/dev/www/tmp/es6-client-boilerplate/package.json",
+			"file_size": 1378,
+			"file_write_time": 131259185390498471,
+			"settings":
+			{
+				"buffer_size": 1332,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "spec/HexValuation.spec.js",
+			"settings":
+			{
+				"buffer_size": 1575,
+				"encoding": "UTF-8",
+				"line_ending": "Windows",
+				"name": "Valuations"
+			}
+		},
+		{
+			"file": "src/ai/methods/getAttackOpportunities.js",
+			"settings":
+			{
+				"buffer_size": 326,
+				"encoding": "UTF-8",
+				"line_ending": "Windows",
+				"name": "function rankAttackOpportunities(action) {"
+			}
+		},
+		{
+			"file": "src/ai/methods/offensivePlay.js",
+			"settings":
+			{
+				"buffer_size": 98,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/lib/util.js",
+			"settings":
+			{
+				"buffer_size": 5607,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
 			"file": "package.json",
 			"settings":
 			{
-				"buffer_size": 886,
+				"buffer_size": 962,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -180,10 +306,30 @@
 			}
 		},
 		{
-			"file": "src/rules/Actions.js",
+			"file": "src/lib/ActionsProvider.js",
 			"settings":
 			{
-				"buffer_size": 8737,
+				"buffer_size": 7627,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "import IterableOn from 'lib/decorators/IterableOn';\nimport { PawnType } from 'rules/Pawns';\nimport async from 'async';\n\nfunction Players(spec) {\n\n    let { actions, log, economy, pawns, regions, warfare } = spec;\n\n    class Player {\n        constructor(name) {\n            this.name = name;\n        }\n\n        get controlledRegions() {\n            return getRegionsControlledBy(this);\n        }\n\n        play(callback) {\n            callback();\n        }\n\n        toString() {\n            return `[Player ${this.name}]`;\n        }\n    }\n\n    class GlobalRegionAI extends Player {\n        constructor() {\n            super(\"GlobalRegionAI\");\n        }\n\n        play(callback) {\n            getRegionsControlledBy(this).reduce((prevPromise, region) => {\n                return prevPromise.then(this.RegionAI(region).play);\n            },Promise.resolve())\n            .then(callback);\n        }\n\n        RegionAI(region) {\n            let availableUnits = [];\n            let availableHexes = [];\n\n            return Object.freeze({\n                play\n            });\n\n            function play() {\n                log.debug(`Evaluating region ${region}`);\n                //return buyUnits().then(refreshAvailUnits).then(attack);\n                return new Promise(resolve=>resolve());\n            }            \n\n            function refreshAvailUnits() {\n                return new Promise(resolve => {\n                    availableUnits = pawns.select({\n                        hexes:region.hexes,\n                        type:PawnType.TROOP_1\n                    });\n                    resolve();\n                });\n            }\n\n            function attack() {\n                return new Promise(resolve=>{\n                    if (!availableUnits.length) return resolve();\n                    //TODO dont recalculate on every call\n                    availableHexes = region.hexes.neighbours().filter(hex => warfare.defenseOf(hex) === 0);\n                    if (!availableHexes.length) return resolve();\n                    actions.schedule('CONQUER_HEX', availableHexes.getRandomHex(), region, availableUnits.shift());\n                           //.then(attack) //nice, now try to attack some more\n                           //.then(resolve);\n                    resolve();\n                });\n            }\n\n            function buyUnits() {\n                return new Promise(resolve=>{\n                    if (economy.treasuryOf(region) > 10 && economy.netIncomeOf(region)+economy.treasuryOf(region)/10 > 2) {\n                        log.debug(`Buying new unit on ${region} (${economy.treasuryOf(region)} gold left)`);\n                        const targetHex = region.hexes.filter(hex => !pawns.pawnAt(hex)).getRandomHex();\n                        if (!targetHex) return resolve();\n                        actions.schedule('BUY_UNIT', PawnType.TROOP_1, targetHex);\n                            //.then(buyUnits) //try to buy another unit\n                            //.then(resolve);\n                        resolve();\n                    } else {\n                        resolve();\n                    }\n                });\n            }\n\n        }\n\n\n    }\n\n    const _players = [new GlobalRegionAI()];\n    \n    // public API\n    let self = {};\n    IterableOn(self, _players);\n\n    actions.setHandler('PLAYER_ACT', (action, player) => {\n        ai.schedule('');\n        player.play(action.resolve);\n    });\n\n    function getRegionsControlledBy(player) {\n        //TODO less bullshit, more actual implementation\n        let list = [];\n        regions.forEach(r=>{if(r.hasCapital()) list.push(r); });\n        return list;\n    }\n\n    return Object.freeze(self);\n}\n\nexport default Players;",
+			"file": "src/rules/Players.js",
+			"file_size": 3789,
+			"file_write_time": 131258763062502513,
+			"settings":
+			{
+				"buffer_size": 3698,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": ".jshintrc",
+			"settings":
+			{
+				"buffer_size": 622,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -395,15 +541,18 @@
 	"expanded_folders":
 	[
 		"/C/Users/Embair/dev/www/konkr/src",
+		"/C/Users/Embair/dev/www/konkr/src/ai",
+		"/C/Users/Embair/dev/www/konkr/src/ai/methods",
 		"/C/Users/Embair/dev/www/konkr/src/lib",
 		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid",
-		"/C/Users/Embair/dev/www/konkr/src/rules",
-		"/C/Users/Embair/dev/www/konkr/src/states",
-		"/C/Users/Embair/dev/www/konkr/src/ui",
-		"/C/Users/Embair/dev/www/konkr/static"
+		"/C/Users/Embair/dev/www/konkr/static",
+		"/C/Users/Embair/dev/www/konkr/spec"
 	],
 	"file_history":
 	[
+		"/C/Users/Embair/dev/www/konkr/src/ai/AI.js",
+		"/C/Users/Embair/dev/www/konkr/src/ai/methods/HexValuation.js",
+		"/C/Users/Embair/dev/www/konkr/src/ai/methods/offensivePlay.js",
 		"/C/Users/Embair/dev/www/tmp/phaser-es6-webpack/webpack.config.js",
 		"/C/Users/Embair/dev/www/konkr/webpack.production.config.js",
 		"/C/Users/Embair/dev/www/konkr/webpack.config.js",
@@ -528,10 +677,7 @@
 		"/C/Users/Embair/dev/www/practice/counterApp/spec/worker.spec.js",
 		"/C/Users/Embair/dev/www/practice/counterApp/worker.js",
 		"/C/Users/Embair/dev/www/practice/counterApp/.jshintrc",
-		"/C/Users/Embair/dev/www/practice/counterApp/package.json",
-		"/C/Users/Embair/dev/www/practice/counterApp/server.js",
-		"/C/Users/Embair/dev/www/practice/counterApp/benchmark.js",
-		"/C/Users/Embair/dev/www/practice/counterApp/redis-server.js"
+		"/C/Users/Embair/dev/www/practice/counterApp/package.json"
 	],
 	"find":
 	{
@@ -565,6 +711,7 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			": null",
 			"pipe",
 			"fastBuild",
 			"guard",
@@ -691,8 +838,7 @@
 			"getOwnerOf",
 			"NullHex",
 			"addAll",
-			"super",
-			"lib/HexGrid"
+			"super"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -838,7 +984,7 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 2,
 			"sheets":
 			[
 				{
@@ -854,8 +1000,8 @@
 						"selection":
 						[
 							[
-								1257,
-								1257
+								769,
+								769
 							]
 						],
 						"settings":
@@ -866,19 +1012,380 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 180.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 17,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "src/rules/Actions.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1239,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								417,
+								417
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 15.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 15,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/ai/RegionAI.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2050,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"auto_name": "class BasicAI {",
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "src/lib/hexgrid/HexGrid.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5982,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "src/lib/hexgrid/HexValuation.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1224,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								191,
+								191
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "spec/support/jasmine.json",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 221,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								221,
+								221
+							]
+						],
+						"settings":
+						{
+							"auto_complete": true,
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "/C/Users/Embair/dev/www/tmp/es6-client-boilerplate/karma.config.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 910,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "/C/Users/Embair/dev/www/tmp/es6-client-boilerplate/webpack.config.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 536,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "/C/Users/Embair/dev/www/tmp/es6-client-boilerplate/package.json",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1332,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								486,
+								486
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "spec/HexValuation.spec.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1575,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								519,
+								519
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"auto_name": "Valuations",
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "src/ai/methods/getAttackOpportunities.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 326,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								326,
+								326
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"auto_name": "function rankAttackOpportunities(action) {",
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "src/ai/methods/offensivePlay.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 98,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								67,
+								67
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 1,
+					"buffer": 12,
+					"file": "src/lib/util.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5607,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1010,
+								1022
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 90.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 13,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
 					"file": "package.json",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 886,
+						"buffer_size": 962,
 						"regions":
 						{
 						},
@@ -900,11 +1407,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 18,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
+					"buffer": 14,
 					"file": "static/index.html",
 					"semi_transient": false,
 					"settings":
@@ -929,11 +1436,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
+					"buffer": 15,
 					"file": "src/index.js",
 					"semi_transient": false,
 					"settings":
@@ -956,34 +1463,34 @@
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
-						"translation.x": -0.0,
+						"translation.x": 0.0,
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 12,
 					"type": "text"
 				}
 			]
 		},
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
-					"buffer": 4,
-					"file": "src/rules/Actions.js",
+					"buffer": 16,
+					"file": "src/lib/ActionsProvider.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8737,
+						"buffer_size": 7627,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								708,
-								708
+								5917,
+								5888
 							]
 						],
 						"settings":
@@ -994,10 +1501,71 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
+						"translation.y": 2422.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 16,
+					"type": "text"
+				},
+				{
+					"buffer": 17,
+					"file": "src/rules/Players.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3698,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1193,
+								1193
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 450.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 18,
+					"file": ".jshintrc",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 622,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								622,
+								622
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 10,
 					"type": "text"
 				}
 			]
@@ -1005,7 +1573,7 @@
 	],
 	"incremental_find":
 	{
-		"height": 23.0
+		"height": 34.0
 	},
 	"input":
 	{
@@ -1031,7 +1599,7 @@
 		"cols":
 		[
 			0.0,
-			0.666452875544,
+			0.480502462321,
 			1.0
 		],
 		"rows":
@@ -1062,6 +1630,10 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"playe",
+				"src\\rules\\Players.js"
+			],
 			[
 				"package",
 				"C:\\Users\\Embair\\dev\\www\\konkr\\package.json"
@@ -1155,7 +1727,7 @@
 		],
 		"width": 0.0
 	},
-	"selected_group": 1,
+	"selected_group": 0,
 	"settings":
 	{
 	},

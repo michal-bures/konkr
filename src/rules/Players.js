@@ -1,107 +1,101 @@
 import IterableOn from 'lib/decorators/IterableOn';
-import { PawnType } from 'rules/Pawns';
-import async from 'async';
 
 function Players(spec) {
 
-    let { actions, log, economy, pawns, regions, warfare } = spec;
+    let { actions, economy, pawns, regions } = spec;
 
     class Player {
         constructor(name) {
             this.name = name;
         }
 
-        get controlledRegions() {
+        get regions() {
             return getRegionsControlledBy(this);
         }
 
-        play(callback) {
-            callback();
+        controls(region) {
+            return ownerOf(region) === this;
         }
+
+        play() { throw Error(`Not implemented`); }
 
         toString() {
             return `[Player ${this.name}]`;
         }
     }
 
-    class GlobalRegionAI extends Player {
+    class GlobalAIPlayer extends Player {
         constructor() {
-            super("GlobalRegionAI");
+            super("Global AI");
         }
 
-        play(callback) {
-            getRegionsControlledBy(this).reduce((prevPromise, region) => {
-                return prevPromise.then(this.RegionAI(region).play);
-            },Promise.resolve())
-            .then(callback);
+        play() {
+            regions.forEach(region => actions.schedule('AI_MANAGE_REGION', this, region));
+            //TODO: What if two owned regions get merged while playing?
         }
-
-        RegionAI(region) {
-            let availableUnits = [];
-            let availableHexes = [];
-
-            return Object.freeze({
-                play
-            });
-
-            function play() {
-                log.debug(`Evaluating region ${region}`);
-                //return buyUnits().then(refreshAvailUnits).then(attack);
-                return new Promise(resolve=>resolve());
-            }            
-
-            function refreshAvailUnits() {
-                return new Promise(resolve => {
-                    availableUnits = pawns.select({
-                        hexes:region.hexes,
-                        type:PawnType.TROOP_1
-                    });
-                    resolve();
-                });
-            }
-
-            function attack() {
-                return new Promise(resolve=>{
-                    if (!availableUnits.length) return resolve();
-                    //TODO dont recalculate on every call
-                    availableHexes = region.hexes.neighbours().filter(hex => warfare.defenseOf(hex) === 0);
-                    if (!availableHexes.length) return resolve();
-                    actions.schedule('CONQUER_HEX', availableHexes.getRandomHex(), region, availableUnits.shift());
-                           //.then(attack) //nice, now try to attack some more
-                           //.then(resolve);
-                    resolve();
-                });
-            }
-
-            function buyUnits() {
-                return new Promise(resolve=>{
-                    if (economy.treasuryOf(region) > 10 && economy.netIncomeOf(region)+economy.treasuryOf(region)/10 > 2) {
-                        log.debug(`Buying new unit on ${region} (${economy.treasuryOf(region)} gold left)`);
-                        const targetHex = region.hexes.filter(hex => !pawns.pawnAt(hex)).getRandomHex();
-                        if (!targetHex) return resolve();
-                        actions.schedule('BUY_UNIT', PawnType.TROOP_1, targetHex);
-                            //.then(buyUnits) //try to buy another unit
-                            //.then(resolve);
-                        resolve();
-                    } else {
-                        resolve();
-                    }
-                });
-            }
-
-        }
-
-
     }
 
-    const _players = [new GlobalRegionAI()];
+    const _players = [new GlobalAIPlayer()];
     
     // public API
     let self = {};
     IterableOn(self, _players);
+    Object.freeze(self);
 
-    actions.setHandler('PLAYER_ACT', (action, player) => {
-        player.play(action.resolve);
+    let activePlayer = null,
+        grabbedPawn = null,
+        grabbedPawnRegion = null,
+        movedUnits = null;
+
+
+    actions.setHandler('START_PLAYER_TURN', (action, player) => {
+        if (activePlayer) throw Error(`Cannot start turn for ${player}, because another players turn is in progress: ${activePlayer}`);
+        activePlayer = player;
+        movedUnits = {};
+        player.play();
+        action.schedule('END_PLAYER_TURN', player);
+        action.resolve();
+    });
+
+    actions.setHandler('CONQUER_HEX', (action, hex, region) => {
+        if (!grabbedPawn) return action.reject(`Attempted to conquer ${hex} with no pawn grabbed!`);
+        movedUnits[grabbedPawn] = true;
+
+        if (pawns.pawnAt(hex)) {
+            action.schedule('DESTROY_PAWN', pawns.pawnAt(hex));
+        }
+        action.schedule('CHANGE_HEXES_REGION', hex, region);
+        action.schedule('MOVE_PAWN',grabbedPawn, hex);
+        grabbedPawn = null;
+        action.resolve();
+    });
+
+    actions.setHandler('GRAB_UNIT', (action, pawn) => {
+        if (movedUnits[pawn]) return action.reject(`Tried to grab ${pawn}, which has already moved this turn.`);
+        if (!pawn.pawnType.isTroop()) return action.reject(`${pawn} is not movable by player!`);
+        const region = regions.regionOf(pawn.hex);
+        if (!activePlayer.controls(region)) return action.reject(`Tried to grab ${pawn}, which does not belong to ${activePlayer}`);
+        grabbedPawn = pawn;
+        grabbedPawnRegion = region;
+        actions.schedule('DESTROY_PAWN',grabbedPawn);
+        action.resolve();
+    });
+
+    actions.setHandler('BUY_UNIT', (action, unitType, region)=> {
+        const cost = economy.priceOf(unitType);
+        if (!cost) return action.reject(`Unit ${unitType} cannot be bought by a player.`);
+        if (cost > economy.treasuryOf(region)) return action.reject(`Region ${region} cannot afford to buy ${unitType}.`);
+
+        action.schedule('CHANGE_REGION_TREASURY',region, -cost);
+//        action.schedule('CREATE_PAWN',unitType,hex);
+        action.resolve();
+    });
+
+    actions.setHandler('END_PLAYER_TURN', (action, player) => {
+        if (player!=activePlayer)  throw Error(`${player} requested to end hist turn but it's not his turn currently!`);
+        if (grabbedPawn) throw Error(`${player} tried to end turn with an unplaced pawn still grabbed.`);
+        activePlayer = null;
+        action.resolve();
     });
 
     function getRegionsControlledBy(player) {
@@ -109,6 +103,11 @@ function Players(spec) {
         let list = [];
         regions.forEach(r=>{if(r.hasCapital()) list.push(r); });
         return list;
+    }
+
+    function ownerOf(region) {
+        //TODO less bullshit, more actual implementation
+        return _players[0];
     }
 
     return Object.freeze(self);

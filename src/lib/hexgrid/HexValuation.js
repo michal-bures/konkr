@@ -1,6 +1,6 @@
 import Heap from 'heap';
 
-function AdhocFunctionValuation(valuationFunc) {
+function Adhoc(valuationFunc) {
     return Object.freeze({
         get,
     });
@@ -10,7 +10,7 @@ function AdhocFunctionValuation(valuationFunc) {
     }
 }
 
-function ManualValuation(defaultValue, heapFunction = (a,b)=> a.val - b.val) {
+function Manual(defaultValue, heapFunction = (a,b)=> a.val - b.val) {
     let data = {},
         heap = new Heap(heapFunction);
 
@@ -52,4 +52,4 @@ function ManualValuation(defaultValue, heapFunction = (a,b)=> a.val - b.val) {
 }
 
 
-export { AdhocFunctionValuation, ManualValuation };
+export default { Manual, Adhoc };

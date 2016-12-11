@@ -37,17 +37,10 @@ function Regions (spec) {
 
     //implementation
 
-    actions.setHandler('CONQUER_HEX', (action, hex, region, pawn) => {
-        if (pawns.pawnAt(hex)) {
-            action.schedule('DESTROY_PAWN', pawns.pawnAt(hex));
-        }
-        action.schedule('CHANGE_HEXES_REGION', new HexGroup(hex), region);
-        action.schedule('MOVE_PAWN',pawn, hex);
-        action.resolve();
-    });
-
     actions.setHandler('CHANGE_HEXES_REGION', (action, hexOrGroup, receivingRegion) => {
         let lostHexesByRegion = {};
+
+        if (!(hexOrGroup instanceof HexGroup)) hexOrGroup = new HexGroup(hexOrGroup);
 
         // capture the hexes and keep track of which regions have lost some hexes
         hexOrGroup.forEach( hex=> {

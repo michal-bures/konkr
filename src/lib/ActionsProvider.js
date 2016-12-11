@@ -173,7 +173,7 @@ function ActionsProvider(spec, providerName, actionList) {
 
     //check that all actions have handlers
     function checkHandlers() {
-        let missing = Object.keys(handlers).filter(key => handlers[key]===undefined);
+        let missing = Object.keys(handlers).filter(key => !handlers[key]);
         if (missing.length) log.warn("Some actions lack a handler: "+missing.join(", "));
     }
 
@@ -202,7 +202,7 @@ function ActionsProvider(spec, providerName, actionList) {
         const tPlanned = planned.map(action => ` ⌛ ${action}`).join('\n');
         const tActionTypes = 
             Object.keys(handlers)
-                  .map(key => `* ${key} => ${handlers[key].description}`).sort().join('\n');
+                  .map(key => `* ${key} => ${handlers[key] && handlers[key].description}`).sort().join('\n');
 
         return `${tHistory}
 ${tCurrent}

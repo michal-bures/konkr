@@ -6,6 +6,9 @@
 		},
 		{
 			"path": "static"
+		},
+		{
+			"path": "spec"
 		}
 	]
 }

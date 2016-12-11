@@ -8,13 +8,14 @@ import GridOverlays from 'ui/GridOverlays';
 import UI from 'lib/controls/UI';
 import UIManager from 'ui/UIManager';
 
-import GameDirector from 'rules/GameDirector';
+import GameFlow from 'rules/GameFlow';
 import Players from 'rules/Players';
 import Regions from 'rules/Regions';
 import Economy from 'rules/Economy';
 import { Pawns } from 'rules/Pawns';
 import Actions from 'rules/Actions';
 import Warfare from 'rules/Warfare';
+import AI from 'ai/AI';
 
 function Play(game) { 
 
@@ -38,7 +39,7 @@ function Play(game) {
 
         gameSpec = new spec.extend({
             // returns a modified clone of spec which has some modules customized for the specified name
-            usingName: spec => (moduleName) => {
+            useName: spec => (moduleName) => {
                 return spec.extend({ 
                     actions: () => spec.actions && spec.actions.getNamedProxy(moduleName),
                     log: () => spec.log && {
@@ -52,15 +53,16 @@ function Play(game) {
             },
             debug: spec => new Renderer.DebugInfo(spec),
             grid: spec => new HexGrid(spec),
-            pawns: spec => new Pawns(spec.usingName('pawns')),
-            regions: spec => new Regions(spec.usingName('regions')),
-            economy: spec => new Economy(spec.usingName('economy')),
-            actions: spec => new Actions(spec.usingName('actions')),
-            warfare: spec => new Warfare(spec.usingName('warfare')),
-            landGen: spec => new LandGenerator(spec.usingName('landGen')),
-            gameDirector: spec => new GameDirector(spec.usingName('gameDirector')),
-            players: spec => new Players(spec.usingName('players')),
-            ui: spec => new UIManager(spec.usingName('ui')),
+            pawns: spec => new Pawns(spec.useName('pawns')),
+            regions: spec => new Regions(spec.useName('regions')),
+            economy: spec => new Economy(spec.useName('economy')),
+            actions: spec => new Actions(spec.useName('actions')),
+            warfare: spec => new Warfare(spec.useName('warfare')),
+            landGen: spec => new LandGenerator(spec.useName('landGen')),
+            gameDirector: spec => new GameFlow(spec.useName('gameDirector')),
+            players: spec => new Players(spec.useName('players')),
+            ui: spec => new UIManager(spec.useName('ui')),
+            ai: spec => new AI(spec.useName('ai'))
         });
 
         gameUi = gameSpec.extend({
@@ -70,7 +72,7 @@ function Play(game) {
             pawnSprites: spec => new Renderer.Pawns(spec),
             hexSelectionProxy: spec => new HexSelectionProxy(spec),
             scrolling: spec => new Scrolling(spec),
-            uiRegionPanel: spec => new RegionPanel(spec.usingName('uiRegionPanel')),
+            uiRegionPanel: spec => new RegionPanel(spec.useName('uiRegionPanel')),
             gridOverlays: spec => new GridOverlays(spec),
         });
         log = spec.log;
@@ -118,8 +120,8 @@ function Play(game) {
         let nextStateCallbacks = [];
 
         gameSpec.actions.attachGuard((prevAction, nextAction) => new Promise(resolve => {
-            switch (prevAction && prevAction.name) {
-                case 'PLAYER_ACT':
+            switch (nextAction && nextAction.name) {
+                case 'START_PLAYER_TURN':
                     return nextStateCallbacks.push(resolve);
                 default:
                     setTimeout(resolve,10);
@@ -142,6 +144,7 @@ function Play(game) {
         gameSpec.actions.schedule('START_NEW_GAME',{
             worldWidth: 10,
             worldHeight: 10,
+            numFactions: 2,
         });
 
         log.info("Level initialization complete.");

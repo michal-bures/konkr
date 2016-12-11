@@ -123,11 +123,14 @@ function Pawns(spec) {
             throw new Error(`Tried to move ${pawn} from ${pawn.hex} to a nonexistent hex.`);
         }
         const fromHex = pawn.hex;
-        if (fromHex === toHex) {
-            log.warn(`Canceled noop move action for ${pawn}`);
+        if (fromHex) {
+            if (fromHex === toHex) {
+                log.warn(`Canceled noop move action for ${pawn}`);
+                return;
+            }
+            delete hexPawn[fromHex.id];
         }
         pawn.hex = toHex;
-        delete hexPawn[fromHex.id];
         hexPawn[toHex.id] = pawn;
         log.debug(`${pawn} moved from ${fromHex} to ${toHex}`);
         pawns.onMoved.dispatch(pawn,fromHex,toHex);

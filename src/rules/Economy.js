@@ -25,7 +25,7 @@ function Economy(spec) {
     let regionTreasury = new WeakMap();
 
     const self = Object.freeze({
-        costOfPawnType,
+        priceOf,
         netIncomeOf,
         incomeOf,
         treasuryOf,
@@ -37,16 +37,6 @@ function Economy(spec) {
     });
 
     /// ACTION HANDLERS
-
-    actions.setHandler('BUY_UNIT', (action, unitType, hex)=> {
-        const cost = PAWN_PURCHASE_COST.get(unitType);
-        if (!cost) return action.reject(`Unit ${unitType} cannot be bought by a player.`);
-        if (cost > treasuryOf(regions.regionOf(hex))) return action.reject(`Region ${regions.regionOf(hex)} cannot afford to buy ${unitType}.`);
-
-        action.schedule('CHANGE_REGION_TREASURY',regions.regionOf(hex), -PAWN_PURCHASE_COST.get(unitType));
-        action.schedule('CREATE_PAWN',unitType,hex);
-        action.resolve();
-    });
 
     actions.setHandler('CHANGE_REGION_TREASURY', (action, region, amount) => {
         setTreasuryOf(region,treasuryOf(region) + amount);
@@ -65,17 +55,15 @@ function Economy(spec) {
         action.resolve();
     });
 
-    actions.setHandler('UPDATE_ECONOMY', (action,player)=>{
-        player.controlledRegions.forEach( (region) => {
-            const oldValue = treasuryOf(region) || 0;
-            let newValue = oldValue + netIncomeOf(region);
-            if (newValue < 0) {
-                newValue = 0;
-                self.onRegionBankrupt.dispatch(region);
-                actions.schedule('KILL_TROOPS_IN_REGION', region);
-            }
-            setTreasuryOf(region, newValue);
-        });
+    actions.setHandler('COLLECT_REGION_INCOME', (action,region)=>{
+        const oldValue = treasuryOf(region) || 0;
+        let newValue = oldValue + netIncomeOf(region);
+        if (newValue < 0) {
+            newValue = 0;
+            self.onRegionBankrupt.dispatch(region);
+            actions.schedule('KILL_TROOPS_IN_REGION', region);
+        }
+        setTreasuryOf(region, newValue);
         action.resolve();
     });
 
@@ -101,7 +89,7 @@ function Economy(spec) {
         return incomeOf(region) - expensesOf(region);
     }
 
-    function costOfPawnType(pawnType) {
+    function priceOf(pawnType) {
         return PAWN_PURCHASE_COST.get(pawnType) || 0;
     }
 

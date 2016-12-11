@@ -1,7 +1,7 @@
 import { assertDefined } from 'lib/util';
 import async from 'async';
 
-function GameFlow({players, log, actions}) {
+function GameFlow({players, log, actions, pawns}) {
     
     const self = Object.freeze({
         toString,
@@ -11,7 +11,7 @@ function GameFlow({players, log, actions}) {
     actions.setHandler('START_NEW_GAME',  (action, {worldWidth, worldHeight, numFactions}) => {
         action.schedule('RESET_HEXGRID', worldWidth, worldHeight);
         action.schedule('GENERATE_LANDMASS');
-        action.schedule('RANDOMIZE_REGIONS');
+        action.schedule('RANDOMIZE_REGIONS', numFactions);
         action.schedule('SET_INITIAL_TREASURY');
         action.schedule('START_NEW_TURN');
         action.resolve();
@@ -19,8 +19,8 @@ function GameFlow({players, log, actions}) {
 
     actions.setHandler('START_NEW_TURN', (action) => {
         players.forEach(player => {
-            action.schedule('UPDATE_ECONOMY', player);
-            action.schedule('PLAYER_ACT', player);
+            player.regions.forEach(region => action.schedule('COLLECT_REGION_INCOME',region));
+            action.schedule('START_PLAYER_TURN', player);
         });
         action.schedule('CHECK_VICTORY_CONDITIONS');
         action.resolve();
