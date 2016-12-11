@@ -124,7 +124,7 @@ function Play(game) {
                 case 'START_PLAYER_TURN':
                     return nextStateCallbacks.push(resolve);
                 default:
-//                    return nextStateCallbacks.push(resolve);
+                    //return nextStateCallbacks.push(resolve);
                     setTimeout(resolve,10);
             }
         }));
@@ -177,12 +177,14 @@ function Play(game) {
 
     function update() {
         gameUi.scrolling.update();
+        gameUi.hexSelectionProxy.update();
     }
 
     function render() {
         gameUi.landSprites.render();
         gameUi.regionBorders.render();
         gameUi.gridOverlays.render();
+        gameUi.debug.render();
     }
 }
 

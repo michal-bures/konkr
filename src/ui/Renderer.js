@@ -15,18 +15,6 @@ const HALF_LINE_HEIGHT = 14.5;//Math.floor(HEX_HEIGHT * 3/8);
 const OFFSET_TOP = 10 + Math.floor((HEX_HEIGHT-LINE_HEIGHT)/2);
 const OFFSET_LEFT = 10;
 
-//draws an invisible shape for the sole purpose of setting the top-left boundary of the resulting graphics to the specified coords
-function fixateTopLeftBoundary(graphics,x=0,y=0) {
-    let prevAlpha = graphics.fillAlpha;
-    let prevLW = graphics.lineWidth;
-    graphics.fillAlpha = 0;
-    graphics.lineWidth = 0;
-    graphics.moveTo(x,y);
-    graphics.lineTo(x,y);
-    graphics.fillAlpha = prevAlpha;
-    graphics.lineWidth =  prevLW;
-}
-
 function convertToWorldCoordinates(x,y) {
     return [ Math.floor(OFFSET_LEFT + HEX_WIDTH + x * HEX_WIDTH), Math.floor(OFFSET_TOP + y * LINE_HEIGHT + HALF_LINE_HEIGHT)];
 }
@@ -63,14 +51,12 @@ function LandSprites(spec) {
     //public
     let landSprites = Object.freeze({
         render,
-        highlightTiles,
         get group() { return group; }
     });
 
     //private
     let group = game.add.group(),
         tileToSprite = {},
-        highlightedTiles = [],
         requiresSorting = false; // true => need to resort group before next render
 
     regions.onHexesChangedOwner.add((hexes) => {
@@ -114,21 +100,6 @@ function LandSprites(spec) {
             this.frame=regions.factionOf(this.hex);
         }
     }
-
-    //implementation
-
-    function highlightTiles(tiles) {
-        return;
-        highlightedTiles.forEach((tileSprite) => {
-            if (tileSprite) tileSprite.frame = 0;
-        });
-        highlightedTiles = tiles.map((tile) => tile && tileToSprite[tile.id]);
-        highlightedTiles.forEach((tileSprite) => {
-            if (tileSprite) tileSprite.frame = 1;
-        });
-    }
-
-
 
     return landSprites;
 }
@@ -268,18 +239,26 @@ class DebugInfo {
     constructor({game}) {
         this.game = game;
         this.items = new OrderedMap();
+        this.sprites = [];
     }
 
     set(key,value) {
         this.items.push(key,value);
     }
 
+    sprite(sprite) {
+        this.sprites.push(sprite);
+    }
+
     render() {
         let y = 32;
         this.items.forEach((key, value) => {
-            this.game.debug.text(key + ": " + value,32,y);
+            if (value!==null && value!==undefined) {
+                this.game.debug.text(key + ": " + value,32,y);
+            }
             y +=32;
         });
+        this.sprites.forEach(sprite=>this.game.debug.spriteBounds(sprite));
     }
 }
 

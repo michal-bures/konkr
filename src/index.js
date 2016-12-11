@@ -27,8 +27,6 @@ function nextId() { return ++idCounter; }
 //init globals
 
 game = new Phaser.Game(1024, 550, Phaser.AUTO, 'content');
-//game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
-
 
 var spec = new Injector(undefined,{
     log: () => log,

@@ -1,7 +1,7 @@
 import { HEX_WIDTH, LINE_HEIGHT, OFFSET_TOP, OFFSET_LEFT } from 'ui/Renderer';
 
 function HexSelectionProxy(spec) {
-    let {game,grid,debug,landSprites,log,regions,pawns,ui, warfare} = spec;
+    let {game,grid,debug,log,regions,pawns,ui, warfare} = spec;
 
     let active = false,
         image = initImage(),
@@ -23,6 +23,10 @@ function HexSelectionProxy(spec) {
         surface.fixedToCamera = true;
         surface.width = game.width;
         surface.height = game.height;
+        game.scale.onSizeChange.add(() => {
+            surface.width = game.width;
+            surface.height = game.height;
+        });        
         surface.events.onInputOver.add(() => active = true);
         surface.events.onInputOut.add(() => active = false);
         surface.events.onInputDown.add(() => {
@@ -47,7 +51,8 @@ Defense: ${warfare.defenseOf(hex)}`;
 
     function update() {
         if (active) {
-            landSprites.highlightTiles([getHexUnderCursor()]);
+            const hex = getHexUnderCursor();
+            debug.set('pointer at',(hex? hex.toString():null));
         }
     }
 
@@ -59,8 +64,6 @@ Defense: ${warfare.defenseOf(hex)}`;
         let dy = y % 1;
 
         let centerX, centerY;
-
-        debug.set("pointer-at",x.toFixed(2) + "," +y.toFixed(2));
 
         if (Math.floor(y) % 2) {
             //A

@@ -1,4 +1,4 @@
-import { assertDefined } from 'lib/util';
+import { assertDefined, debounce } from 'lib/util';
 
 
 let lastComponentId = 0;
@@ -7,7 +7,7 @@ function generateComponentId() {
 }
 
 
-const components = {
+const componentConstructors = {
     'pane' : (...args) => new Pane(...args),
     'label' : (...args) => new Label(...args),
     'button' : (...args) => new Button(...args),
@@ -16,14 +16,14 @@ const components = {
 class UIComponent {
     constructor({game, log}, def, parent) {
         assertDefined(game, def);
+        this.config = def;
         this.name = def.name || def.component + '#'+ generateComponentId();
         this.parentContainer = (parent && parent.getContainer()) || game;
         this.game = game;
         this.image = this.createDisplayObject(def, def.width, def.height);
         assertDefined(this.image);
         this.image.inputEnabled = true;
-
-        this.setPlacement(def);
+        this.reflow();
         if (parent) {
             this.parentContainer.addChild(this.image);
         } else {
@@ -40,10 +40,20 @@ class UIComponent {
     }
 
     getContainer() {
-        throw Error(`Component does not have a container.`);
+        return null;
     }
 
-    setPlacement({hAlign, vAlign, x=0, y=0, hOffset=0, vOffset=0}) {
+    reflow() {
+        let {width, height, hAlign, vAlign, x=0, y=0, hOffset=0, vOffset=0} = this.config;
+        // percentual size
+        if (String(width).endsWith('%')) {
+            this.image.width = (parseInt(width) / 100)*this.parentContainer.width;
+        }
+        if (String(height).endsWith('%')) {
+            this.image.height = (parseInt(height) / 100)*this.parentContainer.height;
+        }
+
+        // position/alignment
         if (hAlign) {
             this.setHAlign(hAlign, hOffset);  
         }  else {
@@ -54,6 +64,9 @@ class UIComponent {
         } else {
             this.image.y = y;
         }
+
+        this.image.cameraOffset.x = this.image.x;
+        this.image.cameraOffset.y = this.image.y;
     }
 
     setHAlign(hAlign, hOffset) {
@@ -100,18 +113,27 @@ class UIComponent {
 class Pane extends UIComponent {
     constructor(spec, def, parent) {
         super(spec, def, parent);
-        let padding = def.padding || 0;
+        this.padding = def.padding || 0;
         this._container = this.game.add.tileSprite(
-                                Math.floor(padding - this.image.width * this.image.anchor.x),
-                                Math.floor(padding - this.image.height * this.image.anchor.y),
-                                def.width-padding*2,
-                                def.height-padding*2,
+                                Math.floor(this.padding - this.image.width * this.image.anchor.x),
+                                Math.floor(this.padding - this.image.height * this.image.anchor.y),
+                                this.image.width-this.padding*2,
+                                this.image.height-this.padding*2,
                                 new Phaser.BitmapData(spec.game, 'blank', 1, 1));
         this.image.addChild(this._container);
     }
 
     createDisplayObject({width, height}) {
         return this.game.add.tileSprite(0, 0, width || 1, height || 1, 'paneBackground');
+    }
+
+    reflow() {
+        super.reflow();
+        if (!this._container) return;
+        this._container.x = Math.floor(this.padding - this.image.width * this.image.anchor.x);
+        this._container.y = Math.floor(this.padding - this.image.height * this.image.anchor.y);
+        this._container.width = this.image.width - this.padding*2;
+        this._container.height = this.image.height - this.padding*2;
     }
 
     getContainer() {
@@ -154,15 +176,23 @@ class Button extends UIComponent {
 function UI (spec, def) {
     let {log, game} = spec;
     
+    let components =[];
     let self = {
         addComponent
     };
     addComponent(def);
 
+    const resizeHandler = debounce(()=> {
+        components.forEach(comp=>comp.reflow());
+    }, 100);
+
+    game.scale.onSizeChange.add(resizeHandler);
 
     function addComponent(def, parent) {
         if (self[def.name]) throw new Error(`Duplicate component name '${def.name}'`);
-        self[def.name] = createComponent(def, parent);
+        let newComp = createComponent(def, parent);
+        self[def.name] = newComp;
+        components.push(newComp);
         if (def.contains) def.contains.forEach(childDef => {
             addComponent(childDef, self[def.name]);
         });
@@ -170,7 +200,7 @@ function UI (spec, def) {
 
     function createComponent(def, parent) {
         log.debug("Creating UI component", def);
-        let constructorFunc = components[def.component];
+        let constructorFunc = componentConstructors[def.component];
         if (!constructorFunc) throw Error(`Unknown component type '${def.component}'`);
         return constructorFunc(spec,def,parent);
     }

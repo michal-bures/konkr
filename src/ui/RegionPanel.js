@@ -12,7 +12,7 @@ function RegionPanel(spec) {
         component: 'pane',
         hAlign: 'center',
         vAlign: 'bottom',
-        width: 500,
+        width: '100%',
         height: 30,
         padding: 5,
         contains: [
