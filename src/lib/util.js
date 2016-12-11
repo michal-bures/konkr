@@ -25,6 +25,14 @@ function extend(base, child, stack) {
     }
 }
 
+function SealedObject(parent = Object, props = {}) {
+    function F() {
+        return props;        
+    }
+    F.prototype = parent;
+    return new F();
+}
+
 function assertDefined(...args) {
     args.forEach( (arg, i) => { 
         if (arg === undefined) throw Error(`Argument #${i+1} is undefined.`);

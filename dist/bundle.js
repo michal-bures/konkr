@@ -14046,6 +14046,17 @@ webpackJsonp([0],[
 	    }
 	}
 
+	function SealedObject() {
+	    var parent = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : Object;
+	    var props = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+	    function F() {
+	        return props;
+	    }
+	    F.prototype = parent;
+	    return new F();
+	}
+
 	function assertDefined() {
 	    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
 	        args[_key] = arguments[_key];
