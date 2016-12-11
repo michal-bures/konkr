@@ -12,7 +12,7 @@ import GameFlow from 'rules/GameFlow';
 import Players from 'rules/Players';
 import Regions from 'rules/Regions';
 import Economy from 'rules/Economy';
-import { Pawns } from 'rules/Pawns';
+import Pawns from 'rules/Pawns';
 import Actions from 'rules/Actions';
 import Warfare from 'rules/Warfare';
 import AI from 'ai/AI';
@@ -124,6 +124,7 @@ function Play(game) {
                 case 'START_PLAYER_TURN':
                     return nextStateCallbacks.push(resolve);
                 default:
+//                    return nextStateCallbacks.push(resolve);
                     setTimeout(resolve,10);
             }
         }));
@@ -142,9 +143,9 @@ function Play(game) {
         setupDebugDiv();
         gameSpec.actions.checkHandlers();
         gameSpec.actions.schedule('START_NEW_GAME',{
-            worldWidth: 10,
-            worldHeight: 10,
-            numFactions: 2,
+            worldWidth: 30,
+            worldHeight: 30,
+            numFactions: 4,
         });
 
         log.info("Level initialization complete.");

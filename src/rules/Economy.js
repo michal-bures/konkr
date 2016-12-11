@@ -1,24 +1,6 @@
 import { PawnType } from 'rules/Pawns';
 import { signedNumber } from 'lib/util';
 
-const PAWN_UPKEEP = new Map([
-    [PawnType.TROOP_1, 2],
-    [PawnType.TROOP_2, 6],
-    [PawnType.TROOP_3, 18],
-    [PawnType.TROOP_4, 64],
-    [PawnType.UNREST, 1],
-    [PawnType.RAIDERS, 1],
-    [PawnType.GRAVE, 1]
-]);
-
-const PAWN_PURCHASE_COST = new Map([
-    [PawnType.TROOP_1, 10],
-    [PawnType.TROOP_2, 20],
-    [PawnType.TROOP_3, 30],
-    [PawnType.TROOP_4, 40],
-    [PawnType.TOWER, 15],
-]);
-
 function Economy(spec) {
     let {log, pawns, actions, regions} = spec;
 
@@ -90,7 +72,7 @@ function Economy(spec) {
     }
 
     function priceOf(pawnType) {
-        return PAWN_PURCHASE_COST.get(pawnType) || 0;
+        return pawnType.price || 0;
     }
 
     function incomeOf(region) {
@@ -113,7 +95,7 @@ function Economy(spec) {
 
     function upkeepOfPawn(pawn) {
         if (!pawn) return 0;
-        return PAWN_UPKEEP.get(pawn.pawnType) || 0;
+        return pawn.pawnType.upkeep || 0;
     }
 
     // PRIVATE METHODS

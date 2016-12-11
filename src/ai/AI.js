@@ -1,5 +1,4 @@
 import HexValuation from 'lib/hexgrid/HexValuation';
-import { PawnType } from 'rules/pawns';
 
 function AI(spec) {
     let {actions, pawns, economy} = spec;
@@ -9,33 +8,34 @@ function AI(spec) {
     });
 
     actions.setHandler("AI_MANAGE_REGION", (action,player, region) => {
-        debugger;
 
         let attackOpportunities = new AttackOpportunities(spec, player, region, 0);
         attackOpportunities.recalculate();
 
         let nextTarget = attackOpportunities.pop();
         if(!nextTarget) return action.resolve();
+        nextTarget = nextTarget.hex;
 
         let availableUnits = pawns.select({
-            hexes:region.hexes,
-            type:PawnType.TROOP_1
+            hexes: region.hexes,
+            type: pawns.TROOP_1,
+            custom: player.canMoveUnit.bind(player)
         });
 
-        if (!availableUnits) {
+        if (!availableUnits.length) {
             if (economy.treasuryOf(region) > 10 &&
                 economy.netIncomeOf(region)+economy.treasuryOf(region)/10 > 2) {
 
-                action.schedule('BUY_UNIT', PawnType.TROOP_1);
-                action.schedule('CONQUER_HEX', nextTarget);
+                action.schedule('BUY_UNIT', pawns.TROOP_1, region);
+                action.schedule('CONQUER_HEX', nextTarget, region);
                 action.schedule('AI_MANAGE_REGION', player, region);
             } 
         } else {
             action.schedule('GRAB_UNIT', availableUnits[0]);
-            action.schedule('CONQUER_HEX', nextTarget);
+            action.schedule('CONQUER_HEX', nextTarget, region);
             action.schedule('AI_MANAGE_REGION', player, region);
         }
-        action.resolved();
+        action.resolve();
     });
 
     function AttackOpportunities({warfare}, player, fromRegion, maxDefense) {
@@ -44,7 +44,7 @@ function AI(spec) {
         function recalculate() {
             fromRegion.hexes
                 .neighbours()
-                .filter(hex => !player.controls(hex) && warfare.defenseOf(hex) <= maxDefense)
+                .filter(hex => warfare.defenseOf(hex) <= maxDefense)
                 .forEach(hex => {
                     cache.set(hex,warfare.defenseOf(hex));
                 });

@@ -17,6 +17,10 @@ function Players(spec) {
             return ownerOf(region) === this;
         }
 
+        canMoveUnit(pawn) {
+            return this.controls(regions.regionOf(pawn)) && !movedUnits[pawn.hex.id];
+        }
+
         play() { throw Error(`Not implemented`); }
 
         toString() {
@@ -59,34 +63,40 @@ function Players(spec) {
 
     actions.setHandler('CONQUER_HEX', (action, hex, region) => {
         if (!grabbedPawn) return action.reject(`Attempted to conquer ${hex} with no pawn grabbed!`);
-        movedUnits[grabbedPawn] = true;
+        if (!region) return action.reject(`Conquering region not specified`);
+        movedUnits[hex.id] = true;
 
         if (pawns.pawnAt(hex)) {
             action.schedule('DESTROY_PAWN', pawns.pawnAt(hex));
         }
         action.schedule('CHANGE_HEXES_REGION', hex, region);
-        action.schedule('MOVE_PAWN',grabbedPawn, hex);
+        action.schedule('CREATE_PAWN',grabbedPawn, hex);
         grabbedPawn = null;
+        grabbedPawnRegion = null;
+
         action.resolve();
     });
 
     actions.setHandler('GRAB_UNIT', (action, pawn) => {
-        if (movedUnits[pawn]) return action.reject(`Tried to grab ${pawn}, which has already moved this turn.`);
+        if (movedUnits[pawn.hex.id]) return action.reject(`Tried to grab ${pawn}, which has already moved this turn.`);
         if (!pawn.pawnType.isTroop()) return action.reject(`${pawn} is not movable by player!`);
         const region = regions.regionOf(pawn.hex);
         if (!activePlayer.controls(region)) return action.reject(`Tried to grab ${pawn}, which does not belong to ${activePlayer}`);
-        grabbedPawn = pawn;
+        grabbedPawn = pawn.pawnType;
         grabbedPawnRegion = region;
-        actions.schedule('DESTROY_PAWN',grabbedPawn);
+        actions.schedule('DESTROY_PAWN',pawn);
         action.resolve();
     });
 
     actions.setHandler('BUY_UNIT', (action, unitType, region)=> {
         const cost = economy.priceOf(unitType);
         if (!cost) return action.reject(`Unit ${unitType} cannot be bought by a player.`);
+        if (!region) return action.reject(`No region specified, who is supposed to pay for this?!`);
         if (cost > economy.treasuryOf(region)) return action.reject(`Region ${region} cannot afford to buy ${unitType}.`);
-
         action.schedule('CHANGE_REGION_TREASURY',region, -cost);
+        grabbedPawn = unitType;
+        grabbedPawnRegion = region;
+
 //        action.schedule('CREATE_PAWN',unitType,hex);
         action.resolve();
     });

@@ -3,31 +3,52 @@ import expect from 'expect';
 
 class PawnType extends Enum {
     isTroop() { return false; }
+    get defense() { return 0; }
+    get upkeep() { return 0; }
+    get price() { return 0; }
 }
 PawnType.initEnum({
     UNKNOWN: {
     },
     TOWN: {
+        defense: 1
     },
     TROOP_1: {
-        isTroop: ()=>true
+        isTroop:()=>true,
+        price: 10,
+        upkeep: 2,
+        defense: 1
     },
     GRAVE: {
+        upkeep: 1
     },
     TROOP_2: {
-        isTroop: ()=>true
+        isTroop: ()=>true,
+        price: 20,
+        upkeep: 6,
+        defense: 2
     },
     TROOP_3: {
-        isTroop: ()=>true
+        isTroop: ()=>true,
+        price: 30,
+        upkeep: 18,
+        defense: 3
     },
     TROOP_4: {
-        isTroop: ()=>true
+        isTroop: ()=>true,
+        price: 40,
+        upkeep: 64,
+        defense: 4
     },
     TOWER: {
+        price: 15,
+        defense: 2
     },
     UNREST: {
+        upkeep: 1
     },
     RAIDERS: {
+        upkeep: 1
     }
 });
 
@@ -41,7 +62,7 @@ function Pawns(spec) {
     let { actions, log } = spec;
     
     // public
-    let pawns = Object.freeze({
+    let pawns = {
         pawnAt,
         select,
         forEach,
@@ -49,7 +70,13 @@ function Pawns(spec) {
         onCreated: new Phaser.Signal(/* pawn */),
         onDestroyed: new Phaser.Signal(/* pawn */),
         onMoved: new Phaser.Signal(/* pawn, hex */)
+    };
+
+    PawnType.enumValues.forEach(pawnType => {
+        pawns[pawnType.name] = pawnType;
     });
+
+    Object.freeze(pawns);
 
     //private
     let hexPawn = [],
@@ -141,9 +168,10 @@ function Pawns(spec) {
         _pawns.forEach(fn);
     }
 
-    function select({type,hexes}) {
+    function select({type,hexes,custom=()=>true}) {
         const filterFunction = (pawn=> {
             if (type && pawn.pawnType !== type) return false;
+            if (!custom(pawn)) return false;
             return true;
         });
 
@@ -202,4 +230,4 @@ function Pawns(spec) {
     return pawns;
 }
 
-export { Pawns, PawnType };
+export default Pawns;
