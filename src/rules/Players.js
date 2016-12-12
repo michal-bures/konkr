@@ -2,10 +2,11 @@ import IterableOn from 'lib/decorators/IterableOn';
 
 function Players(spec) {
 
-    let { actions, economy, pawns, regions } = spec;
+    let { actions, economy, grid, pawns, regions, ids } = spec;
 
     class Player {
-        constructor(name) {
+        constructor(id, name) {
+            this.id = id;
             this.name = name;
         }
 
@@ -29,8 +30,8 @@ function Players(spec) {
     }
 
     class GlobalAIPlayer extends Player {
-        constructor() {
-            super("Global AI");
+        constructor(id) {
+            super(id,"Global AI");
         }
 
         toJSON() {
@@ -38,34 +39,48 @@ function Players(spec) {
         }
 
         play() {
-            regions.forEach(region => actions.schedule('AI_MANAGE_REGION', this, region));
+            regions.forEach(region => region.hasCapital() && actions.schedule('AI_MANAGE_REGION', this, region));
             //TODO: What if two owned regions get merged while playing?
         }
     }
 
-    const _players = [new GlobalAIPlayer()];
+    let _players = [];
     
     let activePlayer = null,
         grabbedPawn = null,
         grabbedPawnRegion = null,
         movedUnits = {};
 
+    let p = new GlobalAIPlayer(ids.next('player'));
+    _players[p.id] = p;        
+
     // public API
     let self = {
-        storeState() {
-            return {
-                players: _players.map(player=>player.toJSON()),
-                activePlayer: activePlayer && activePlayer.toJSON(),
-                grabbedPawn: grabbedPawn && grabbedPawn.toJSON(),
-                grabbedPawnRegion: grabbedPawnRegion && grabbedPawnRegion.toJSON(),
-                movedUnits: Object.keys(movedUnits),
-            };
-        }
+        byId(id) { return _players[id]; },
+        toJSON,
+        fromJSON
     };
     IterableOn(self, _players);
     Object.freeze(self);
 
+    function toJSON() {
+        return {
+            players: _players.map(player=>player && player.id).filter(x=>x),
+            activePlayer: activePlayer && _players.indexOf(activePlayer),
+            grabbedPawn: grabbedPawn && grabbedPawn.name,
+            grabbedPawnRegion: grabbedPawnRegion && grabbedPawnRegion.id,
+            movedUnits: Object.keys(movedUnits),
+        };
+    }
 
+    function fromJSON(src) {
+        _players = [];
+        src.players.forEach(id=> _players[id]=new GlobalAIPlayer(id));
+        activePlayer = src.activePlayer && self.byId(src.activePlayer);
+        grabbedPawn = src.grabbedPawn && pawns[src.grabbedPawn];
+        grabbedPawnRegion = src.grabbedPawnRegion && regions.byId(grabbedPawnRegion);
+        movedUnits = src.movedUnits.map(hexId => grid.getHexById(hexId));
+    }
 
     actions.setHandler('START_PLAYER_TURN', (action, player) => {
         if (activePlayer) throw Error(`Cannot start turn for ${player}, because another players turn is in progress: ${activePlayer}`);

@@ -6,12 +6,17 @@
 	<link rel="stylesheet" href="styles/main.css">
 </head>
 <body>
-	<div id="content" style="height:80%"></div>
+	<div id="content"></div>
     <script src="dist/vendor.bundle.js"></script>
     <script src="dist/bundle.js"></script>
-    <div id="debug" style="height:20%; overflow:auto">
-        <select id="debugModeSelect">
-        </select>
+    <div id="debug">
+        <div id="debugControlPanel">
+            <select id="debugModeSelect">
+            </select>
+            <div id="debugCommandButtons">
+
+            </div>
+        </div>
         <div id="debugContent">
         </div>
     </div>

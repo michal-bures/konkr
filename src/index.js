@@ -1,11 +1,3 @@
-
-/* globals -game */
-/* globals -director */
-/* globals -inspect */
-/* globals -CONST */
-/* globals window */
-/* exported inspect */
-
 import log from 'loglevel';
 
 import AssetManager from 'lib/AssetManager';

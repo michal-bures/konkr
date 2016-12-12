@@ -2,18 +2,14 @@
 
 import { Random } from 'lib/util';
 import IterableOn from 'lib/decorators/IterableOn';
-import { HexGroup } from 'lib/hexgrid/Hexagon';
+import HexGroup from 'lib/hexgrid/HexGroup';
+import Region from 'rules/entities/Region';
 
 const MAX_NUMBER_OF_FACTIONS = 4;
 const MIN_SIZE_FOR_CAPITAL = 2;
 
-let lastRegionId = 0;
-function generateRegionId() {
-    return ++lastRegionId;
-}
-
 function Regions (spec) {
-    let { grid, log, actions, pawns } = spec;
+    let { grid, log, actions, pawns, ids } = spec;
 
     //private
     const _regions = [], //must be const in order not to break IterableOn
@@ -27,17 +23,30 @@ function Regions (spec) {
         onCreated: new Phaser.Signal(/* region */),
         onGainedCapital: new Phaser.Signal(/* region, hex */),
         onLostCapital: new Phaser.Signal(/* region */),
+        onCapitalConquered: new Phaser.Signal(/* region, hex */),
         onHexesChangedOwner: new Phaser.Signal(/* hexGroup */),
         onChanged: new Phaser.Signal(/* region */),
         onDestroyed: new Phaser.Signal(/* region */),
         toDebugString,
-        storeState: () => _regions.map(r=>r.toJSON()),
-
+        toJSON,
+        fromJSON
     };
     IterableOn(regions,_regions);
     Object.freeze(regions);
 
-    //implementation
+    function toJSON() {
+        return _regions.map(r=>r.toJSON()).filter(r=>r);
+    }
+
+    function fromJSON(data) {
+        _regions.length=0;
+        hexRegion.length=0;
+        data.forEach(regionData => {
+            const region = Region.fromJSON(spec, regionData);
+            _regions[region.id] = region;
+            region.hexes.forEach(hex=>hexRegion[hex.id]=region);
+        });
+    }
 
     actions.setHandler('CHANGE_HEXES_REGION', (action, hexOrGroup, receivingRegion) => {
         let lostHexesByRegion = {};
@@ -65,12 +74,11 @@ function Regions (spec) {
             checkForRegionMerging(hexOrGroup);
             // check if region gained capital
             if (!receivingRegion.hasCapital() && receivingRegion.hexes.length >= MIN_SIZE_FOR_CAPITAL) {
-                receivingRegion.pickNewCapital();
+                pickNewCapital(receivingRegion);
             }
 
             regions.onChanged.dispatch(receivingRegion);
         }
-
 
         regions.onHexesChangedOwner.dispatch(hexOrGroup);
         action.resolve();
@@ -87,8 +95,6 @@ function Regions (spec) {
             .forEach((group) => createRegion(group, hexFaction[group.pivot.id]));
         action.resolve();
     });
-
-
 
     function byId(id) {
         return _regions[id];
@@ -145,8 +151,10 @@ function Regions (spec) {
             }
         }
 
-        if (region.hasCapital() && region.hexes.length < MIN_SIZE_FOR_CAPITAL) {
-            actions.schedule('CHANGE_REGION_CAPITAL', region, null, region.capital);
+        if (region.capital && hexGroup.contains(region.capital)) {
+            // the region capital was just conqured
+            regions.onCapitalConquered.dispatch(region, region.capital);
+            pickNewCapital(region);
         }
         if (region.hexes.length===0) {
             delete _regions[region.id];
@@ -158,9 +166,25 @@ function Regions (spec) {
 
     // for internal use only!!
     function createRegion(hexGroup, faction) {
-        let region = new Region(faction);
+        let region = new Region(ids.next('region'),faction);
         _regions[region.id] = region;
         actions.schedule('CHANGE_HEXES_REGION', hexGroup, region);
+        regions.onCreated.dispatch(region);
+    }
+
+    function pickNewCapital(region) {
+        const availableHexes = region.hexes.filter(hex=>!pawns.pawnAt(hex));
+        const prevCapital = region.capital;
+        if (availableHexes.length === 0) {
+            //TODO: clear some hex to make space for the new capital
+            region.capital = null;
+            if (prevCapital) regions.onLostCapital.dispatch(region, prevCapital);
+            actions.schedule('CHANGE_REGION_CAPITAL', region, null, prevCapital);
+        } else {
+            region.capital = availableHexes.getRandomHex();
+            if (!prevCapital) regions.onGainedCapital.dispatch(region, region.capital);
+            actions.schedule('CHANGE_REGION_CAPITAL', region, region.capital, prevCapital);
+        }            
     }
 
     function factionOf(hex) {
@@ -178,56 +202,6 @@ function Regions (spec) {
         }).filter(x=>x).join('\n');
     }
    
-    class Region {
-        constructor(faction) {
-            this._id = generateRegionId();
-            this._hexes = new HexGroup();
-            this.faction = faction;
-            this.capital = null;
-            regions.onCreated.dispatch(this);
-        }
-        
-        get hexes() {
-            return this._hexes; 
-        }
-        
-        get id() { 
-            return this._id; 
-        }
-
-        hasCapital() {
-            return !!this.capital; 
-        }
-        
-        pickNewCapital() {
-            const availableHexes = this.hexes.filter(hex=>!pawns.pawnAt(hex));
-            const prevCapital = this.capital;
-            if (availableHexes.length === 0) {
-                //TODO: clear some hex to make space for the new capital
-                this.capital = null;
-                if (prevCapital) regions.onLostCapital.dispatch(this, prevCapital);
-                actions.schedule('CHANGE_REGION_CAPITAL', this, null, prevCapital);
-            } else {
-                this.capital = availableHexes.getRandomHex();
-                if (!prevCapital) regions.onGainedCapital.dispatch(this, this.capital);
-                actions.schedule('CHANGE_REGION_CAPITAL', this, this.capital, prevCapital);
-            }            
-        }
-
-        toJSON() {
-            return {
-                id: this._id,
-                hexes: this._hexes.toJSON(),
-                faction: this.faction,
-                capital: this.capital && this.capital.id
-            };
-        }
-
-        toString() {
-            return `[Region #${this.id} (${this.faction} ,${this._hexes.length} hexes,`+(this.hasCapital()?`capital at ${this.capital}`:"no capital")+")]";
-        }
-    }
-
     return regions;
 }
 

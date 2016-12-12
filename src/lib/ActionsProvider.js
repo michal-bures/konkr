@@ -1,6 +1,8 @@
-function ActionsProvider(spec, providerName, actionList) {
-    let {log} = spec;
+const VALIDATE_ARGUMENTS = true; // validate argument values of every action call? (slower but detects errors)
 
+
+function ActionsProvider(spec, providerName, config) {
+    let {log, debug} = spec;
 
     // public
     const actions = {
@@ -9,15 +11,12 @@ function ActionsProvider(spec, providerName, actionList) {
         schedule,
         undoLastAction,
         checkHandlers,
+        abortAll,
         toString, 
         toDebugString,
         getNamedProxy,
-        storeState() {
-            return {
-                prePlanned: prePlanned.map(a=>a.toJSON()),
-                planned: planned.map(a=>a.toJSON()),
-            };
-        }
+        toJSON,
+        fromJSON
     };
 
     // private
@@ -28,16 +27,32 @@ function ActionsProvider(spec, providerName, actionList) {
         guards = [];  // async function that have to return promise after each action and before 
                       //next action on the stack is started
 
+    function toJSON() {
+        return {
+            history: history.map(a=>a.toJSON()),
+            prePlanned: prePlanned.map(a=>a.toJSON()),
+            planned: planned.map(a=>a.toJSON()),
+        };
+    }
 
+    function fromJSON(src) {
+        history = src.history.map(json=>ScheduledAction.fromJSON(json));
+        prePlanned = src.prePlanned.map(json=>ScheduledAction.fromJSON(json));
+        planned = src.planned.map(json=>ScheduledAction.fromJSON(json));
+    }
 
     let handlers = {
         // Special Actions (handled here)
         // will undo all actions until the named action is back on top of the history stack
         'UNDO_UNTIL': null, // (actionName)
     };
+    let actionDefs = config.actions;
+    actionDefs.UNDO_UNTIL = [];
+    let typeDefs = config.types;
 
-    actionList.forEach(action => handlers[action] = null);
-
+    for (const key in actionDefs) {
+        handlers[key] = null;
+    }
     Object.seal(handlers);
 
     setHandler("UNDO_UNTIL", (action, targetName) => {
@@ -81,6 +96,20 @@ function ActionsProvider(spec, providerName, actionList) {
             canBeUndone() { return !!undoFunc; }
         });
 
+        if (args.length != actionDefs[name].length) {
+            throw Error(`${self} called with ${args.length} arguments (expected ${actionDefs[name].length})`);
+        }
+
+        if (VALIDATE_ARGUMENTS) {
+            args.forEach((arg, index) => {
+                if (arg === null) return;
+                const expectedType = actionDefs[name][index];
+                if (!typeDefs[expectedType].validate(arg)) {
+                    log.warn(`${self} validation failed on argument #${index+1}: ${arg} does not appear to be of type ${expectedType}`);
+                }
+            });
+        }
+
         // pushes another action on top of the scheduler stack; it will be excuted as soon as this
         // action is resolved
         function schedule(actionName, ...args) {
@@ -118,13 +147,9 @@ function ActionsProvider(spec, providerName, actionList) {
 
         function toJSON() {
             log.debug(`converting ${self} to JSON`);
-            return [name].concat(args.map(a=>{
-                if (typeof a === 'object') {
-                    if (!a.toJSON) throw Error(`Failed to serialize ${self}, Argument '${a}' lacks toJSON() method`);
-                    return a.toJSON(); //TODO: Need to store argument type as well for reconstruction
-                } else {
-                    return a;
-                }
+            return [name].concat(args.map((arg, index)=>{
+                if (arg === null) return null;
+                return typeDefs[actionDefs[name][index]].toJSON(arg);
             }));
         }
 
@@ -134,6 +159,11 @@ function ActionsProvider(spec, providerName, actionList) {
 
         return self;
     }
+    ScheduledAction.fromJSON = function(data) {
+        let name = data[0];
+        let args = data.slice(1).map((arg, i)=> typeDefs[actionDefs[name][i]].fromJSON(arg));
+        return ScheduledAction.apply(null,[name].concat(args));
+    };
 
     function getNamedProxy(name) {
         return {
@@ -152,13 +182,16 @@ function ActionsProvider(spec, providerName, actionList) {
         if (handlers[id]===undefined) throw Error(`Call to unknown action '${id}'`);
         const newAction = new ScheduledAction(id, ...args);
         log.debug(`Scheduled ${newAction})`);
-        if (!activeAction) {
-            planned.push(newAction);
-            executeNext();
-        } else {
-            prePlanned.push(newAction);
-        }
+        prePlanned.push(newAction);
+        if (!activeAction) executeNext();
         return newAction;
+    }
+
+    // aborts all future planned actions (any currently running action will still finish)
+    function abortAll() {
+        log.debug('Aborting all planed actions');
+        prePlanned.length = 0;
+        planned.length = 0;
     }
 
     function executeNext(lastAction) {
@@ -201,8 +234,12 @@ function ActionsProvider(spec, providerName, actionList) {
 
     //check that all actions have handlers
     function checkHandlers() {
-        let missing = Object.keys(handlers).filter(key => !handlers[key]);
-        if (missing.length) log.warn("Some actions lack a handler: "+missing.join(", "));
+        Object.keys(handlers).forEach(key => {
+            if (!handlers[key]) log.warn(`Action ${key} has no handler assigned.`);
+            actionDefs[key].forEach(arg=> {
+                if (!typeDefs[arg]) throw Error(`Action ${key} uses unrecognized argument type '${arg}' `);
+            });
+        });
     }
 
     function setHandler(actionName, handle, description='anonymous') {
@@ -240,7 +277,6 @@ ${tPlanned}
 Registered Handlers:
 ${tActionTypes}`;
     }
-
     return actions;
 }
 

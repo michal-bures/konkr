@@ -1,6 +1,8 @@
 import log from 'loglevel';
 import expect from 'expect';
-import { Hexagon, HexGroup, HexGroupSet } from 'lib/hexgrid/Hexagon';
+import Hexagon from './Hexagon';
+import HexGroup from './HexGroup';
+import HexGroupSet from './HexGroupSet';
 
 // A coordinates in the hexagonal grid.
 // automatically converts between three coordinate systems
@@ -73,15 +75,9 @@ class GridPoint {
 
 class HexGrid {
 
-    constructor({actions, src}, width=0, height=0) {
+    constructor({actions}, width=0, height=0) {
         this.hexes = [];
-        if (src) {
-            const src = initialState;
-            this.reset(src.width, src.height);
-            this.fillWith(point => src.hexes[point.index]);
-        } else {
-            this.reset(width, height);
-        }
+        this.reset(width, height);
 
         actions.setHandler('RESET_HEXGRID', (action, width, height) => {
             this.reset(width, height);
@@ -89,7 +85,7 @@ class HexGrid {
         });
     }
 
-    storeState() {
+    toJSON() {
         return {
             w: this.width,
             h: this.height,
@@ -97,6 +93,10 @@ class HexGrid {
         };
     }
 
+    fromJSON(src) {
+        this.reset(src.h, src.w);
+        this.fillWith(point => src.hexes[point.index]==='1');
+    }
 
     reset(width, height) {
         this.hexes.length = 0;

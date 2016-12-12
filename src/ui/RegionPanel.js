@@ -4,8 +4,6 @@ import { assertDefined } from 'lib/util';
 function RegionPanel(spec) {
     let { log, game, economy, ui, regions } = spec;
 
-    log.debug(spec.toDebugString());
-
     let group = game.add.group(),
         currentRegion = null;
 

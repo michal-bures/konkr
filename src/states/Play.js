@@ -3,11 +3,18 @@ import HexSelectionProxy from 'ui/HexSelectionProxy';
 import Scrolling from 'ui/Scrolling';
 import RegionPanel from 'ui/RegionPanel';
 import GridOverlays from 'ui/GridOverlays';
+import DebugInfo from 'ui/DebugInfo';
 import UI from 'lib/controls/UI';
 
 import UIManager from 'ui/UIManager';
 import GameState from 'rules/GameState';
 
+
+const DEFAULT_GAME_SETTTINGS = {
+    worldWidth: 10,
+    worldHeight: 10,
+    numFactions: 4,   
+};
 
 function Play(game) { 
 
@@ -15,7 +22,7 @@ function Play(game) {
     let gameState = null,
         gameSpec = null,
         gameUi = null,
-        debugTabName='actions',
+        debugTabName=null,
         lastDebugContent='';
 
 
@@ -34,8 +41,9 @@ function Play(game) {
         gameSpec = gameState.spec;
 
         gameUi = gameSpec.extend({
+            gameState: () => gameState,
             ui: spec => new UIManager(spec),
-            debug: spec => new Renderer.DebugInfo(spec),
+            debug: spec => new DebugInfo(spec),
             landSprites: spec => new Renderer.LandSprites(spec),
             regionBorders: spec => new Renderer.RegionBorders(spec),
             selRegionHighlight: spec => new Renderer.SelectedRegionHighlight(spec),
@@ -88,20 +96,26 @@ function Play(game) {
             vOffset: 10,
         });
 
+        // DEBUG TOOLS SETUP
+
         let nextStateCallbacks = [];
+        let breakAfterEveryAction = true;
+        let debugBreakCallback = null;
 
         gameSpec.actions.attachGuard((prevAction, nextAction) => new Promise(resolve => {
             switch (nextAction && nextAction.name) {
                 case 'START_PLAYER_TURN':
-                    return nextStateCallbacks.push(resolve);
+                    setTimeout(resolve, 100);
+                    break;
+//                    return nextStateCallbacks.push(resolve);
                 default:
-                    //return nextStateCallbacks.push(resolve);
-                    //setTimeout(resolve,0);
-                    resolve();
+                    if (breakAfterEveryAction) {
+                        debugBreakCallback = resolve;
+                    } else {
+                        resolve();
+                    }
             }
         }));
-
-
 
         nextTurnButton.addToGroup(game.world);
         nextTurnButton.onInputUp.add(() => {
@@ -111,14 +125,38 @@ function Play(game) {
         });
 
         game.debug.reset();
+        // DEBUG
+        gameUi.debug.addCommand('actions','⏵ Play', ()=> {
+            breakAfterEveryAction = !breakAfterEveryAction;
+            if (debugBreakCallback) debugBreakCallback();
+            return (breakAfterEveryAction?'⏵ Play':"⏸ Pause");
+        });
+
+        gameUi.debug.addCommand('actions','⏯ Step', ()=> {
+            if (debugBreakCallback) debugBreakCallback();
+        });
+
+        gameUi.debug.addCommand('actions','Restart', ()=> {
+            gameSpec.actions.abortAll();
+            gameSpec.actions.schedule('START_NEW_GAME',DEFAULT_GAME_SETTTINGS);
+        });
+
+        gameUi.debug.addCommand('actions','Store snapshot', ()=> {
+            gameSpec.actions.schedule("STORE_STATE", "konkr_devsnapshot");
+        });
+
+        gameUi.debug.addCommand('actions','Load snapshot', ()=> {
+            gameSpec.actions.abortAll();
+            gameSpec.actions.schedule("LOAD_STATE", JSON.parse(localStorage.getItem("konkr_devsnapshot")));
+        });
 
         setupDebugDiv();
+        refreshDebugTab('actions');
+
+        //END OF DEBUG TOOLS SETUP
+
         gameSpec.actions.checkHandlers();
-        gameSpec.actions.schedule('START_NEW_GAME',{
-            worldWidth: 30,
-            worldHeight: 30,
-            numFactions: 4,
-        });
+        gameSpec.actions.schedule('START_NEW_GAME',DEFAULT_GAME_SETTTINGS);
 
         log.info("Level initialization complete.");
     }
@@ -128,14 +166,19 @@ function Play(game) {
         const debugSelect = document.getElementById("debugModeSelect");
 
         if (!debugDiv) return;
-        debugSelect.innerHTML= gameUi.listConstructors().sort().map(key => (gameUi[key].toDebugString?`<option value='${key}'>${key}</option>`:''));
-        debugSelect.value = debugTabName;
+        debugSelect.innerHTML= gameUi.listConstructors().sort().map(key => (gameUi[key].toDebugString?`<option value='${key}'>${key}</option>`:'')).join('');
         debugSelect.onchange = () => { refreshDebugTab(debugSelect.value); };
         setInterval(refreshDebugTab, 100);
     }
 
     function refreshDebugTab(name = debugTabName) {
+        if (debugTabName!==name) {
+            //changed tab
+            gameUi.debug.generateDebugCommandsHTML(document.getElementById("debugCommandButtons"),name);
+        }
+
         debugTabName=name;
+        document.getElementById("debugModeSelect").value = debugTabName;
         const newContent = `<pre>${gameUi[name].toDebugString()}</pre>`;
         if (newContent == lastDebugContent) return;
         lastDebugContent = newContent;

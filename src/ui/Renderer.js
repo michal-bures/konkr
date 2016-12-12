@@ -1,6 +1,4 @@
-import log from 'loglevel';
 import expect from 'expect';
-import { OrderedMap, assertDefined } from 'lib/util';
 
 const HEX_WIDTH = 32;
 const HEX_HEIGHT = 38;
@@ -46,7 +44,7 @@ function drawOnHex(graphics, hex, scale, path) {
 }
 
 function LandSprites(spec) {
-    const {game, grid, regions} = spec;
+    const {game, grid, gameState, regions} = spec;
     
     //public
     let landSprites = Object.freeze({
@@ -56,21 +54,33 @@ function LandSprites(spec) {
 
     //private
     let group = game.add.group(),
-        tileToSprite = {},
+        hexToSprite = {},
         requiresSorting = false; // true => need to resort group before next render
 
-    regions.onHexesChangedOwner.add((hexes) => {
+    regions.onHexesChangedOwner.add(refreshHexes);
+
+    gameState.onReset.add(() => {
+        for (const hexId in hexToSprite) {
+            if (!grid.getHexById(hexId)) {
+                hexToSprite[hexId].destroy();
+                delete hexToSprite[hexId];
+            }
+        }
+        refreshHexes(grid.allHexes());
+    });
+
+    function refreshHexes(hexes) {
         hexes.forEach( hex => {
-            if (tileToSprite[hex.id]) {
-                tileToSprite[hex.id].refresh();
+            if (hexToSprite[hex.id]) {
+                hexToSprite[hex.id].refresh();
             } else {
                 let sprite = new LandSprite(hex);
                 group.add(sprite);
-                tileToSprite[hex.id] = sprite;
+                hexToSprite[hex.id] = sprite;
                 requiresSorting = true;
             }
         });
-    });
+    }
 
     function render() {
         if (requiresSorting) {
@@ -80,16 +90,16 @@ function LandSprites(spec) {
     }
 
     class LandSprite extends Phaser.Image {
-        constructor(tile) {
-            const [x,y] = convertToWorldCoordinates(tile.position.x, tile.position.y);
+        constructor(hex) {
+            const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
             super(game, x, y-HEX_HEIGHT/2, 'hex');
             this.anchor.setTo(0.5,0);
-            this.frame=regions.factionOf(tile) || 0;
-            this.hex = tile;
-            //log.debug(`Hex sprite for ${tile} created at ${x}:${y}`);
+            this.frame=regions.factionOf(hex) || 0;
+            this.hexId = hex.id;
+            //log.debug(`Hex sprite for ${hex} created at ${x}:${y}`);
             /*
             var style = { font: "12px Courier New", fill: "white", align: "center"};
-            this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,tile.id, style);
+            this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,hex.id, style);
             this.label.alpha=0.5;
             this.label.lineSpacing = -6;
             this.label.anchor.set(0.5,0.5);
@@ -97,7 +107,11 @@ function LandSprites(spec) {
         }
 
         refresh() {
-            this.frame=regions.factionOf(this.hex);
+            const hex = grid.getHexById(this.hexId);
+            this.visible = !!hex;
+            if (hex) {
+                this.frame=regions.factionOf(hex);
+            }
         }
     }
 
@@ -108,72 +122,93 @@ function LandSprites(spec) {
 
 const PAWN_OFFSET_TOP = -13;
 
-class Pawns {
-    constructor({game, log, pawns, actions}) {
-        expect(game).toExist();
-        expect(pawns).toExist();    
+function Pawns ({game, log, pawns, gameState}) {
+    let pawnToSprite = {},
+        group = game.add.group();
 
-        this.game = game;
-        this.group = game.add.group();
-        this.pawns = pawns;
-        this.pawnToSprite = {};
-        this.pawns.forEach((pawn) => {
-            var sprite = new PawnSprite({game},pawn);
-            this.group.add(sprite);
-            this.pawnToSprite[pawn.id] = sprite;
-        });        
+    let self = Object.freeze({ 
+        group,
+    });
 
-        pawns.onCreated.add((pawn) => {
-            var sprite = new PawnSprite({game},pawn);
-            this.group.add(sprite);
-            this.pawnToSprite[pawn.id] = sprite;
-        });
+    class PawnSprite extends Phaser.Sprite {
+        constructor(pawn) {
+            const [x,y] = convertToWorldCoordinates(pawn.hex.position.x, pawn.hex.position.y);
+            super(game, x, y+Math.floor(PAWN_OFFSET_TOP/2), 'pawn');
+            this.anchor.set(0.5);
+            this.frame=pawn.pawnType.ordinal;
+            this.pawnId=pawn.id;
+            this.game=game;
+        }
 
-        pawns.onDestroyed.add(pawn => {
-            const sprite = this.pawnToSprite[pawn.id];
-            if (!sprite) return;
-            this.pawnToSprite[pawn.id] = undefined;
-            sprite.destroy();
-        });
+        updatePosition(animate=true) {
+            const pos = pawns.byId(this.pawnId).hex.position;
+            const [x,y] = convertToWorldCoordinates(pos.x, pos.y);
+            if (animate) {
+                this.game.add.tween(this).to( { x: x, y: Math.floor(y+PAWN_OFFSET_TOP/2) }, 500, "Linear", true);  
+            } else {
+                this.x = x;
+                this.y = y;
+            }
+        }
 
-        pawns.onMoved.add(pawn => {
-            const sprite = this.pawnToSprite[pawn.id];
-            if (!sprite) throw Error(`${pawn} should have had a sprite assigned by now, but does not!`);
-            sprite.updatePosition();
-        });
-    }
-}
-
-class PawnSprite extends Phaser.Sprite {
-    constructor({game},pawn) {
-        const [x,y] = convertToWorldCoordinates(pawn.hex.position.x, pawn.hex.position.y);
-        super(game, x, y+Math.floor(PAWN_OFFSET_TOP/2), 'pawn');
-        this.anchor.set(0.5);
-        this.frame=pawn.pawnType.ordinal;
-        this.pawn=pawn;
-        this.game=game;
-
-/*        var style = { font: "10px Courier New", fill: "white", align: "center"};
-        this.label = game.add.text(HEX_WIDTH/2,HEX_HEIGHT/2,tile.id, style);
-        this.label.lineSpacing = -6;
-        this.label.anchor.set(0.5,0.5);
-        this.addChild(this.label);*/
+        refresh() {
+            log.warn("REFRESH", this);
+            this.frame=pawns.byId(this.pawnId).pawnType.ordinal;
+            this.updatePosition(false);
+        }
     }
 
-    updatePosition() {
-        const [x,y] = convertToWorldCoordinates(this.pawn.hex.position.x, this.pawn.hex.position.y);
-        this.game.add.tween(this).to( { x: x, y: Math.floor(y+PAWN_OFFSET_TOP/2) }, 500, "Linear", true);
+    pawns.onCreated.add(ensureSpriteExists);
+
+    pawns.onDestroyed.add(pawn => {
+        const sprite = pawnToSprite[pawn.id];
+        if (!sprite) return;
+        pawnToSprite[pawn.id] = undefined;
+        sprite.destroy();
+    });
+
+    pawns.onMoved.add(pawn => {
+        const sprite = pawnToSprite[pawn.id];
+        if (!sprite) throw Error(`${pawn} should have had a sprite assigned by now, but does not!`);
+        sprite.updatePosition();
+    });
+
+    gameState.onReset.add(()=>{
+        destroyOrphanedSprites();
+        pawns.forEach(ensureSpriteExists);
+    });
+
+
+    function ensureSpriteExists(pawn) {
+        if (pawnToSprite[pawn.id]) return;
+        var sprite = new PawnSprite(pawn);
+        group.add(sprite);
+        pawnToSprite[pawn.id] = sprite;
     }
+
+    function destroyOrphanedSprites() {
+        for (const key in pawnToSprite) {
+            if (!pawns.byId(key)) {
+                pawnToSprite[key].destroy();
+                delete pawnToSprite[key];
+            } else {
+                pawnToSprite[key].refresh();
+            }
+        }        
+    }
+
+    return self;
 }
 
 class RegionBorders {
-    constructor({game, regions}) {
+    constructor({game, regions, gameState}) {
         this.regions = regions;
         this.game = game;
         this.needsRedraw = true;
         this.group = game.add.group();
 
         regions.onHexesChangedOwner.add(() => { this.needsRedraw = true; });
+        gameState.onReset.add(() => { this.needsRedraw = true; });        
     }
 
     redraw() {
@@ -234,34 +269,6 @@ function SelectedRegionHighlight({game,ui}) {
 
 }
 
-
-class DebugInfo {
-    constructor({game}) {
-        this.game = game;
-        this.items = new OrderedMap();
-        this.sprites = [];
-    }
-
-    set(key,value) {
-        this.items.push(key,value);
-    }
-
-    sprite(sprite) {
-        this.sprites.push(sprite);
-    }
-
-    render() {
-        let y = 32;
-        this.items.forEach((key, value) => {
-            if (value!==null && value!==undefined) {
-                this.game.debug.text(key + ": " + value,32,y);
-            }
-            y +=32;
-        });
-        this.sprites.forEach(sprite=>this.game.debug.spriteBounds(sprite));
-    }
-}
-
 export { 
     convertToWorldCoordinates,
     drawOnHex,
@@ -270,7 +277,6 @@ export {
     Pawns,
     RegionBorders,
     SelectedRegionHighlight,
-    DebugInfo,
     HEX_WIDTH,
     HEX_HEIGHT,
     LINE_HEIGHT,

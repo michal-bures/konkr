@@ -5,11 +5,12 @@ import Pawns from 'rules/Pawns';
 import Actions from 'rules/Actions';
 import Warfare from 'rules/Warfare';
 import { HexGrid } from 'lib/hexgrid/HexGrid';
+import IdGenerator from 'lib/IdGenerator';
 import LandGenerator from 'rules/LandGenerator';
 import AI from 'ai/AI';
 
 function GameState(spec) {
-    let {log, initialState} = spec;
+    let {log} = spec;
     
     let gameStateSpec = spec.extend({
         useName: spec => (moduleName) => {
@@ -24,6 +25,7 @@ function GameState(spec) {
                 }
             });
         },
+        ids: spec => new IdGenerator(spec),
         grid: spec => new HexGrid(spec),
         pawns: spec => new Pawns(spec.useName('pawns')),
         regions: spec => new Regions(spec.useName('regions')),
@@ -38,26 +40,44 @@ function GameState(spec) {
 
     const self = Object.freeze({
         get spec() { return gameStateSpec; },
+        onReset: new Phaser.Signal(),
         toString,
         toDebugString,
         toJSON
     });
 
+    // order is important - modules that rely on objects from other modules must go last
+    // for example pawns will want instances of hexes, so they need grid to be loaded
+    const STATEFUL_MODULES = ['grid','pawns','regions','economy','players','actions', 'ids'];
+
     function toJSON() {
         let obj = {};
-        ['grid','pawns','regions','economy',/*'actions',*/'players'].forEach(moduleName=> {
+        STATEFUL_MODULES.forEach(moduleName=> {
             log.debug("Saving "+moduleName);
-            obj[moduleName] = gameStateSpec[moduleName].storeState();
+            obj[moduleName] = gameStateSpec[moduleName].toJSON();
         });
         return obj;
     }
-/*
-    actions.setHandler('STORE_STATE', (action, container) => {
+
+    function fromJSON(jsonData) {
+        STATEFUL_MODULES.forEach(moduleName=> {
+            log.debug(`Loading ${moduleName} state from`, jsonData[moduleName]);
+            gameStateSpec[moduleName].fromJSON(jsonData[moduleName]);
+        });
+        self.onReset.dispatch();
+    }
+
+    actions.setHandler('STORE_STATE', (action, name) => {
+        log.debug("Saving current game state...");
+        localStorage.setItem(name, JSON.stringify(toJSON()));
+        log.info("GameState saved into localStorage["+name+"]");
+        action.resolve();
     });
 
-    actions.setHandler('LOAD_STATE', (action) => {
-
-    })*/
+    actions.setHandler('LOAD_STATE', (action, json) => {
+        fromJSON(json);
+        action.resolve();
+    });
 
     actions.setHandler('START_NEW_GAME',  (action, {worldWidth, worldHeight, numFactions}) => {
         action.schedule('RESET_HEXGRID', worldWidth, worldHeight);

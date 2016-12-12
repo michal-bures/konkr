@@ -1,4 +1,3 @@
-import { PawnType } from 'rules/Pawns';
 import { signedNumber } from 'lib/util';
 
 function Economy(spec) {
@@ -16,16 +15,20 @@ function Economy(spec) {
         onRegionTreasuryChanged: new Phaser.Signal(/* region, newValue, oldValue */),
         onRegionBankrupt: new Phaser.Signal(/* region */),
         toDebugString,
-        storeState() {
+        toJSON() {
             let ret = {};
             regions.forEach(r=> {
                 if (treasuryOf(r)!==0) ret[r.id] = treasuryOf(r);
             });
             return ret;
+        },
+        fromJSON(data) {
+            regionTreasury = new WeakMap();
+            regions.forEach(r=> {
+                if (data[r.id]) regionTreasury.set(r,data[r.id]);
+            });
         }
     });
-
-
 
     /// ACTION HANDLERS
 

@@ -18,8 +18,30 @@ pre {
   margin: 0;
 }
 
+div#content {
+    height:80%;
+}
+
+div#debug {
+    height:200px;
+    overflow:auto;
+    background-color: #cccccc;
+}
+
+input.debugCommandButton {
+    width:100%;
+
+}
 div#debugContent {
-  font-family: Courier New
+  font-family: 'Courier New';
   font-size: 8pt;
   padding:10px;
+  overflow: hidden;
+  border-left: 3px solid whitesmoke;
+  height: 100%;
+}
+
+div#debugControlPanel {
+   float: left;
+   width: 130px;
 }
