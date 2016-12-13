@@ -20,31 +20,34 @@ function ActionsProvider(spec, providerName, config) {
     };
 
     // private
-    let history = [],
-        activeAction = null, // action currently running
-        planned = [], // stack of planned actions
+    let actionQueue = [], // queue of future and past actions
+        actionPointer = 0, // current position in the queue
+        actionRunning = false, // whether the action currently pointed to by actionPointer is already running
         guards = [];  // async function that have to return promise after each action and before 
                       //next action on the stack is started
 
     function toJSON() {
+        if (actionRunning) log.warn(`Unsafe serialization while ${currentAction()} is executing.`);
         return {
-            history: history.map(a=>a.toJSON()),
-            planned: planned.map(a=>a.toJSON()),
+            queue: actionQueue.map(a=>a.toJSON()),
+            at: actionPointer,            
         };
     }
 
     function fromJSON(src) {
-        history = src.history.map(json=>ScheduledAction.fromJSON(json));
-        planned = src.planned.map(json=>ScheduledAction.fromJSON(json));
+        actionQueue = src.queue.map(json=>ScheduledAction.fromJSON(json));
+        actionPointer = src.at;
+        actionRunning = false;
+        executeNext();
     }
 
-    let handlers = {
-        // Special Actions (handled here)
-        // will undo all actions until the named action is back on top of the history stack
-        'UNDO_UNTIL': null, // (actionName)
-    };
+    function currentAction() {
+        if (!actionRunning) return null;
+        return actionQueue[actionPointer];
+    }
+
+    let handlers = {};
     let actionDefs = config.actions;
-    actionDefs.UNDO_UNTIL = [];
     let typeDefs = config.types;
 
     for (const key in actionDefs) {
@@ -52,29 +55,13 @@ function ActionsProvider(spec, providerName, config) {
     }
     Object.seal(handlers);
 
-    setHandler("UNDO_UNTIL", (action, targetName) => {
-        if (history.find(act=> act.name === 'targetName')) {
-            undoAnotherUnlessDone();
-        } else {
-            return action.reject(`no action of type ${targetName} is in the history stack`);
-        }
-
-        function undoAnotherUnlessDone() {
-            if (history[history.length-1].name !== targetName) {
-                undoLastAction.then(undoAnotherUnlessDone);
-            }
-        }
-        action.resolve();
-
-    });
-
-
     function undoLastAction(){
-        if (activeAction) throw Error('Cannot issue UNDO while another action is running');
-        if (!history.length) throw Error('No action to undo');
-        const actionToUndo = history.pop();
+        if (actionRunning) throw Error('Cannot issue UNDO while another action is running');
+        if (actionPointer===0) throw Error('No action left to undo');
+        let actionToUndo = actionQueue[actionPointer-1];
+        actionQueue.splice(actionPointer,actionToUndo.descendants);
         actionToUndo.undo();
-        actionToUndo.reschedule();
+        --actionPointer;
     }
 
     function attachGuard(guardFunc) {
@@ -96,7 +83,6 @@ function ActionsProvider(spec, providerName, config) {
             start,
             resolve,
             reject,
-            abortDescendants,
             undo,
             toJSON,
             get name() { return name; },
@@ -137,19 +123,14 @@ function ActionsProvider(spec, providerName, config) {
             if (resolution) throw Error(`Attempt to restart action that is already done.`);
             if (processing) throw Error(`Attempt to restart action that is already running.`);
             processing = true;
-            if (!handlers[name]) throw Error(`Missign handler for action ${activeAction.name}`);
+            if (!handlers[name]) throw Error(`Missign handler for action ${name}`);
             log.debug(`Now running ${name}`);
             handlers[name].handle(self,...args);
         }
 
-        function abortDescendants() {
-            for (let i=0; i<self.descendants; ++i) planned.shift();
-            self.descendants=0;
-        }
-
         function undo() {
-            abortDescendants();
             handlers[name].undo(self,...args);
+            resolution = null;
         }
 
 
@@ -158,6 +139,7 @@ function ActionsProvider(spec, providerName, config) {
         function resolve() {
             if (resolution) throw Error(`Duplicate call of ${self}.resolve()`);
             resolution = 'resolved';
+            processing = false;
             actionResolved(self);
         }
 
@@ -165,6 +147,7 @@ function ActionsProvider(spec, providerName, config) {
         // if any actions scheduled from this action will be aborted as well
         function reject(reason) {
             resolution = 'rejected: '+reason;
+            processing = false;
             actionRejected(self, reason);
         }
 
@@ -181,7 +164,7 @@ function ActionsProvider(spec, providerName, config) {
         }
 
         function toString() {
-            return `[${name}(${args})${self.issuer?` issued by ${self.issuer}`:''}${self.canBeUndone()?" ↶":""}]`;
+            return `[${name}(${args})${self.issuer?` issued by ${self.issuer}`:''}${self.canBeUndone()?"(↶)":""}]`;
         }
 
         return self;
@@ -212,13 +195,13 @@ function ActionsProvider(spec, providerName, config) {
         if (handlers[id]===undefined) throw Error(`Call to unknown action '${id}'`);
         const newAction = new ScheduledAction(id, ...args);
         log.debug(`Scheduled ${newAction})`);
-        if (!activeAction) {
-            planned.unshift(newAction);
+        if (!actionRunning) {
+            actionQueue.splice(actionPointer,0,newAction);
             executeNext();
         } else {
-            log.debug(`Putting ${newAction} at ${activeAction.descendants}`);
-            planned.splice(activeAction.descendants,0,newAction);
-            activeAction.descendants++;
+            log.debug(`Putting ${newAction} at ${actionPointer + currentAction().descendants+1}`);
+            actionQueue.splice(actionPointer+currentAction().descendants+1,0,newAction);
+            currentAction().descendants++;
         }
         return newAction;
     }
@@ -226,37 +209,41 @@ function ActionsProvider(spec, providerName, config) {
     // aborts all future planned actions (any currently running action will still finish)
     function abortAll() {
         log.debug('Aborting all planed actions');
-        planned.length = 0;
+        actionQueue.splice(actionPointer+(actionRunning?1:0));
+        actionPointer=0;
     }
 
     function executeNext(lastAction) {
-        if (activeAction) throw Error(`executeNext() called while another action is still active`);
+        if (actionRunning) throw Error(`executeNext() called while another action is still active`);
         guards.reduce((previousPromise, guard) => previousPromise.then(() => {
-            return guard(lastAction, planned[0]);
+            return guard(lastAction, actionQueue[actionPointer]);
         }), Promise.resolve()).then(() => {
-            if (!planned.length) return;
-            activeAction = planned.shift();
-            activeAction.start();
+            if (actionPointer === actionQueue.length) return;
+            actionRunning = true;
+            actionQueue[actionPointer].start();
         });
     }
 
     function actionResolved(action) {
-        if (action !== activeAction) throw Error(`Action ${action} was resolved but it should not have been running at all!`);
-        if (activeAction.canBeUndone()) {
-            log.debug(`Resolved ${activeAction}`);
-            history.push(activeAction);
+        if (action !== currentAction()) throw Error(`Action ${action} was resolved but it should not have been running at all!`);
+        if (action.canBeUndone()) {
+            log.debug(`Resolved ${action}`);
+            ++actionPointer;
         } else {
-            log.debug(`Resolved ${activeAction} (history purged)`);
-            history.length=0;
+            log.debug(`Resolved ${action} (history purged)`);
+            actionQueue.splice(0, actionPointer+1);
+            actionPointer=0;
         }
-        activeAction = null;
+        actionRunning = false;
         executeNext(action);
     }
 
     function actionRejected(action, message) {
+        if (action !== currentAction()) throw Error(`Action ${action} was rejected but it should not have been running at all!`);
         log.warn(`Action ${action} rejected: ${message}`);
-        action.abortDescendants();
-        activeAction = null;
+        actionQueue.splice(actionPointer,action.descendants+1);
+        action.descendants=0;
+        actionRunning = false;
         executeNext(action);
     }
 
@@ -282,33 +269,40 @@ function ActionsProvider(spec, providerName, config) {
 
     function toDebugString() {
 
-        let lastPrefix = "";
-
-        function buildTree(container, symbol, prefix="", index=0) {
-            if (index >= container.length) return "";
-            let action = container[index];
+        function buildTree(prefix="", index=0, rootLevel=true) {
+            if (index >= actionQueue.length) return "";
+            let action = actionQueue[index];
             let ret = [];
-            ret.push(`${prefix} └─ ${symbol} ${action}`);
-            lastPrefix=prefix;
+            ret.push(`${prefix} ${rootLevel?"":" └─"} ${symbol(index)} ${action}`);
             index++;
             for (var c = 0; c < action.descendants; ++c) {
-                ret.push(buildTree(container, symbol, prefix+"   ", index+c));
+                ret.push(buildTree(prefix+"   ", index+c, false));
             }
-            if (index+c < container.length) ret.push(buildTree(container, symbol, prefix, index));
+            if (rootLevel && index+c < actionQueue.length) ret.push(buildTree(prefix, index+c));
             return ret.join('\n');
         }
 
-        const tHistory = buildTree(history,'✓');
-        const tCurrent = activeAction ? `▶▶ ${activeAction}` : '▶▶ (idle)';
-        const tPlanned = buildTree(planned, '⌛',lastPrefix);
+        function symbol(i) {
+            if (i < actionPointer) {
+                return '✓';
+            } else if (i > actionPointer) {
+                return '⌛';
+            } else if (actionRunning) {
+                return '▶▶';
+            } else {
+                return '⏸▶';
+            }
+        }
+/*
+        const tQueue = actionQueue.map((action,i)=> {
+            return ` ${actionSymbol(i)} ${action}`;
+        }).join('\n');*/
 
         const tActionTypes = 
             Object.keys(handlers)
                   .map(key => `* ${key} => ${handlers[key] && handlers[key].description}`).sort().join('\n');
 
-        return `${tHistory}
-${tCurrent}
-${tPlanned}
+        return `${buildTree()}
 
 Registered Handlers:
 ${tActionTypes}`;

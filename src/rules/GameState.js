@@ -81,7 +81,8 @@ function GameState(spec) {
         }
         log.debug('Loading game data:',jsonOrKey);
         fromJSON(jsonOrKey);
-        action.resolve();
+        // do not resolve() this action because at this point actions module
+        // no longer knows about it, much less expects it to be executing
     });
 
     actions.setHandler('RESTART_GAME', action=> {
