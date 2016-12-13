@@ -94,7 +94,7 @@ class HexGrid {
     }
 
     fromJSON(src) {
-        this.reset(src.h, src.w);
+        this.reset(src.w, src.h);
         this.fillWith(point => src.hexes[point.index]==='1');
     }
 

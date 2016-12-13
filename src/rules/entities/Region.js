@@ -30,7 +30,7 @@ class Region {
     }
 
     static fromJSON({grid},{id, faction, hexes, capital}) {
-        return new Region(id, faction, new HexGroup(hexes.map(hexId=>grid.getHexById(hexId))), capital);
+        return new Region(id, faction, new HexGroup(hexes.map(hexId=>grid.getHexById(hexId))), grid.getHexById(capital));
     }
 
     toString() {

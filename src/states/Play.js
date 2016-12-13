@@ -11,8 +11,8 @@ import GameState from 'rules/GameState';
 
 
 const DEFAULT_GAME_SETTTINGS = {
-    worldWidth: 10,
-    worldHeight: 10,
+    worldWidth: 20,
+    worldHeight: 20,
     numFactions: 4,   
 };
 
@@ -105,9 +105,9 @@ function Play(game) {
         gameSpec.actions.attachGuard((prevAction, nextAction) => new Promise(resolve => {
             switch (nextAction && nextAction.name) {
                 case 'START_PLAYER_TURN':
-                    setTimeout(resolve, 100);
-                    break;
-//                    return nextStateCallbacks.push(resolve);
+                    //setTimeout(resolve, 100);
+                    //break;
+                    return nextStateCallbacks.push(resolve);
                 default:
                     if (breakAfterEveryAction) {
                         debugBreakCallback = resolve;
@@ -138,8 +138,14 @@ function Play(game) {
 
         gameUi.debug.addCommand('actions','Restart', ()=> {
             gameSpec.actions.abortAll();
-            gameSpec.actions.schedule('START_NEW_GAME',DEFAULT_GAME_SETTTINGS);
+            gameSpec.actions.schedule('RESTART_GAME');
         });
+
+        gameUi.debug.addCommand('actions','New map', ()=> {
+            gameSpec.actions.abortAll();
+            gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_prestart');
+        });
+
 
         gameUi.debug.addCommand('actions','Store snapshot', ()=> {
             gameSpec.actions.schedule("STORE_STATE", "konkr_devsnapshot");

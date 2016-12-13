@@ -1,6 +1,6 @@
 function UIManager(spec) {
     
-    let {regions,log} = spec,
+    let {regions,log, gameState} = spec,
         selectedRegion,
         selectedHex,
         hoveredRegion,
@@ -31,6 +31,8 @@ function UIManager(spec) {
             selectRegion(null);
         }
     });
+
+    gameState.onReset.add(()=>selectRegion(null));
 
     function selectHex(hex) {
         selectedHex = hex;

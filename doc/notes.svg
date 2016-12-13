@@ -381,6 +381,15 @@
        x2="204"
        y2="900.36218"
        gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient3367"
+       id="linearGradient3371"
+       gradientUnits="userSpaceOnUse"
+       x1="212"
+       y1="900.36218"
+       x2="204"
+       y2="900.36218" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -389,18 +398,18 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.4142136"
-     inkscape:cx="337.51124"
-     inkscape:cy="115.82248"
+     inkscape:zoom="2.8284272"
+     inkscape:cx="234.98269"
+     inkscape:cy="140.51785"
      inkscape:document-units="px"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer1"
      showgrid="true"
      showguides="true"
      inkscape:guide-bbox="true"
-     inkscape:window-width="1399"
+     inkscape:window-width="1204"
      inkscape:window-height="737"
-     inkscape:window-x="172"
-     inkscape:window-y="185"
+     inkscape:window-x="29"
+     inkscape:window-y="175"
      inkscape:window-maximized="0"
      inkscape:snap-bbox="true"
      inkscape:snap-grids="true"
@@ -724,8 +733,8 @@
      style="display:inline">
     <path
        style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
-       d="M 207.96875 892.34375 C 207.75296 892.34375 207.54623 892.36426 207.34375 892.40625 C 207.16637 892.44303 207.00873 892.52792 206.84375 892.59375 C 206.77361 892.62097 206.69271 892.62428 206.625 892.65625 C 206.42666 892.74989 206.26796 892.86894 206.09375 893 C 205.91908 893.13141 205.73923 893.27354 205.59375 893.4375 C 205.07186 894.02572 204.75 894.79876 204.75 895.65625 C 204.75 896.76837 205.30422 897.74304 206.125 898.34375 L 204 898.34375 L 202.0625 898.34375 L 201 899.375 L 201 903.34375 L 204 903.34375 L 204 908.34375 C 204.73964 908.73429 205.30434 909.38725 207 908.34375 L 207 905.34375 L 209 905.34375 L 209 908.34375 C 209.74053 908.86269 210.44931 909.44512 212 908.34375 L 212 903.34375 L 213 903.34375 L 215 903.34375 L 215 899.375 L 214 898.375 L 212 898.375 L 212 898.34375 L 209.84375 898.34375 C 210.66453 897.74304 211.21875 896.76837 211.21875 895.65625 C 211.21875 894.79876 210.89689 894.02572 210.375 893.4375 C 210.22952 893.27354 210.04967 893.13141 209.875 893 C 209.70079 892.86894 209.54209 892.74989 209.34375 892.65625 C 209.33501 892.65212 209.32128 892.6603 209.3125 892.65625 C 209.21449 892.6107 209.1028 892.56691 209 892.53125 C 208.88908 892.4935 208.77214 892.43165 208.65625 892.40625 C 208.64616 892.40398 208.63512 892.40843 208.625 892.40625 C 208.41451 892.36213 208.19197 892.34375 207.96875 892.34375 z "
-       id="rect3375"
+       d="M 207.96875 892.34375 C 207.56392 892.34375 207.19705 892.45278 206.84375 892.59375 C 205.62317 893.06734 204.75 894.23995 204.75 895.65625 C 204.75 896.76837 205.30422 897.74304 206.125 898.34375 L 204 898.34375 L 202.0625 898.34375 L 201 899.375 L 201 903.34375 L 204 903.34375 L 204 907.375 L 203 907.375 L 203 909.375 L 207 909.375 L 207 907.375 L 207 905.34375 L 209 905.34375 L 209 907.375 L 209 908.34375 L 209 909.375 L 213 909.375 L 213 907.375 L 212 907.375 L 212 903.34375 L 213 903.34375 L 215 903.34375 L 215 899.375 L 214 898.375 L 212 898.375 L 212 898.34375 L 209.84375 898.34375 C 210.66453 897.74304 211.21875 896.76837 211.21875 895.65625 C 211.21875 894.31084 210.43722 893.17478 209.3125 892.65625 C 209.21449 892.6107 209.1028 892.56691 209 892.53125 C 208.88908 892.4935 208.77214 892.43165 208.65625 892.40625 C 208.64616 892.40398 208.63512 892.40843 208.625 892.40625 C 208.41451 892.36213 208.19197 892.34375 207.96875 892.34375 z "
+       id="rect3351"
        inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
@@ -2648,5 +2657,25 @@
        id="path3319"
        d="m 1425.7348,652.15769 c -28,-16 -28,-16 -28,-16"
        style="fill:none;stroke:#000000;stroke-width:0.25;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <rect
+       style="display:inline;color:#000000;fill:#917c6f;stroke:none;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;overflow:visible;enable-background:accumulate;fill-opacity:1;fill-rule:nonzero"
+       id="rect3329"
+       width="4"
+       height="2"
+       x="203"
+       y="907.36218"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       y="907.36218"
+       x="209"
+       height="2"
+       width="4"
+       id="rect3349"
+       style="color:#000000;fill:#917c6f;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
   </g>
 </svg>

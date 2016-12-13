@@ -74,16 +74,28 @@ function GameState(spec) {
         action.resolve();
     });
 
-    actions.setHandler('LOAD_STATE', (action, json) => {
-        fromJSON(json);
+    actions.setHandler('LOAD_STATE', (action, jsonOrKey) => {
+        if (typeof jsonOrKey === 'string') {
+            log.debug(`Loading saved game from localStorage[${jsonOrKey}]`)
+            jsonOrKey = JSON.parse(localStorage.getItem(jsonOrKey));
+        }
+        log.debug('Loading game data:',jsonOrKey);
+        fromJSON(jsonOrKey);
+        action.resolve();
+    });
+
+    actions.setHandler('RESTART_GAME', action=> {
+        action.schedule('LOAD_STATE','konkr_autosave_gamestart');
         action.resolve();
     });
 
     actions.setHandler('START_NEW_GAME',  (action, {worldWidth, worldHeight, numFactions}) => {
+        action.schedule('STORE_STATE','konkr_autosave_prestart');
         action.schedule('RESET_HEXGRID', worldWidth, worldHeight);
         action.schedule('GENERATE_LANDMASS');
         action.schedule('RANDOMIZE_REGIONS', numFactions);
         action.schedule('SET_INITIAL_TREASURY');
+        action.schedule('STORE_STATE','konkr_autosave_gamestart');
         action.schedule('START_NEW_TURN');
         action.resolve();
     });

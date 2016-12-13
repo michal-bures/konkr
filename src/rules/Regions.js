@@ -9,7 +9,7 @@ const MAX_NUMBER_OF_FACTIONS = 4;
 const MIN_SIZE_FOR_CAPITAL = 2;
 
 function Regions (spec) {
-    let { grid, log, actions, pawns, ids } = spec;
+    let { grid, log, actions, pawns, ids, debug } = spec;
 
     //private
     const _regions = [], //must be const in order not to break IterableOn
@@ -197,6 +197,9 @@ function Regions (spec) {
     }
 
     function toDebugString() {
+        window.regions_list = _regions;
+        window.hexRegion = hexRegion;
+
         return regions.map(region => {
             return `* ${region}`;
         }).filter(x=>x).join('\n');

@@ -199,11 +199,10 @@ function ActionsProvider(spec, providerName, config) {
         while (prePlanned.length) {
             planned.unshift(prePlanned.pop());
         }
-        if (!planned.length) return;
-
         guards.reduce((previousPromise, guard) => previousPromise.then(() => {
             return guard(lastAction, planned[0]);
         }), Promise.resolve()).then(() => {
+            if (!planned.length) return;
             activeAction = planned.shift();
             activeAction.start();
         });

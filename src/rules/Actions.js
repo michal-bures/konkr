@@ -13,6 +13,7 @@ function Actions(spec) {
         'CHECK_VICTORY_CONDITIONS': [],
         'STORE_STATE': ['plain'], // ( localStorageItemName )
         'LOAD_STATE': ['plain'], // ( jsonData )
+        'RESTART_GAME': [],
 
         // Handled by Players
         'START_PLAYER_TURN': ["player"], // (player)

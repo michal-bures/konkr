@@ -1,7 +1,7 @@
 import { assertDefined } from 'lib/util';
 import { drawInnerHex } from 'ui/Renderer';
 
-function GridOverlays({game, grid, log, regions}) {
+function GridOverlays({game, grid, log, regions, gameState}) {
     
     let overlays = {},
         group = game.add.group(),
@@ -18,6 +18,7 @@ function GridOverlays({game, grid, log, regions}) {
     });
 
     regions.onHexesChangedOwner.add(() => dirty=true);
+    gameState.onReset.add(()=>dirty=true);
 
     function configureOverlay(overlayDefinition) {
         assertDefined(overlayDefinition, overlayDefinition.name);

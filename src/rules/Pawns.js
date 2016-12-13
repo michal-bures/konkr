@@ -1,5 +1,6 @@
 import {Enum} from 'enumify';
 import expect from 'expect';
+import Pawn from './entities/Pawn';
 
 class PawnType extends Enum {
     isTroop() { return false; }
@@ -52,22 +53,18 @@ PawnType.initEnum({
     }
 });
 
-
-let lastPawnId = 0;
-function generatePawnId() {
-    return ++lastPawnId;
-}
-
 function Pawns(spec) {
-    let { actions, log, src } = spec;
+    let { actions, log, ids } = spec;
     
     // public
     let pawns = {
+        byId(id) { return _pawns[id]; },
         pawnAt,
         select,
         forEach,
         toDebugString,
-        storeState: () => _pawns.map(pawn=>pawn.toJSON()),
+        toJSON,
+        fromJSON,
         onCreated: new Phaser.Signal(/* pawn */),
         onDestroyed: new Phaser.Signal(/* pawn */),
         onMoved: new Phaser.Signal(/* pawn, hex */)
@@ -83,8 +80,18 @@ function Pawns(spec) {
     let hexPawn = [],
         _pawns = [];
 
-    if (src) {
-        throw Error('Not implemented');
+    function toJSON() {
+        return _pawns.map(pawn=>pawn && pawn.toJSON()).filter(e=>e);
+    }
+
+    function fromJSON(data) {
+        hexPawn = [];
+        _pawns = [];
+        data.forEach(pawnData=>{
+            const pawn = Pawn.fromJSON(spec, pawnData);
+            _pawns[pawn.id] = pawn;
+            hexPawn[pawn.hex.id] = pawn;
+        });
     }
 
     actions.setHandler("CREATE_PAWN", (action, pawnType, hex) => {
@@ -118,6 +125,7 @@ function Pawns(spec) {
 
     actions.setHandler("CHANGE_REGION_CAPITAL", (action, region, newCapital, prevCapital) => {
         if (prevCapital && newCapital) {
+            debugger;
             action.schedule("MOVE_PAWN", pawnAt(prevCapital), newCapital);
         } else if (prevCapital && !newCapital) {
             action.schedule("DESTROY_PAWN", pawnAt(prevCapital));
@@ -195,49 +203,16 @@ function Pawns(spec) {
         return ret;
     } 
 
+
     function placeAt(pawnType,hex) {
         if (pawnAt(hex)) {
             throw Error(`Tried to place ${pawnType} at ${hex}, but it's already occupied by ${pawnAt(hex)}`);
         }
         expect(pawnType instanceof PawnType).toBeTruthy("Invalid pawnType '"+pawnType+"' in Pawns.placeAt");
-        const newPawn = new Pawn(pawnType,hex);
+        const newPawn = new Pawn(ids.next('pawn'),pawnType,hex);
         hexPawn[hex.id] = newPawn;
         _pawns[newPawn.id] = newPawn;
         return newPawn;
-    }
-
-    class Pawn {
-        constructor(pawnType, hex) {
-            expect(pawnType instanceof PawnType).toBeTruthy();
-            expect(hex).toExist();
-            this._id = generatePawnId();
-            this.pawnType = pawnType;
-            this._hex = hex;
-        }
-    
-        toJSON() {
-            return {
-                id: this._id,
-                type: this.pawnType.name,
-                hex: this.hex && this.hex.id,
-            };
-        }
-
-        set hex(hex) {
-            this._hex = hex;
-        }
-
-        get hex() {
-            return this._hex;
-        }
-
-        get id() {
-            return this._id;
-        }
-
-        toString() {
-            return `[${this.pawnType} #${this.id} at ${this._hex}]`;
-        }        
     }
 
     return pawns;

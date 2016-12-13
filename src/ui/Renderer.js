@@ -92,7 +92,7 @@ function LandSprites(spec) {
     class LandSprite extends Phaser.Image {
         constructor(hex) {
             const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
-            super(game, x, y-HEX_HEIGHT/2, 'hex');
+            super(game, x, Math.floor(y-HEX_HEIGHT/2), 'hex');
             this.anchor.setTo(0.5,0);
             this.frame=regions.factionOf(hex) || 0;
             this.hexId = hex.id;
@@ -111,6 +111,10 @@ function LandSprites(spec) {
             this.visible = !!hex;
             if (hex) {
                 this.frame=regions.factionOf(hex);
+                const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
+                this.x=x;
+                this.y=Math.floor(y-HEX_HEIGHT/2);
+
             }
         }
     }
@@ -147,12 +151,11 @@ function Pawns ({game, log, pawns, gameState}) {
                 this.game.add.tween(this).to( { x: x, y: Math.floor(y+PAWN_OFFSET_TOP/2) }, 500, "Linear", true);  
             } else {
                 this.x = x;
-                this.y = y;
+                this.y = y+Math.floor(PAWN_OFFSET_TOP/2);
             }
         }
 
         refresh() {
-            log.warn("REFRESH", this);
             this.frame=pawns.byId(this.pawnId).pawnType.ordinal;
             this.updatePosition(false);
         }
@@ -163,7 +166,7 @@ function Pawns ({game, log, pawns, gameState}) {
     pawns.onDestroyed.add(pawn => {
         const sprite = pawnToSprite[pawn.id];
         if (!sprite) return;
-        pawnToSprite[pawn.id] = undefined;
+        delete pawnToSprite[pawn.id];
         sprite.destroy();
     });
 
@@ -189,9 +192,11 @@ function Pawns ({game, log, pawns, gameState}) {
     function destroyOrphanedSprites() {
         for (const key in pawnToSprite) {
             if (!pawns.byId(key)) {
+                log.debug("DESTROY", key);
                 pawnToSprite[key].destroy();
                 delete pawnToSprite[key];
             } else {
+                log.debug("REFRESH", key);
                 pawnToSprite[key].refresh();
             }
         }        
