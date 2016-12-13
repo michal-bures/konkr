@@ -34,7 +34,7 @@ function Actions(spec) {
         // Handled by Regions
         'CHANGE_HEXES_REGION': ["hexGroup", "region"], // (hexes, region)
         'RANDOMIZE_REGIONS': ["plain"], // (numFactons)
-        'CHANGE_REGION_CAPITAL': ["region", "hex", "hex"], // (region, hex, previousHex)
+        'MERGE_REGIONS': ["region","region"],
 
         // Handled by Economy
         'COLLECT_REGION_INCOME': ["region"], // (regions)
@@ -47,6 +47,7 @@ function Actions(spec) {
         'DESTROY_PAWN': ["pawn"], // (pawn)
         'MOVE_PAWN': ["pawn", "hex"], // (pawn, hex)
         'KILL_TROOPS_IN_REGION': ["region"], // (region)
+        'CHANGE_REGION_CAPITAL': ["region", "hex", "hex"], // (region, hex, previousHex)
     },
 
     "types": {

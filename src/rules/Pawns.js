@@ -125,7 +125,6 @@ function Pawns(spec) {
 
     actions.setHandler("CHANGE_REGION_CAPITAL", (action, region, newCapital, prevCapital) => {
         if (prevCapital && newCapital) {
-            debugger;
             action.schedule("MOVE_PAWN", pawnAt(prevCapital), newCapital);
         } else if (prevCapital && !newCapital) {
             action.schedule("DESTROY_PAWN", pawnAt(prevCapital));
@@ -140,19 +139,22 @@ function Pawns(spec) {
     }
 
     function toDebugString() {
-        const byType = new Map();
+        const byType = {};
         pawns.forEach(pawn => {
-            if (!byType.get(pawn.pawnType)) byType.set(pawn.pawnType,[]);
-            byType.get(pawn.pawnType).push(pawn);
+            const t = pawn.pawnType.name;
+            if (!byType[t]) byType[t]=[];
+            byType[t].push(pawn);
         });
         
+        log.debug(byType);
+
         let ret = [];
-        byType.forEach((value,key) => {
+        for (const key in byType) {
             ret.push(`* ${key}:`);
-            value.forEach(pawn=> {
-                ret.push(`   * ${pawn}`);
+            byType[key].forEach(val=> {
+                ret.push(`   * ${val}`);
             });
-        });
+        }
         return ret.join('\n');
     }
 

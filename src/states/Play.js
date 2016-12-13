@@ -13,7 +13,7 @@ import GameState from 'rules/GameState';
 const DEFAULT_GAME_SETTTINGS = {
     worldWidth: 20,
     worldHeight: 20,
-    numFactions: 4,   
+    numFactions: 2,   
 };
 
 function Play(game) { 

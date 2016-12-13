@@ -29,7 +29,7 @@ function ActionsProvider(spec, providerName, config) {
     function toJSON() {
         if (actionRunning) log.warn(`Unsafe serialization while ${currentAction()} is executing.`);
         return {
-            queue: actionQueue.map(a=>a.toJSON()),
+            queue: actionQueue.slice(actionRunning?1:0).map(a=>a.toJSON()),
             at: actionPointer,            
         };
     }

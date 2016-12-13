@@ -19,7 +19,7 @@ function Players(spec) {
         }
 
         canMoveUnit(pawn) {
-            return this.controls(regions.regionOf(pawn)) && !movedUnits[pawn.hex.id];
+            return this.controls(regions.regionOf(pawn.hex)) && !movedUnits[pawn.hex.id];
         }
 
         play() { throw Error(`Not implemented`); }
@@ -69,7 +69,7 @@ function Players(spec) {
             activePlayer: activePlayer && _players.indexOf(activePlayer),
             grabbedPawn: grabbedPawn && grabbedPawn.name,
             grabbedPawnRegion: grabbedPawnRegion && grabbedPawnRegion.id,
-            movedUnits: Object.keys(movedUnits),
+            movedUnits
         };
     }
 
@@ -79,7 +79,7 @@ function Players(spec) {
         activePlayer = src.activePlayer && self.byId(src.activePlayer);
         grabbedPawn = src.grabbedPawn && pawns[src.grabbedPawn];
         grabbedPawnRegion = src.grabbedPawnRegion && regions.byId(grabbedPawnRegion);
-        movedUnits = src.movedUnits.map(hexId => grid.getHexById(hexId));
+        movedUnits = src.movedUnits;
     }
 
     actions.setHandler('START_PLAYER_TURN', (action, player) => {
@@ -152,7 +152,7 @@ function Players(spec) {
 
     function ownerOf(region) {
         //TODO less bullshit, more actual implementation
-        return _players[0];
+        return _players.filter(p=>p)[0];
     }
 
     return Object.freeze(self);

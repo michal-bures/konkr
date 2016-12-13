@@ -84,6 +84,15 @@ function Regions (spec) {
         action.resolve();
     });
 
+    actions.setHandler('MERGE_REGIONS',(action, region1, region2)=>{
+        if (region1.hexes.length>region2.hexes.length) {
+            action.schedule('CHANGE_HEXES_REGION', region2.hexes.clone(), region1);
+        } else {
+            action.schedule('CHANGE_HEXES_REGION', region1.hexes.clone(), region2);
+        }        
+        action.resolve();
+    });
+
     actions.setHandler('RANDOMIZE_REGIONS', (action, numFactions=99) => {
         numFactions = Math.min(numFactions, MAX_NUMBER_OF_FACTIONS);
         let hexFaction=[];
@@ -108,24 +117,11 @@ function Regions (spec) {
             hex1.neighbours().forEach(hex2 => {
                 let region2 = regionOf(hex2);
                 if (!region2) return;
-                log.debug(`Merge regions ${region1} and ${region2}?`);
                 if (region1 !== region2 && region1.faction === region2.faction) {
-                    hexOrGroup.add(region2.hexes); // so that the added hexes are later included in onHexesChangedOwner event
-                    if (region1.length>region2.length) {
-                        absorbRegion(region1, region2);
-                    } else {
-                        absorbRegion(region2, region1);
-                    }
+                    actions.schedule('MERGE_REGIONS', region1, region2);
                 }   
             });
         });
-    }
-
-    function absorbRegion(sourceRegion, receivingRegion) {
-        log.debug(`Region ${sourceRegion} was absorbed into ${receivingRegion}, ${sourceRegion.faction}=${receivingRegion.faction}`);
-        sourceRegion.hexes.forEach(hex => hexRegion[hex.id] = receivingRegion);
-        receivingRegion.hexes.add(sourceRegion.hexes);
-        hexesRemovedFromRegion(sourceRegion, sourceRegion.hexes);
     }
 
     // for internal use from HEXES_CHANGED_OWNER only!! Does NOT update hexRegion
@@ -138,10 +134,11 @@ function Regions (spec) {
         if (comps.length > 1) {
             // Oh shit boys, we have a split over here
             if (region.hasCapital()) {
-                comps.remove(comps.getOwnerOf(region.capital));
                 // the component with capital is staying in this region
+                comps.remove(comps.getOwnerOf(region.capital));
             } else {
-                comps.popLargestGroup(); // the largest component is staying in this region
+                // the largest component is staying in this region
+                comps.popLargestGroup(); 
             }
 
             // assign any disconnected components to standalone regions
