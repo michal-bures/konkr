@@ -35,6 +35,11 @@ function Economy(spec) {
     actions.setHandler('CHANGE_REGION_TREASURY', (action, region, amount) => {
         setTreasuryOf(region,treasuryOf(region) + amount);
         action.resolve();
+    },
+    {
+        undo(action, region, amount) {
+            setTreasuryOf(region,treasuryOf(region) - amount);
+        }
     });
 
     actions.setHandler('SET_INITIAL_TREASURY', action => {

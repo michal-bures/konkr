@@ -67,7 +67,18 @@ function ActionsProvider(spec, providerName, config) {
                 undoLastAction.then(undoAnotherUnlessDone);
             }
         }
+        action.resolve();
+
     });
+
+
+    function undoLastAction(){
+        if (activeAction) throw Error('Cannot issue UNDO while another action is running');
+        if (!history.length) throw Error('No action to undo');
+        const actionToUndo = history.pop();
+        actionToUndo.undo();
+        actionToUndo.reschedule();
+    }
 
     function attachGuard(guardFunc) {
         guards.push(guardFunc);
@@ -79,21 +90,21 @@ function ActionsProvider(spec, providerName, config) {
     }
 
     function ScheduledAction (name, ...args) {
-        let undoFunc = null,
-            processing = false,
+        let processing = false,
             resolution = null;
 
         const self = Object.seal({
             schedule,
+            reschedule,
             start,
             resolve,
             reject,
-            enableUndo,
+            undo,
             toJSON,
             get name() { return name; },
             toString,
             issuer:null,            
-            canBeUndone() { return !!undoFunc; }
+            canBeUndone() { return !!handlers[name].undo; }
         });
 
         if (args.length != actionDefs[name].length) {
@@ -117,14 +128,25 @@ function ActionsProvider(spec, providerName, config) {
             a.issuer = name;
         }
 
+        // schedule another instance of this action
+        function reschedule() {
+            let a = actions.schedule(name, ...args);
+            a.issuer = name;
+        }
+
         function start() {
             if (resolution) throw Error(`Attempt to restart action that is already done.`);
             if (processing) throw Error(`Attempt to restart action that is already running.`);
             processing = true;
             if (!handlers[name]) throw Error(`Missign handler for action ${activeAction.name}`);
-            log.debug(`Now running ${activeAction}`);
-            handlers[activeAction.name].handle(self,...args);
+            log.debug(`Now running ${name}`);
+            handlers[name].handle(self,...args);
         }
+
+        function undo() {
+            handlers[name].undo(self,...args);
+        }
+
 
         // mark the action resolved and enable the planner to move on to the next action on the 
         // stack
@@ -141,10 +163,6 @@ function ActionsProvider(spec, providerName, config) {
             actionRejected(self, reason);
         }
 
-        function enableUndo(func) {
-            undoFunc = func;
-        }
-
         function toJSON() {
             log.debug(`converting ${self} to JSON`);
             return [name].concat(args.map((arg, index)=>{
@@ -154,7 +172,7 @@ function ActionsProvider(spec, providerName, config) {
         }
 
         function toString() {
-            return `[${name}(${args})${self.issuer?` issued by ${self.issuer}`:''}]`;
+            return `[${name}(${args})${self.issuer?` issued by ${self.issuer}`:''}${self.canBeUndone()?"(can undo)":""}]`;
         }
 
         return self;
@@ -170,8 +188,9 @@ function ActionsProvider(spec, providerName, config) {
             schedule: (id, ...args) => {
                 return schedule(id, ...args);
             },
-            setHandler: (actionName, handler, comment) => {
-                setHandler(actionName, handler, `${name}${comment?': '+comment:''}`);
+            setHandler: (actionName, handler, config={}) => {
+                config.description = `${name}${config.description?': '+config.description:''}`;
+                setHandler(actionName, handler, config);
             },
             toString: () => '[Actions proxy: '+ name +']'
         };
@@ -241,18 +260,10 @@ function ActionsProvider(spec, providerName, config) {
         });
     }
 
-    function setHandler(actionName, handle, description='anonymous') {
+    function setHandler(actionName, handle, config={}) {
         if (handlers[actionName] === undefined) throw Error(`Invalid action name '${actionName}'`);
-        if (handlers[actionName]) throw Error(`Action '${actionName}' is already handled by '${handlers[actionName].description}' - cannot assign to '${description}'`);
-        handlers[actionName] = { handle, description };
-    }
-
-    function undoLastAction() {
-        if (!history.length) throw Error(`History is empty`);
-        let a = history.pop();
-        let promise = a.undo(); 
-        if (!promise.then) throw Error(`${a}.undo() did not return a promise`);
-        return promise;
+        if (handlers[actionName]) throw Error(`Action '${actionName}' is already handled by '${handlers[actionName].description}' - cannot assign to '${config.description}'`);
+        handlers[actionName] = { handle, description: config.description, undo: config.undo };
     }
 
     function toString() {

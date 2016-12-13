@@ -123,12 +123,17 @@ function Players(spec) {
         if (!cost) return action.reject(`Unit ${unitType} cannot be bought by a player.`);
         if (!region) return action.reject(`No region specified, who is supposed to pay for this?!`);
         if (cost > economy.treasuryOf(region)) return action.reject(`Region ${region} cannot afford to buy ${unitType}.`);
+        if (grabbedPawn) return action.reject(`Cannot buy unit, because player is already holding one`);
+        //TODO: Auto unit merging?
         action.schedule('CHANGE_REGION_TREASURY',region, -cost);
         grabbedPawn = unitType;
         grabbedPawnRegion = region;
-
-//        action.schedule('CREATE_PAWN',unitType,hex);
         action.resolve();
+    },{
+        undo() {
+            grabbedPawn=null;
+            grabbedPawnRegion=null;
+        }
     });
 
     actions.setHandler('END_PLAYER_TURN', (action, player) => {

@@ -136,6 +136,10 @@ function Play(game) {
             if (debugBreakCallback) debugBreakCallback();
         });
 
+        gameUi.debug.addCommand('actions','Undo', ()=> {
+            gameSpec.actions.undoLastAction();
+        });
+
         gameUi.debug.addCommand('actions','Restart', ()=> {
             gameSpec.actions.abortAll();
             gameSpec.actions.schedule('RESTART_GAME');
