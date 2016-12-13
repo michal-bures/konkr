@@ -22,7 +22,6 @@ function ActionsProvider(spec, providerName, config) {
     // private
     let history = [],
         activeAction = null, // action currently running
-        prePlanned = [], // actions added during the execution of the current action
         planned = [], // stack of planned actions
         guards = [];  // async function that have to return promise after each action and before 
                       //next action on the stack is started
@@ -30,14 +29,12 @@ function ActionsProvider(spec, providerName, config) {
     function toJSON() {
         return {
             history: history.map(a=>a.toJSON()),
-            prePlanned: prePlanned.map(a=>a.toJSON()),
             planned: planned.map(a=>a.toJSON()),
         };
     }
 
     function fromJSON(src) {
         history = src.history.map(json=>ScheduledAction.fromJSON(json));
-        prePlanned = src.prePlanned.map(json=>ScheduledAction.fromJSON(json));
         planned = src.planned.map(json=>ScheduledAction.fromJSON(json));
     }
 
@@ -99,10 +96,12 @@ function ActionsProvider(spec, providerName, config) {
             start,
             resolve,
             reject,
+            abortDescendants,
             undo,
             toJSON,
             get name() { return name; },
             toString,
+            descendants: 0,
             issuer:null,            
             canBeUndone() { return !!handlers[name].undo; }
         });
@@ -143,7 +142,13 @@ function ActionsProvider(spec, providerName, config) {
             handlers[name].handle(self,...args);
         }
 
+        function abortDescendants() {
+            for (let i=0; i<self.descendants; ++i) planned.shift();
+            self.descendants=0;
+        }
+
         function undo() {
+            abortDescendants();
             handlers[name].undo(self,...args);
         }
 
@@ -165,22 +170,28 @@ function ActionsProvider(spec, providerName, config) {
 
         function toJSON() {
             log.debug(`converting ${self} to JSON`);
-            return [name].concat(args.map((arg, index)=>{
-                if (arg === null) return null;
-                return typeDefs[actionDefs[name][index]].toJSON(arg);
-            }));
+            return {
+                name,
+                descendants: self.descendants,
+                args:[].concat(args).map((arg, index)=>{
+                    if (arg === null) return null;
+                    return typeDefs[actionDefs[name][index]].toJSON(arg);
+                })
+            };
         }
 
         function toString() {
-            return `[${name}(${args})${self.issuer?` issued by ${self.issuer}`:''}${self.canBeUndone()?"(can undo)":""}]`;
+            return `[${name}(${args})${self.issuer?` issued by ${self.issuer}`:''}${self.canBeUndone()?" ↶":""}]`;
         }
 
         return self;
     }
     ScheduledAction.fromJSON = function(data) {
-        let name = data[0];
-        let args = data.slice(1).map((arg, i)=> typeDefs[actionDefs[name][i]].fromJSON(arg));
-        return ScheduledAction.apply(null,[name].concat(args));
+        const actionDef = actionDefs[data.name];
+        let args = data.args.map((arg, i)=> typeDefs[actionDef[i]].fromJSON(arg));
+        let a = ScheduledAction.apply(null,[data.name].concat(args));
+        a.descendants = data.descendants;
+        return a;
     };
 
     function getNamedProxy(name) {
@@ -201,23 +212,25 @@ function ActionsProvider(spec, providerName, config) {
         if (handlers[id]===undefined) throw Error(`Call to unknown action '${id}'`);
         const newAction = new ScheduledAction(id, ...args);
         log.debug(`Scheduled ${newAction})`);
-        prePlanned.push(newAction);
-        if (!activeAction) executeNext();
+        if (!activeAction) {
+            planned.unshift(newAction);
+            executeNext();
+        } else {
+            log.debug(`Putting ${newAction} at ${activeAction.descendants}`);
+            planned.splice(activeAction.descendants,0,newAction);
+            activeAction.descendants++;
+        }
         return newAction;
     }
 
     // aborts all future planned actions (any currently running action will still finish)
     function abortAll() {
         log.debug('Aborting all planed actions');
-        prePlanned.length = 0;
         planned.length = 0;
     }
 
     function executeNext(lastAction) {
         if (activeAction) throw Error(`executeNext() called while another action is still active`);
-        while (prePlanned.length) {
-            planned.unshift(prePlanned.pop());
-        }
         guards.reduce((previousPromise, guard) => previousPromise.then(() => {
             return guard(lastAction, planned[0]);
         }), Promise.resolve()).then(() => {
@@ -242,10 +255,7 @@ function ActionsProvider(spec, providerName, config) {
 
     function actionRejected(action, message) {
         log.warn(`Action ${action} rejected: ${message}`);
-        if (prePlanned.length) {
-            log.debug(`Unscheduled ${prePlanned.length} dependent action(s)`);
-            prePlanned.length=0;
-        }
+        action.abortDescendants();
         activeAction = null;
         executeNext(action);
     }
@@ -271,17 +281,33 @@ function ActionsProvider(spec, providerName, config) {
     }
 
     function toDebugString() {
-        const tHistory = history.map(action => ` ✓ ${action}`).join('\n');
+
+        let lastPrefix = "";
+
+        function buildTree(container, symbol, prefix="", index=0) {
+            if (index >= container.length) return "";
+            let action = container[index];
+            let ret = [];
+            ret.push(`${prefix} └─ ${symbol} ${action}`);
+            lastPrefix=prefix;
+            index++;
+            for (var c = 0; c < action.descendants; ++c) {
+                ret.push(buildTree(container, symbol, prefix+"   ", index+c));
+            }
+            if (index+c < container.length) ret.push(buildTree(container, symbol, prefix, index));
+            return ret.join('\n');
+        }
+
+        const tHistory = buildTree(history,'✓');
         const tCurrent = activeAction ? `▶▶ ${activeAction}` : '▶▶ (idle)';
-        const tPrePlanned = prePlanned.map(action => ` └─ ⌛ ${action}`).join('\n');
-        const tPlanned = planned.map(action => ` ⌛ ${action}`).join('\n');
+        const tPlanned = buildTree(planned, '⌛',lastPrefix);
+
         const tActionTypes = 
             Object.keys(handlers)
                   .map(key => `* ${key} => ${handlers[key] && handlers[key].description}`).sort().join('\n');
 
         return `${tHistory}
 ${tCurrent}
-${tPrePlanned}
 ${tPlanned}
 
 Registered Handlers:
