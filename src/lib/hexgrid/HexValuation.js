@@ -28,7 +28,7 @@ function Manual(defaultValue, heapFunction = (a,b)=> b.val - a.val) {
 
     function get(hex) {
         if (data[hex.id] !== undefined) {
-            return data[hex.id];
+            return data[hex.id].val;
         } else {
             return defaultValue;
         }

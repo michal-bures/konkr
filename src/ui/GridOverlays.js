@@ -1,9 +1,9 @@
-import { assertDefined } from 'lib/util';
+import { assertDefined, OrderedMap } from 'lib/util';
 import { drawInnerHex } from 'ui/Renderer';
 
-function GridOverlays({game, grid, log, regions, gameState}) {
+function GridOverlays({game, grid, log, debug, regions, gameState}) {
     
-    let overlays = {},
+    let overlays = new OrderedMap(),
         group = game.add.group(),
         currentOverlay = null,
         dirty = true;
@@ -14,6 +14,7 @@ function GridOverlays({game, grid, log, regions, gameState}) {
         refresh,
         hide,
         render,
+        toDebugString,
         get group() { return group; }
     });
 
@@ -22,17 +23,43 @@ function GridOverlays({game, grid, log, regions, gameState}) {
 
     function configureOverlay(overlayDefinition) {
         assertDefined(overlayDefinition, overlayDefinition.name);
-        overlays[overlayDefinition.name] = new Overlay(overlayDefinition);
+        const newOverlay = new Overlay(overlayDefinition);
+        overlays.push(overlayDefinition.name,newOverlay);
+        if (!currentOverlay || currentOverlay.name === newOverlay.name) {
+            currentOverlay = newOverlay;
+            dirty = true;
+        }
     }
 
+    function toDebugString() {
+        let ret = [];
+        overlays.forEach((name,overlay)=> {
+            ret.push(`${overlay === currentOverlay?(group.children.length?'(👁)':'( )'): '   '}  ${name} `);
+        });
+        return ret.join('\n');
+    }
+    debug.addCommand('gridOverlays','toggle', () => {
+        if (group.children.length) {
+            hide();
+        } else {
+            if (!overlays.length) return;
+            if (!currentOverlay) currentOverlay = overlays[0];
+            show(currentOverlay.name);
+        }
+    });
+    debug.addCommand('gridOverlays','next', () => {
+        if (!overlays.length) return;
+        if (!currentOverlay) return show(overlays[0].name);
+        let i = (overlays.indexOfKey(currentOverlay.name)+1) % overlays.length;
+        show(overlays.at(i).name);
+    });
+
     function show(name) {
-        const overlay = overlays[name];
+        const overlay = overlays.get(name);
         if (!overlay) throw Error("No such overlay: "+name);
         currentOverlay = overlay;
         overlay.refresh();
         assertDefined(overlay.sprite);
-        hide();
-        group.add(overlay.sprite);
     }
 
     function refresh() {
@@ -51,14 +78,16 @@ function GridOverlays({game, grid, log, regions, gameState}) {
     }
 
     class Overlay {
-        constructor({name, func, color, min, max}) {
+        constructor({name, valuation, color, min, max}) {
+            assertDefined(name, valuation);
             this.sprite = null;
-            this.func = func;
+            this.valuation = valuation;
+            this.name = name;
         }
 
         refresh() {
             //  Create a nice and complex graphics object
-            const graphics = game.add.graphics(0, 0);
+            const graphics = game.make.graphics(0, 0);
 
             graphics.beginFill(0x000000);
             graphics.fillAlpha=0;
@@ -66,14 +95,16 @@ function GridOverlays({game, grid, log, regions, gameState}) {
             graphics.fillAlpha=0.7;
 
             grid.forEach(hex=>{
-                drawInnerHex(graphics,hex, this.func(hex));
+                drawInnerHex(graphics,hex, this.valuation.get(hex) || 0);
             });
 
             if (this.sprite) {
                 this.sprite.loadTexture(graphics.generateTexture());
             } else {
-                this.sprite = game.add.sprite(0, 0, graphics.generateTexture());
+                this.sprite = game.make.sprite(0, 0, graphics.generateTexture());
             }
+            group.removeChildren();
+            group.add(this.sprite);
             graphics.destroy();
         }
     }

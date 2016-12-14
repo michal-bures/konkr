@@ -102,6 +102,21 @@ class OrderedMap {
         return this._vals[k]; 
     }
 
+    indexOfKey(k) {
+        return this._keys.indexOf(k);
+    }
+
+    at(i) {
+        return this._vals[this._keys[i]];
+    }
+
+    iterator() {
+        let current = 0;
+        return {
+            next() { return this._vals[current++]; }
+        };
+    }
+
     get length() {
         return this._keys.length;
     }

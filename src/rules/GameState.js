@@ -16,6 +16,7 @@ function GameState(spec) {
         useName: spec => (moduleName) => {
             return spec.extend({ 
                 actions: () => spec.actions && spec.actions.getNamedProxy(moduleName),
+                debug: () => spec.debug && spec.debug.getNamedProxy(moduleName),
                 log: () => spec.log && {
                     debug: (...args) => console.debug(`${moduleName}>`, ...args),
                     error: (...args) => console.error(`${moduleName}>`, ...args),

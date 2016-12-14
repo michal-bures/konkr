@@ -1,7 +1,7 @@
 import HexValuation from 'lib/hexgrid/HexValuation';
 
 function AI(spec) {
-    let {actions, pawns, economy} = spec;
+    let {actions, pawns, economy, debug} = spec;
 
     let ai = Object.freeze({
         AttackOpportunities
@@ -11,6 +11,7 @@ function AI(spec) {
 
         let attackOpportunities = new AttackOpportunities(spec, player, region, 0);
         attackOpportunities.recalculate();
+        debug.valuation('attackOpportunities', attackOpportunities);
 
         let nextTarget = attackOpportunities.pop();
         if(!nextTarget) return action.resolve();
@@ -46,7 +47,7 @@ function AI(spec) {
                 .neighbours()
                 .filter(hex => warfare.defenseOf(hex) <= maxDefense)
                 .forEach(hex => {
-                    cache.set(hex,warfare.defenseOf(hex));
+                    cache.set(hex,1);
                 });
         }
 

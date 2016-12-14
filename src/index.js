@@ -2,6 +2,7 @@ import log from 'loglevel';
 
 import AssetManager from 'lib/AssetManager';
 import Injector from 'lib/Injector';
+import DebugInfo from 'ui/DebugInfo';
 
 import Play from 'states/Play';
 
@@ -24,6 +25,7 @@ var spec = new Injector(undefined,{
     log: () => log,
     game: () => game,
     assetManager: spec => new AssetManager(spec),
+    debug: spec => new DebugInfo(spec),
 });
 
 

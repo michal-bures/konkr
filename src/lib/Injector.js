@@ -33,9 +33,10 @@ function Injector(parent=Object, extension) {
         Object.defineProperty(self,name,{
             get: () => { 
                 Object.seal(self); // no more props can be added to the injector after its used for the first time
+                let loaderId = _id+'/'+name;
                 if (!_resolved[name]) {
-                    if (_loading.indexOf(name)!==-1) throw Error(`Dependency loop detected! ${_loading.concat(name).join(' <- ')}`);
-                    _loading.push(name);
+                    if (_loading.indexOf(loaderId)!==-1) throw Error(`Dependency loop detected! ${_loading.concat(loaderId).join(' <- ')}`);
+                    _loading.push(loaderId);
                     console.debug(`Injector ${_id}> loading: ${_loading.join(' <- ')}`);
                     _resolved[name]=factoryFunction(self);
                     _loading.pop();

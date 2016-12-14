@@ -42,11 +42,17 @@ function HexSelectionProxy(spec) {
         const hex = getHexUnderCursor();
         if (!hex) return `Under cursor: (nothing)`;
 
+        let ret = [];
+        for (let key in debug.valuations) {
+            ret.push(`${key}: ${debug.valuations[key].get(hex)}`);
+        }
+
         return `Under cursor: ${hex}
 Faction: ${regions && regions.factionOf(hex)}
 Region:  ${regions && regions.regionOf(hex)}
 Pawn: ${pawns.pawnAt(hex)}
-Defense: ${warfare.defenseOf(hex)}`;
+
+${ret.join('\n')}`;
     }
 
     function update() {

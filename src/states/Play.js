@@ -13,7 +13,7 @@ import GameState from 'rules/GameState';
 const DEFAULT_GAME_SETTTINGS = {
     worldWidth: 20,
     worldHeight: 20,
-    numFactions: 2,   
+    numFactions: 4,   
 };
 
 function Play(game) { 
@@ -43,7 +43,6 @@ function Play(game) {
         gameUi = gameSpec.extend({
             gameState: () => gameState,
             ui: spec => new UIManager(spec),
-            debug: spec => new DebugInfo(spec),
             landSprites: spec => new Renderer.LandSprites(spec),
             regionBorders: spec => new Renderer.RegionBorders(spec),
             selRegionHighlight: spec => new Renderer.SelectedRegionHighlight(spec),
@@ -70,12 +69,6 @@ function Play(game) {
         game.world.add(gameUi.hexSelectionProxy.group);
         game.world.add(gameUi.uiRegionPanel.group);  
         game.stage.backgroundColor='#d5dfef';
-
-        gameUi.gridOverlays.configureOverlay({
-            name: 'defense',
-            func: (hex) => { return gameSpec.warfare.defenseOf(hex)/5; }
-        });
-        gameUi.gridOverlays.show('defense');
 
         game.canvas.oncontextmenu = function (e) { 
             e.preventDefault(); 
@@ -127,36 +120,39 @@ function Play(game) {
 
         game.debug.reset();
         // DEBUG
-        gameUi.debug.addCommand('actions','⏵ Play', ()=> {
+
+        gameUi.debug.attachOverlayRenderer(gameUi.gridOverlays);
+
+        gameUi.debug.addCommand(null,'⏵ Play', ()=> {
             breakAfterEveryAction = !breakAfterEveryAction;
             if (debugBreakCallback) debugBreakCallback();
             return (breakAfterEveryAction?'⏵ Play':"⏸ Pause");
         });
 
-        gameUi.debug.addCommand('actions','⏯ Step', ()=> {
+        gameUi.debug.addCommand(null,'⏯ Step', ()=> {
             if (debugBreakCallback) debugBreakCallback();
         });
 
-        gameUi.debug.addCommand('actions','Undo', ()=> {
+        gameUi.debug.addCommand(null,'Undo', ()=> {
             gameSpec.actions.undoLastAction();
         });
 
-        gameUi.debug.addCommand('actions','Restart', ()=> {
+        gameUi.debug.addCommand('gameState','Restart', ()=> {
             gameSpec.actions.abortAll();
             gameSpec.actions.schedule('RESTART_GAME');
         });
 
-        gameUi.debug.addCommand('actions','New map', ()=> {
+        gameUi.debug.addCommand('gameState','New map', ()=> {
             gameSpec.actions.abortAll();
             gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_prestart');
         });
 
 
-        gameUi.debug.addCommand('actions','Store snapshot', ()=> {
+        gameUi.debug.addCommand('gameState','Store snapshot', ()=> {
             gameSpec.actions.schedule("STORE_STATE", "konkr_devsnapshot");
         });
 
-        gameUi.debug.addCommand('actions','Load snapshot', ()=> {
+        gameUi.debug.addCommand('gameState','Load snapshot', ()=> {
             gameSpec.actions.abortAll();
             gameSpec.actions.schedule("LOAD_STATE", JSON.parse(localStorage.getItem("konkr_devsnapshot")));
         });
