@@ -51,8 +51,6 @@ function Regions (spec) {
     actions.setHandler('CHANGE_HEXES_REGION', (action, hexOrGroup, receivingRegion) => {
         let lostHexesByRegion = {};
 
-        if (!(hexOrGroup instanceof HexGroup)) hexOrGroup = new HexGroup(hexOrGroup);
-
         // capture the hexes and keep track of which regions have lost some hexes
         hexOrGroup.forEach( hex=> {
             let owner = hexRegion[hex.id];
@@ -60,7 +58,11 @@ function Regions (spec) {
                 if (!lostHexesByRegion[owner.id]) lostHexesByRegion[owner.id]=new HexGroup();
                 lostHexesByRegion[owner.id].add(hex);
             }
-            hexRegion[hex.id] = receivingRegion;
+            if (receivingRegion) {
+                hexRegion[hex.id] = receivingRegion;
+            } else {
+                delete hexRegion[hex.id];
+            }
         });
  
         // update all regions that have lost hexes in this transaction
@@ -81,7 +83,30 @@ function Regions (spec) {
         }
 
         regions.onHexesChangedOwner.dispatch(hexOrGroup);
+        action.data.lostHexesByRegion = lostHexesByRegion; // store for undo
         action.resolve();
+    },
+    {
+        undo(action, hexOrGroup, receivingRegion) {
+            if (!(hexOrGroup instanceof HexGroup)) hexOrGroup = new HexGroup(hexOrGroup);
+            
+            if (receivingRegion) {
+                receivingRegion.hexes.remove(hexOrGroup);
+                hexOrGroup.forEach(hex=> { hexRegion[hex.id] = null; });
+            }
+
+            for (const key in action.data.lostHexesByRegion) {
+                let r = byId(key);
+                r.hexes.add(action.data.lostHexesByRegion[key]);
+                action.data.lostHexesByRegion[key].forEach(hex => {
+                    hexRegion[hex.id] = r;
+                });
+            }
+
+            regions.onChanged.dispatch(receivingRegion);
+            regions.onHexesChangedOwner.dispatch(hexOrGroup);
+
+        }
     });
 
     actions.setHandler('MERGE_REGIONS',(action, region1, region2)=>{
@@ -91,7 +116,24 @@ function Regions (spec) {
             action.schedule('CHANGE_HEXES_REGION', region1.hexes.clone(), region2);
         }        
         action.resolve();
-    });
+    }, { undo() {} });
+
+    actions.setHandler("CHANGE_REGION_CAPITAL", (action, region, newCapital, prevCapital) => {
+        region.capital = newCapital;
+        if (prevCapital && newCapital) {
+            action.schedule("MOVE_PAWN", pawns.pawnAt(prevCapital), newCapital);
+        } else if (prevCapital && !newCapital) {
+            action.schedule("DESTROY_PAWN", pawns.pawnAt(prevCapital));
+        } else if (!prevCapital && newCapital) {
+            action.schedule("CREATE_PAWN", pawns.TOWN, newCapital);
+        }
+        action.resolve();
+    },
+    {
+        undo(action, region, newCapital, prevCapital) {
+            region.capital = prevCapital;
+        }
+    });    
 
     actions.setHandler('RANDOMIZE_REGIONS', (action, numFactions=99) => {
         numFactions = Math.min(numFactions, MAX_NUMBER_OF_FACTIONS);
@@ -104,6 +146,23 @@ function Regions (spec) {
             .forEach((group) => createRegion(group, hexFaction[group.pivot.id]));
         action.resolve();
     });
+
+    actions.setHandler('REMOVE_REGION', (action, region)=> {
+        delete _regions[region.id];
+        if (region.hexes) {
+            action.schedule('CHANGE_HEXES_REGION', region.hexes, null);
+        }
+        regions.onDestroyed.dispatch(region);
+        action.resolve();
+    },
+    {
+        undo(action, region) {
+            _regions[region.id] = region;
+            region.hexes.forEach(hex => hexRegion[hex.id] = region);
+            regions.onCreated.dispatch(region);
+        }
+    }
+    );
 
     function byId(id) {
         return _regions[id];
@@ -154,8 +213,7 @@ function Regions (spec) {
             pickNewCapital(region);
         }
         if (region.hexes.length===0) {
-            delete _regions[region.id];
-            regions.onDestroyed.dispatch(region);
+            actions.schedule('REMOVE_REGION', region);
         } else {
             regions.onChanged.dispatch(region);
         }
@@ -174,13 +232,12 @@ function Regions (spec) {
         const prevCapital = region.capital;
         if (availableHexes.length === 0) {
             //TODO: clear some hex to make space for the new capital
-            region.capital = null;
             if (prevCapital) regions.onLostCapital.dispatch(region, prevCapital);
             actions.schedule('CHANGE_REGION_CAPITAL', region, null, prevCapital);
         } else {
-            region.capital = availableHexes.getRandomHex();
+            let newCapital = availableHexes.getRandomHex();
             if (!prevCapital) regions.onGainedCapital.dispatch(region, region.capital);
-            actions.schedule('CHANGE_REGION_CAPITAL', region, region.capital, prevCapital);
+            actions.schedule('CHANGE_REGION_CAPITAL', region, newCapital, prevCapital);
         }            
     }
 

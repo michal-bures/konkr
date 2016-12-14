@@ -72,7 +72,7 @@ function GameState(spec) {
         localStorage.setItem(name, JSON.stringify(toJSON()));
         log.info("GameState saved into localStorage["+name+"]");
         action.resolve();
-    });
+    },{ undo() {} });
 
     actions.setHandler('LOAD_STATE', (action, jsonOrKey) => {
         if (typeof jsonOrKey === 'string') {

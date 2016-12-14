@@ -36,7 +36,7 @@ function AI(spec) {
             action.schedule('AI_MANAGE_REGION', player, region);
         }
         action.resolve();
-    });
+    }, { undo() {}});
 
     function AttackOpportunities({warfare}, player, fromRegion, maxDefense) {
         let cache = new HexValuation.Manual();

@@ -1,4 +1,5 @@
 import IterableOn from 'lib/decorators/IterableOn';
+import HexGroup from 'lib/hexgrid/HexGroup';
 
 function Players(spec) {
 
@@ -99,13 +100,17 @@ function Players(spec) {
         if (pawns.pawnAt(hex)) {
             action.schedule('DESTROY_PAWN', pawns.pawnAt(hex));
         }
-        action.schedule('CHANGE_HEXES_REGION', hex, region);
+        action.schedule('CHANGE_HEXES_REGION', new HexGroup(hex), region);
         action.schedule('CREATE_PAWN',grabbedPawn, hex);
         grabbedPawn = null;
         grabbedPawnRegion = null;
-
+        action.data.grabbedPawn = grabbedPawn;
         action.resolve();
-    });
+    }, { undo(action, hex, region) {
+        movedUnits[hex.id] = false;
+        grabbedPawn = action.data.grabbedPawn;
+        grabbedPawnRegion = region;
+    }});
 
     actions.setHandler('GRAB_UNIT', (action, pawn) => {
         if (movedUnits[pawn.hex.id]) return action.reject(`Tried to grab ${pawn}, which has already moved this turn.`);

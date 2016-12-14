@@ -60,6 +60,7 @@ function ActionsProvider(spec, providerName, config) {
         if (actionPointer===0) throw Error('No action left to undo');
         let actionToUndo = actionQueue[actionPointer-1];
         actionQueue.splice(actionPointer,actionToUndo.descendants);
+        actionToUndo.descendants=0;
         actionToUndo.undo();
         --actionPointer;
     }
@@ -88,6 +89,7 @@ function ActionsProvider(spec, providerName, config) {
             get name() { return name; },
             toString,
             descendants: 0,
+            data: {}, // auxiliary data that can be assigned by handlers, useful for storing information needed for undo
             issuer:null,            
             canBeUndone() { return !!handlers[name].undo; }
         });
@@ -198,6 +200,9 @@ function ActionsProvider(spec, providerName, config) {
         if (!actionRunning) {
             actionQueue.splice(actionPointer,0,newAction);
             executeNext();
+            if (actionQueue[actionPointer-1]) {
+                actionQueue[actionPointer-1].descendants++;
+            }
         } else {
             log.debug(`Putting ${newAction} at ${actionPointer + currentAction().descendants+1}`);
             actionQueue.splice(actionPointer+currentAction().descendants+1,0,newAction);
@@ -269,16 +274,18 @@ function ActionsProvider(spec, providerName, config) {
 
     function toDebugString() {
 
-        function buildTree(prefix="", index=0, rootLevel=true) {
-            if (index >= actionQueue.length) return "";
-            let action = actionQueue[index];
+        let ptr = 0;
+
+        function buildTree(prefix="", rootLevel=true) {
+            if (ptr >= actionQueue.length) return "";
+            let action = actionQueue[ptr];
             let ret = [];
-            ret.push(`${prefix} ${rootLevel?"":" └─"} ${symbol(index)} ${action}`);
-            index++;
+            ret.push(`${prefix} ${rootLevel?"":" └─"} ${symbol(ptr)} ${action}`);
+            ptr++;
             for (var c = 0; c < action.descendants; ++c) {
-                ret.push(buildTree(prefix+"   ", index+c, false));
+                ret.push(buildTree(prefix+"   ", false));
             }
-            if (rootLevel && index+c < actionQueue.length) ret.push(buildTree(prefix, index+c));
+            if (rootLevel && ptr < actionQueue.length) ret.push(buildTree(prefix));
             return ret.join('\n');
         }
 
@@ -293,16 +300,15 @@ function ActionsProvider(spec, providerName, config) {
                 return '⏸▶';
             }
         }
-/*
-        const tQueue = actionQueue.map((action,i)=> {
-            return ` ${actionSymbol(i)} ${action}`;
-        }).join('\n');*/
 
         const tActionTypes = 
             Object.keys(handlers)
                   .map(key => `* ${key} => ${handlers[key] && handlers[key].description}`).sort().join('\n');
 
-        return `${buildTree()}
+        return `
+<b>${actionRunning?'Runnnig':'Next up'}:</b> ${actionQueue[actionPointer]}
+Queue:
+${buildTree()}
 
 Registered Handlers:
 ${tActionTypes}`;

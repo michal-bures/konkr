@@ -22,9 +22,6 @@ class Hexagon {
             .filter((hex) => hex && condition(hex));        
     }
 
-    border() { return this; }
-    borderIncludingShoreline() { return this; }
-
     neighbour(direction) {
         return this.grid.getHexByAxial(this.position.r+HEX_ADJACENCY_VECTORS[direction][0],this.position.c+HEX_ADJACENCY_VECTORS[direction][1]);
     }

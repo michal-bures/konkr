@@ -44,14 +44,17 @@ function Economy(spec) {
 
     actions.setHandler('SET_INITIAL_TREASURY', action => {
         regions.forEach(region=>{
-            setTreasuryOf(region,netIncomeOf(region)*5);
+            actions.schedule('SET_REGION_TREASURY', region,netIncomeOf(region)*5);
         });
         action.resolve();
-    });    
+    }, { undo() {} });    
 
     actions.setHandler('SET_REGION_TREASURY', (action, region, amount) => {
+        action.data.previousAmount = treasuryOf(region);
         setTreasuryOf(region,amount);
         action.resolve();
+    },{
+        undo(action,region) { setTreasuryOf(region,action.data.previousAmount); }
     });
 
     actions.setHandler('COLLECT_REGION_INCOME', (action,region)=>{
@@ -62,9 +65,9 @@ function Economy(spec) {
             self.onRegionBankrupt.dispatch(region);
             actions.schedule('KILL_TROOPS_IN_REGION', region);
         }
-        setTreasuryOf(region, newValue);
+        actions.schedule('SET_REGION_TREASURY', region, newValue);
         action.resolve();
-    });
+    }, { undo() {} });    
 
     /// ACTION TRIGGERS
 

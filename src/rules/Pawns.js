@@ -99,19 +99,31 @@ function Pawns(spec) {
         const newPawn = placeAt(pawnType, hex);
         pawns.onCreated.dispatch(newPawn);
         return action.resolve();
-    });
+    }, { undo(action, pawnType, hex) {
+        let pawn = pawnAt(hex);
+        delete hexPawn[hex.id];
+        delete _pawns[pawn.id];
+        pawns.onDestroyed.dispatch(pawn);
+    }});
 
     actions.setHandler("DESTROY_PAWN", (action, pawn) => {
         delete hexPawn[pawn.hex.id];
         delete _pawns[pawn.id];
         pawns.onDestroyed.dispatch(pawn);
         action.resolve();
-    });
+    }, { undo(action, pawn) {
+        hexPawn[pawn.hex.id] = pawn;
+        _pawns[pawn.id] = pawn;
+        pawns.onCreated.dispatch(pawn);
+    }});
 
     actions.setHandler("MOVE_PAWN", (action, pawn, hex) => {
+        action.data.previousHex = hex;
         movePawn(pawn, hex);
         action.resolve();
-    });
+    }, { undo(action, pawn) {
+        movePawn(pawn, action.data.previousHex);
+    }});
 
     actions.setHandler("KILL_TROOPS_IN_REGION", (action, region) => {
         pawns.select({ hexes: region.hexes, })
@@ -121,18 +133,7 @@ function Pawns(spec) {
                 action.schedule("CREATE_PAWN", PawnType.GRAVE, pawn.hex);
             });
         action.resolve();
-    });
-
-    actions.setHandler("CHANGE_REGION_CAPITAL", (action, region, newCapital, prevCapital) => {
-        if (prevCapital && newCapital) {
-            action.schedule("MOVE_PAWN", pawnAt(prevCapital), newCapital);
-        } else if (prevCapital && !newCapital) {
-            action.schedule("DESTROY_PAWN", pawnAt(prevCapital));
-        } else if (!prevCapital && newCapital) {
-            action.schedule("CREATE_PAWN", PawnType.TOWN, newCapital);
-        }
-        action.resolve();
-    });
+    }, { undo() {} });
 
     function pawnAt(hex) {
         return hexPawn[hex.id] || null;

@@ -71,10 +71,6 @@ function Play(game) {
         game.world.add(gameUi.uiRegionPanel.group);  
         game.stage.backgroundColor='#d5dfef';
 
-        // Keyboard shortcuts
-/*        var kEnter = game.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-        kEnter.onDown.add(function() {director.commitWord(); });
-*/
         gameUi.gridOverlays.configureOverlay({
             name: 'defense',
             func: (hex) => { return gameSpec.warfare.defenseOf(hex)/5; }
@@ -123,6 +119,11 @@ function Play(game) {
                 nextStateCallbacks.pop()();
             }
         });
+
+        // Keyboard shortcuts
+        var kBackSpace = game.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
+        kBackSpace.onDown.add(function() { gameSpec.actions.undoLastAction(); });
+
 
         game.debug.reset();
         // DEBUG
