@@ -48,7 +48,7 @@ describe("Valuation.Manual", () => {
         vals.set(hex(3), 3);
         vals.set(hex(1), 10);
 
-        expect(vals.get(hex(1))).toEqual({hex: hex(1), val: 10});
+        expect(vals.get(hex(1))).toEqual(10);
         expect(vals.pop()).toEqual({hex: hex(1), val: 10});
         expect(vals.pop()).toEqual({hex: hex(3), val: 3});
     });

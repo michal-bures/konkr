@@ -18,33 +18,38 @@ PawnType.initEnum({
         isTroop:()=>true,
         price: 10,
         upkeep: 2,
-        defense: 1
-    },
-    GRAVE: {
-        upkeep: 1
+        defense: 1,
+        might: 1,
     },
     TROOP_2: {
         isTroop: ()=>true,
         price: 20,
         upkeep: 6,
-        defense: 2
+        defense: 2,
+        might: 2,
     },
     TROOP_3: {
         isTroop: ()=>true,
         price: 30,
         upkeep: 18,
-        defense: 3
+        defense: 3,
+        might: 3,
     },
     TROOP_4: {
         isTroop: ()=>true,
         price: 40,
         upkeep: 64,
-        defense: 4
+        defense: 4,
+        might: 4,
     },
     TOWER: {
         price: 15,
         defense: 2
     },
+    GRAVE: {
+        upkeep: 1
+    },
+
     UNREST: {
         upkeep: 1
     },

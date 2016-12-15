@@ -23,8 +23,8 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-        'tests.webpack.js',
         'dist/vendor.bundle.js',
+        'tests.webpack.js',
     ],
 
 
