@@ -3,16 +3,16 @@ import HexSelectionProxy from 'ui/HexSelectionProxy';
 import Scrolling from 'ui/Scrolling';
 import RegionPanel from 'ui/RegionPanel';
 import GridOverlays from 'ui/GridOverlays';
-import DebugInfo from 'ui/DebugInfo';
 import UI from 'lib/controls/UI';
+import Messages from 'ui/Messages';
 
 import UIManager from 'ui/UIManager';
 import GameState from 'rules/GameState';
 
 
 const DEFAULT_GAME_SETTTINGS = {
-    worldWidth: 20,
-    worldHeight: 20,
+    worldWidth: 10,
+    worldHeight: 10,
     numFactions: 4,   
 };
 
@@ -37,6 +37,20 @@ function Play(game) {
 
     function init(spec) {
 
+        // logging plugin that display some messages directly on screen
+        // must be initialized before more loggers are forked from the root logger
+        var originalFactory = spec.log.methodFactory;
+        spec.log.methodFactory = function (methodName, logLevel, loggerName) {
+            var rawMethod = originalFactory(methodName, logLevel, loggerName);
+
+            return function (...args) {
+                rawMethod.apply(undefined,[(loggerName||'') + ">"].concat(...args));
+                if (methodName!=='debug' && methodName!=='trace') gameUi.messages.push(`${args.join(' ')}`, methodName);
+            };
+        };
+        spec.log.setLevel(spec.log.getLevel()); // apply plugin
+
+
         gameState = new GameState(spec);
         gameSpec = gameState.spec;
 
@@ -51,6 +65,7 @@ function Play(game) {
             scrolling: spec => new Scrolling(spec),
             uiRegionPanel: spec => new RegionPanel(spec),
             gridOverlays: spec => new GridOverlays(spec),
+            messages: spec => new Messages(spec),
         });
         log = spec.log;
         window.c = gameUi;
@@ -67,6 +82,7 @@ function Play(game) {
         game.world.add(gameUi.gridOverlays.group);  
         game.world.add(gameUi.pawnSprites.group);          
         game.world.add(gameUi.hexSelectionProxy.group);
+        game.world.add(gameUi.messages.group);  
         game.world.add(gameUi.uiRegionPanel.group);  
         game.stage.backgroundColor='#d5dfef';
 
@@ -91,20 +107,41 @@ function Play(game) {
         let breakAfterEveryAction = true;
         let debugBreakCallback = null;
 
-        gameSpec.actions.attachGuard((prevAction, nextAction) => new Promise(resolve => {
+        function shouldBreakBefore(nextAction) {
+            if (breakAfterEveryAction) return true;
             switch (nextAction && nextAction.name) {
-                case 'START_PLAYER_TURN':
-                    //setTimeout(resolve, 100);
-                    //break;
-                    return nextStateCallbacks.push(resolve);
+                case 'STORE_STATE':
+                    return (nextAction.args[0] === 'konkr_autosave_turn_start');
                 default:
-                    if (breakAfterEveryAction) {
-                        debugBreakCallback = resolve;
-                    } else {
-                        resolve();
-                    }
+                    return false;
+            }            
+        }
+
+        function shouldBreakAfter(prevAction) {
+            switch (prevAction && prevAction.name) {
+                default:
+                    return false;
+            }
+        }
+
+        gameSpec.actions.attachGuard((prevAction, nextAction) => new Promise(resolve => {
+            //if (debugBreakCallback) return setTimeout(resolve,0);
+            if (shouldBreakAfter(prevAction)) {
+                log.info('❚❚ Halted after ' + prevAction.name);
+                debugBreakCallback = resolve;
+            } else if (shouldBreakBefore(nextAction)) {
+                if (!breakAfterEveryAction) log.info('❚❚ Halted before ' + nextAction.name);
+                debugBreakCallback = resolve;
+            } else {
+                setTimeout(resolve, 0);
             }
         }));
+
+        //pause after game state has been reloaded
+        gameState.onReset.add(()=> {
+            log.info('❚❚ Halted after GameState.reset');
+            breakAfterEveryAction = true;
+        });
 
         nextTurnButton.addToGroup(game.world);
         nextTurnButton.onInputUp.add(() => {
@@ -113,10 +150,21 @@ function Play(game) {
             }
         });
 
-        // Keyboard shortcuts
-        var kBackSpace = game.input.keyboard.addKey(Phaser.Keyboard.BACKSPACE);
-        kBackSpace.onDown.add(function() { gameSpec.actions.undoLastAction(); });
+        function setCommandHotkey(keyName,commandName) {
+            let key = Phaser.Keyboard[keyName];
+            if (!key) throw Error(`${keyName} is not a valid Phaser Key name`);
+            game.input.keyboard.addKey(key).onDown.add(()=> {
+                gameUi.debug.executeCommand(commandName);
+            });
+        }
 
+        // Keyboard shortcuts
+        setCommandHotkey('BACKSPACE','Undo');
+        setCommandHotkey('N','⏯ Step');
+        setCommandHotkey('SPACEBAR','⏵ Play');
+        setCommandHotkey('F1','gridOverlays.toggle');
+        setCommandHotkey('O','gridOverlays.next');
+        setCommandHotkey('R','gameState.Reload turn');
 
         game.debug.reset();
         // DEBUG
@@ -124,16 +172,28 @@ function Play(game) {
         gameUi.debug.attachOverlayRenderer(gameUi.gridOverlays);
 
         gameUi.debug.addCommand(null,'⏵ Play', ()=> {
-            breakAfterEveryAction = !breakAfterEveryAction;
-            if (debugBreakCallback) debugBreakCallback();
-            return (breakAfterEveryAction?'⏵ Play':"⏸ Pause");
+            breakAfterEveryAction = false;
+            if (debugBreakCallback) {
+                debugBreakCallback();
+                debugBreakCallback = null;
+            }
+            log.info("⏵ Actions queue resumed");
         });
 
         gameUi.debug.addCommand(null,'⏯ Step', ()=> {
-            if (debugBreakCallback) debugBreakCallback();
+            if (!breakAfterEveryAction) {
+                breakAfterEveryAction = true;
+            }
+            if (debugBreakCallback) {
+                log.info("⏯ "+ (gameSpec.actions.getCurrent() && gameSpec.actions.getCurrent().name));
+                debugBreakCallback();
+                debugBreakCallback = null;
+            }
         });
 
         gameUi.debug.addCommand(null,'Undo', ()=> {
+            if (!gameSpec.actions.getLast()) return;
+            gameUi.messages.push('↶ '+gameSpec.actions.getLast().name);
             gameSpec.actions.undoLastAction();
         });
 
@@ -145,6 +205,11 @@ function Play(game) {
         gameUi.debug.addCommand('gameState','New map', ()=> {
             gameSpec.actions.abortAll();
             gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_prestart');
+        });
+
+        gameUi.debug.addCommand('gameState','Reload turn', ()=> {
+            gameSpec.actions.abortAll();
+            gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_turn_start');
         });
 
 

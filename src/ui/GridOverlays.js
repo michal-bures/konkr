@@ -6,7 +6,8 @@ function GridOverlays({game, grid, log, debug, regions, gameState}) {
     let overlays = new OrderedMap(),
         group = game.add.group(),
         currentOverlay = null,
-        dirty = true;
+        dirty = true,
+        enabled = false;
 
     const self = Object.freeze({
         configureOverlay,
@@ -55,11 +56,13 @@ function GridOverlays({game, grid, log, debug, regions, gameState}) {
     });
 
     function show(name) {
+        enabled = true;
         const overlay = overlays.get(name);
         if (!overlay) throw Error("No such overlay: "+name);
         currentOverlay = overlay;
         overlay.refresh();
         assertDefined(overlay.sprite);
+        log.info("Overlay: " + name);
     }
 
     function refresh() {
@@ -70,11 +73,12 @@ function GridOverlays({game, grid, log, debug, regions, gameState}) {
     }
 
     function hide() {
+        enabled = false;
         group.removeChildren();
     }
 
     function render() {
-        if (dirty) refresh();
+        if (dirty && enabled) refresh();
     }
 
     class Overlay {

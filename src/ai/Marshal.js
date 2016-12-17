@@ -1,6 +1,6 @@
 const MAX_UNIT_MIGHT = 4;
 
-function Manpower({pawns,economy,log},pawnList) {
+function Marshal({pawns,economy,log},pawnList) {
 
     const pawnTypeByMight = {
         1: pawns.TROOP_1,
@@ -33,22 +33,23 @@ function Manpower({pawns,economy,log},pawnList) {
         //1. check if we already have a troop fit for the job
         if (pawnsByMight[targetMight].length) {
             totalMight-=targetMight;
-            return { use: [pawnsByMight[targetMight].pop()] };
+            return { use: [pawnsByMight[targetMight].pop()], result: pawnTypeByMight[targetMight] };
         }
         //2. if not, try to merge units
         let merge = findMerge(targetMight);
         let mergedMight = merge.reduce((sum, troop)=> sum + troop.pawnType.might, 0);
         totalMight-=mergedMight;
         if (mergedMight >= targetMight) {
-            return { use: merge };
+            return { use: merge, result: pawnTypeByMight[mergedMight] };
         } else {
             //3. if it's still not enough, try to buy a unit
-            return { use: merge, buy: pawnTypeByMight[targetMight-mergedMight] };
+            return { use: merge, buy: pawnTypeByMight[targetMight-mergedMight], result: pawnTypeByMight[targetMight] };
         }
 
     }
 
     function findMerge(targetMight) {
+        // WARNING: Assumption: merging two units with might X + Y will yield a unit with migth=X.might+Y.might
         let selected = [];
         let currentMight = 0;
         for (let might = MAX_UNIT_MIGHT; might>0 && currentMight < targetMight; --might) {
@@ -61,4 +62,4 @@ function Manpower({pawns,economy,log},pawnList) {
     }
 }
 
-export default Manpower;
+export default Marshal;

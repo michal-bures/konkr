@@ -10,7 +10,7 @@ class DebugInfo {
         this.globalCommands = [];
         this.valuations = {};
         this.overlaysRenderer = null;
-
+        this.commandMap = {};
     }
 
     set(key,value) {
@@ -42,9 +42,19 @@ class DebugInfo {
     }
 
     addCommand(category,title,func) {
-        if (!category) return this.globalCommands.push({title, func});
-        if (!this.commands[category]) this.commands[category]=[];
-        this.commands[category].push({title, func});
+        if (!category) {
+            this.globalCommands.push({title, func});
+            this.commandMap[title] = func;
+        } else {
+            if (!this.commands[category]) this.commands[category]=[];
+            this.commands[category].push({title, func});
+            this.commandMap[category+"."+title] = func;
+        }
+    }
+
+    executeCommand(name) {
+        if (!this.commandMap[name]) throw Error('No such command: '+ name);
+        this.commandMap[name]();
     }
 
     getNamedProxy(name) {
@@ -66,7 +76,10 @@ class DebugInfo {
           newButton.value = cmd.title;
           newButton.onclick = function () {
             let newTitle = cmd.func();
-            if (newTitle) newButton.value = newTitle;
+            if (newTitle) {
+                cmd.title = newTitle;
+                newButton.value = newTitle;
+            }   
           };
           enclosingDiv.appendChild(newButton);
         });

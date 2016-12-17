@@ -4,6 +4,18 @@
 		"selected_items":
 		[
 			[
+				"upke",
+				"upkeepCostOfMerge〔function〕"
+			],
+			[
+				"smallestOverkil",
+				"smallestOverkillPair"
+			],
+			[
+				"smalle",
+				"smallestOverkillPair〔variable〕"
+			],
+			[
 				"Schedule",
 				"ScheduledAction"
 			],
@@ -165,19 +177,57 @@
 			}
 		},
 		{
+			"contents": "import HexValuation from 'lib/hexgrid/HexValuation';\n\n\nfunction AI(spec) {\n    let {actions, pawns, economy, debug, log} = spec;\n\n    let ai = Object.freeze({\n        AttackOpportunities\n    });\n\n    let currentRegion;\n    let currentPlayer;\n\n    const troopByMight = {\n        1: pawns.TROOP_1,\n        2: pawns.TROOP_2,\n        3: pawns.TROOP_4,\n        4: pawns.TROOP_3,\n    };\n\n    actions.setHandler(\"AI_MANAGE_REGION\", (action,player, region) => {\n        currentRegion = region;\n        currentPlayer = player;\n        let defense = 0;\n        let nextTarget = null;\n        let attackOpportunities = null;\n        while (!nextTarget && defense<=4) {\n            log.debug(\"Looking for reachable tiles with max defense of \"+defense);\n            attackOpportunities = new AttackOpportunities(spec, player, region, defense);\n            attackOpportunities.recalculate();\n            nextTarget = attackOpportunities.pop();\n            ++defense;\n        }\n        --defense;\n        if (!nextTarget) {\n            log.debug(\"No capturable hexes are available at all, bummer!\");\n            return action.resolve();\n        }\n\n        debug.valuation('attackOpportunities', attackOpportunities);\n        nextTarget = nextTarget.hex;\n        log.debug(`Gonna try to capture ${nextTarget} (defense ${defense})...`);\n\n        let totalMight = 0;\n\n        let villager = null;\n        let strongestTroop = null;\n        let capableUnits = pawns.select({\n            hexes: region.hexes,\n            custom: (pawn => {\n                if (pawn.isTroop() && player.canMoveUnit(pawn)) {\n                    totalMight += pawn.might;\n                    if (!strongestTroop || pawn.might > strongestTroop.might) {\n                        strongestTroop = pawn;\n                    } else if (!villager && pawn.might ===1) {\n                        villager = pawn;\n                    }\n                    return pawn.might > defense;\n                } else {\n                    return false;\n                }\n            })\n        });\n\n        if (capableUnits.length) {\n            // we have a strong enough pawn available\n            log.debug(`...${capableUnits[0]} will do the job.`);\n            action.schedule('GRAB_UNIT', capableUnits[0]);\n            action.schedule('CONQUER_HEX', nextTarget, region);\n            action.schedule('AI_MANAGE_REGION', player, region);\n        } else {\n            //can't capture the tile with any existing pawns, try if i can merge some to get the exact \n            //attack needed\n            if (strongestTroop && villager && canAffordUpkeep(upkeepCostOfMerge(villager, strongestTroop))) {\n                log.debug(`...I'll upgrade ${capableUnits[0]} will do the job.`);\n                action.schedule('GRAB_UNIT', villager.hex);\n                action.schedule('DROP_UNIT', strongestTroop.hex);\n                action.schedule('CONQUER_HEX', nextTarget, region);\n                action.schedule('AI_MANAGE_REGION', player, region);\n            } else {\n                //merging didn't help either, try to boost the strongest unit by buing stuff\n                let unitToBuy = troopByMight[defense - strongestTroop.might + 1];\n                if (canAffordPayment(unitToBuy.price) && canAffordUpkeep(unitToBuy.upkeep)) {\n                    action.schedule('GRABD_UNIT', strongestTroop.hex);\n                    action.schedule('BUY_UNIT', unitToBuy, region);\n                    action.schedule('CONQUER_HEX', nextTarget, region);\n                    action.schedule('AI_MANAGE_REGION', player, region);\n                }\n            }\n            if (economy.treasuryOf(region) > 10 &&\n                economy.netIncomeOf(region)+economy.treasuryOf(region)/10 > 2) {\n\n            } \n        }\n        action.resolve();\n    }, { undo() {}});\n\n    function upkeepCostOfMerge(u1, u2) {\n        return (troopByMight[u1.pawnType.might+u2.pawnType.might].upkeep - u1.pawnType.upkeep - u2.pawnType.upkeep);\n    }\n\n    function canAffordUpkeep(upkeep) {\n        return economy.netIncomeOf(region)+economy.treasuryOf(region)/10 > increase;\n    }\n\n    function mergeUnitsToGainMight(units,targetMight) {\n        log.debug(\"Trying to merge units in \",units,\" to achieve might \"+ targetMight);\n        if (targetMight > 4) return;\n        let tierList = {};\n        units.forEach(unit=> {\n            tierList[unit.might] = unit;\n        });\n\n        let smallestOverkill = Infinity;\n        let smallestOverkillPair = null;\n        for (const m1 in tierList) {\n            for (const m2 in tierList) {\n                if (m1 + m2 === targetMight) {\n                    log.debug(`Found an exact solution!: ${m1} + ${m2}`);\n                    return [m1, m2];\n                } else if (m1 + m2 > targetMight && m1 + m2 - targetMight < smallestOverkill) {\n                    smallestOverkill = m1 + m2 - targetMight;\n                    smallestOverkillPair = [m1, m2];\n                    log.debug(`Could go with ${m1} + ${m2}, which will overkill by ${smallestOverkill}`);\n                }\n            }\n        }\n        return smallestOverkillPair;\n    }\n\n    function AttackOpportunities({warfare}, player, fromRegion, maxDefense) {\n        let cache = new HexValuation.Manual();\n\n        function recalculate() {\n            fromRegion.hexes\n                .neighbours()\n                .filter(hex => warfare.defenseOf(hex) <= maxDefense)\n                .forEach(hex => {\n                    cache.set(hex,1);\n                });\n        }\n\n        return Object.freeze({\n            recalculate,\n            get: cache.get,\n            pop: cache.pop\n        });\n    }\n\n    return ai;\n}\n\nexport default AI;",
 			"file": "src/ai/AI.js",
+			"file_size": 5751,
+			"file_write_time": 131263047492196819,
 			"settings":
 			{
-				"buffer_size": 1987,
+				"buffer_size": 5664,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ai/RegionAI.js",
+			"settings":
+			{
+				"buffer_size": 50,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ai/Manpower.js",
+			"settings":
+			{
+				"buffer_size": 1846,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ai/Manpower.spec.js",
+			"settings":
+			{
+				"buffer_size": 1902,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "karma.conf.js",
+			"settings":
+			{
+				"buffer_size": 2720,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
 			}
 		},
 		{
 			"file": "src/lib/hexgrid/HexValuation.spec.js",
 			"settings":
 			{
-				"buffer_size": 1630,
+				"buffer_size": 1610,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -437,7 +487,7 @@
 			"file": "src/rules/Pawns.js",
 			"settings":
 			{
-				"buffer_size": 5926,
+				"buffer_size": 6003,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -711,16 +761,13 @@
 		"/C/Users/Embair/dev/www/konkr/src",
 		"/C/Users/Embair/dev/www/konkr/src/ai",
 		"/C/Users/Embair/dev/www/konkr/src/lib",
-		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid",
-		"/C/Users/Embair/dev/www/konkr/src/rules",
-		"/C/Users/Embair/dev/www/konkr/src/rules/entities",
-		"/C/Users/Embair/dev/www/konkr/src/states",
-		"/C/Users/Embair/dev/www/konkr/src/ui",
-		"/C/Users/Embair/dev/www/konkr/static",
-		"/C/Users/Embair/dev/www/konkr/static/styles"
+		"/C/Users/Embair/dev/www/konkr/static"
 	],
 	"file_history":
 	[
+		"/C/Users/Embair/dev/www/konkr/konkr.sublime-project",
+		"/C/Users/Embair/dev/www/konkr/src/ai/Manpower.js",
+		"/C/Users/Embair/dev/www/konkr/src/ai/RegionAI.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/util.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid/HexGrid.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/DebugInfo.js",
@@ -746,7 +793,6 @@
 		"/C/Users/Embair/dev/www/konkr/src/lib/ActionsProvider.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/Players.js",
 		"/C/Users/Embair/dev/www/konkr/webpack.config.js",
-		"/C/Users/Embair/dev/www/konkr/konkr.sublime-project",
 		"/C/Users/Embair/dev/www/konkr/spec/HexValuation.spec.js",
 		"/C/Users/Embair/dev/www/tmp/es6-karma-jasmine-webpack-boilerplate/src/Calculator.js",
 		"/C/Users/Embair/dev/www/tmp/es6-karma-jasmine-webpack-boilerplate/package.json",
@@ -763,7 +809,6 @@
 		"/C/Users/Embair/dev/www/konkr/src/ai/methods/getAttackOpportunities.js",
 		"/C/Users/Embair/dev/www/konkr/src/ai/methods/offensivePlay.js",
 		"/C/Users/Embair/dev/www/tmp/es6-client-boilerplate/package.json",
-		"/C/Users/Embair/dev/www/konkr/src/ai/RegionAI.js",
 		"/C/Users/Embair/dev/www/konkr/src/ai/methods/HexValuation.js",
 		"/C/Users/Embair/dev/www/tmp/phaser-es6-webpack/webpack.config.js",
 		"/C/Users/Embair/dev/www/konkr/webpack.production.config.js",
@@ -847,8 +892,7 @@
 		"/C/Users/Embair/dev/www/practice/twitterapp/src/App.js",
 		"/C/Users/Embair/dev/www/practice/twitterapp/src/App.css",
 		"/C/Users/Embair/AppData/Roaming/Sublime Text 3/Packages/User/SublimeLinter.sublime-settings",
-		"/C/Users/Embair/dev/www/practice/twitterapp/node_modules/react-scripts/scripts/start.js",
-		"/C/Users/Embair/dev/www/practice/twitterapp/node_modules/react-scripts/config/webpack.config.dev.js"
+		"/C/Users/Embair/dev/www/practice/twitterapp/node_modules/react-scripts/scripts/start.js"
 	],
 	"find":
 	{
@@ -879,9 +923,13 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": false,
+		"case_sensitive": true,
 		"find_history":
 		[
+			"Phaser",
+			"n",
+			"targetValue",
+			"player",
 			"drawInnerHex",
 			"overlaysRenderer",
 			"attachOverlayRenderer",
@@ -1005,11 +1053,7 @@
 			"fixate",
 			"debugger",
 			"initImage",
-			"getContainer",
-			"scaleManager",
-			"components",
-			"ScaleMode",
-			"scale_mode"
+			"getContainer"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1017,6 +1061,8 @@
 		"regex": false,
 		"replace_history":
 		[
+			"might",
+			"targetMight",
 			"actionQueue",
 			"actionRunning",
 			"actionPointer",
@@ -1142,20 +1188,18 @@
 			"assert.equal",
 			"gracefulShutdown",
 			"dumpStream",
-			"dbClient",
-			"DUMP_FILE",
-			"console.log"
+			"dbClient"
 		],
 		"reverse": false,
 		"show_context": true,
 		"use_buffer2": true,
-		"whole_word": false,
+		"whole_word": true,
 		"wrap": true
 	},
 	"groups":
 	[
 		{
-			"selected": 6,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -1186,7 +1230,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 17,
 					"type": "text"
 				},
 				{
@@ -1195,15 +1239,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1987,
+						"buffer_size": 5664,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1787,
-								1787
+								347,
+								347
 							]
 						],
 						"settings":
@@ -1215,27 +1259,84 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 1080.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "src/lib/hexgrid/HexValuation.spec.js",
+					"file": "src/ai/RegionAI.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1630,
+						"buffer_size": 50,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								513,
-								513
+								48,
+								48
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "src/ai/Manpower.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1846,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								614,
+								614
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "src/ai/Manpower.spec.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1902,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								422,
+								422
 							]
 						],
 						"settings":
@@ -1249,11 +1350,73 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
+					"buffer": 5,
+					"file": "karma.conf.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2720,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1264,
+								1264
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 250.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "src/lib/hexgrid/HexValuation.spec.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1610,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1402,
+								1402
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 180.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
 					"file": "src/rules/Warfare.js",
 					"semi_transient": false,
 					"settings":
@@ -1265,8 +1428,8 @@
 						"selection":
 						[
 							[
-								383,
-								383
+								495,
+								495
 							]
 						],
 						"settings":
@@ -1280,11 +1443,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 8,
 					"file": "src/rules/Regions.js",
 					"semi_transient": false,
 					"settings":
@@ -1311,11 +1474,11 @@
 						"translation.y": 1699.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 15,
+					"stack_index": 22,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
+					"buffer": 9,
 					"file": "src/rules/GameState.js",
 					"semi_transient": false,
 					"settings":
@@ -1327,8 +1490,8 @@
 						"selection":
 						[
 							[
-								217,
-								217
+								435,
+								435
 							]
 						],
 						"settings":
@@ -1343,11 +1506,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 13,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 10,
 					"file": "src/ui/DebugInfo.js",
 					"semi_transient": false,
 					"settings":
@@ -1359,8 +1522,8 @@
 						"selection":
 						[
 							[
-								1085,
-								1085
+								866,
+								866
 							]
 						],
 						"settings":
@@ -1374,11 +1537,11 @@
 						"translation.y": 270.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 11,
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 11,
 					"semi_transient": false,
 					"settings":
 					{
@@ -1597,11 +1760,11 @@
 						"translation.y": 4275.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 19,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 12,
 					"file": "src/lib/hexgrid/Hexagon.js",
 					"semi_transient": false,
 					"settings":
@@ -1628,11 +1791,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 21,
+					"stack_index": 27,
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 13,
 					"file": "src/lib/hexgrid/HexGroupSet.js",
 					"semi_transient": false,
 					"settings":
@@ -1659,11 +1822,11 @@
 						"translation.y": 270.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 34,
+					"stack_index": 38,
 					"type": "text"
 				},
 				{
-					"buffer": 10,
+					"buffer": 14,
 					"file": ".jshintrc",
 					"semi_transient": false,
 					"settings":
@@ -1689,11 +1852,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 36,
+					"stack_index": 40,
 					"type": "text"
 				},
 				{
-					"buffer": 11,
+					"buffer": 15,
 					"file": "src/index.js",
 					"semi_transient": false,
 					"settings":
@@ -1720,11 +1883,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 12,
+					"stack_index": 20,
 					"type": "text"
 				},
 				{
-					"buffer": 12,
+					"buffer": 16,
 					"semi_transient": false,
 					"settings":
 					{
@@ -1748,11 +1911,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 37,
+					"stack_index": 41,
 					"type": "text"
 				},
 				{
-					"buffer": 13,
+					"buffer": 17,
 					"file": "src/states/Play.js",
 					"semi_transient": false,
 					"settings":
@@ -1779,11 +1942,11 @@
 						"translation.y": 1620.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
-					"buffer": 14,
+					"buffer": 18,
 					"file": "src/ui/UIManager.js",
 					"semi_transient": false,
 					"settings":
@@ -1810,11 +1973,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 32,
+					"stack_index": 36,
 					"type": "text"
 				},
 				{
-					"buffer": 15,
+					"buffer": 19,
 					"file": "src/lib/ActionsProvider.js",
 					"semi_transient": false,
 					"settings":
@@ -1842,11 +2005,11 @@
 						"translation.y": 3870.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 23,
 					"type": "text"
 				},
 				{
-					"buffer": 16,
+					"buffer": 20,
 					"file": "src/lib/Injector.js",
 					"semi_transient": false,
 					"settings":
@@ -1873,11 +2036,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 14,
+					"stack_index": 21,
 					"type": "text"
 				},
 				{
-					"buffer": 17,
+					"buffer": 21,
 					"file": "src/ui/Renderer.js",
 					"semi_transient": false,
 					"settings":
@@ -1905,11 +2068,11 @@
 						"translation.y": 630.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
-					"buffer": 18,
+					"buffer": 22,
 					"file": "src/ui/GridOverlays.js",
 					"semi_transient": false,
 					"settings":
@@ -1936,11 +2099,11 @@
 						"translation.y": 270.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
-					"buffer": 19,
+					"buffer": 23,
 					"file": "src/lib/util.js",
 					"semi_transient": false,
 					"settings":
@@ -1967,11 +2130,11 @@
 						"translation.y": 1080.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 10,
+					"stack_index": 18,
 					"type": "text"
 				},
 				{
-					"buffer": 20,
+					"buffer": 24,
 					"file": "src/lib/controls/UI.js",
 					"semi_transient": false,
 					"settings":
@@ -1998,11 +2161,11 @@
 						"translation.y": 1907.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 43,
+					"stack_index": 47,
 					"type": "text"
 				},
 				{
-					"buffer": 21,
+					"buffer": 25,
 					"file": "src/ui/HexSelectionProxy.js",
 					"semi_transient": false,
 					"settings":
@@ -2029,11 +2192,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 7,
+					"stack_index": 16,
 					"type": "text"
 				},
 				{
-					"buffer": 22,
+					"buffer": 26,
 					"file": "src/ui/RegionPanel.js",
 					"semi_transient": false,
 					"settings":
@@ -2060,11 +2223,11 @@
 						"translation.y": 270.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 29,
+					"stack_index": 33,
 					"type": "text"
 				},
 				{
-					"buffer": 23,
+					"buffer": 27,
 					"file": "src/rules/LandGenerator.js",
 					"semi_transient": false,
 					"settings":
@@ -2091,11 +2254,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 33,
+					"stack_index": 37,
 					"type": "text"
 				},
 				{
-					"buffer": 24,
+					"buffer": 28,
 					"file": "src/lib/hexgrid/HexGrid.js",
 					"semi_transient": false,
 					"settings":
@@ -2123,11 +2286,11 @@
 						"translation.y": 1080.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 18,
+					"stack_index": 24,
 					"type": "text"
 				},
 				{
-					"buffer": 25,
+					"buffer": 29,
 					"file": "src/lib/hexgrid/HexGroup.js",
 					"semi_transient": false,
 					"settings":
@@ -2154,11 +2317,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 22,
+					"stack_index": 28,
 					"type": "text"
 				},
 				{
-					"buffer": 26,
+					"buffer": 30,
 					"file": "src/rules/Players.js",
 					"semi_transient": false,
 					"settings":
@@ -2185,11 +2348,11 @@
 						"translation.y": 1080.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 19,
+					"stack_index": 25,
 					"type": "text"
 				},
 				{
-					"buffer": 27,
+					"buffer": 31,
 					"file": "src/rules/Actions.js",
 					"semi_transient": false,
 					"settings":
@@ -2201,8 +2364,8 @@
 						"selection":
 						[
 							[
-								320,
-								320
+								346,
+								346
 							]
 						],
 						"settings":
@@ -2213,14 +2376,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 600.0,
+						"translation.y": 180.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 17,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
-					"buffer": 28,
+					"buffer": 32,
 					"file": "src/rules/Economy.js",
 					"semi_transient": false,
 					"settings":
@@ -2247,11 +2410,11 @@
 						"translation.y": 450.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 23,
+					"stack_index": 29,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 8,
 					"file": "src/rules/Regions.js",
 					"semi_transient": false,
 					"settings":
@@ -2278,11 +2441,11 @@
 						"translation.y": 2074.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 30,
+					"stack_index": 34,
 					"type": "text"
 				},
 				{
-					"buffer": 29,
+					"buffer": 33,
 					"file": "src/rules/entities/Region.js",
 					"semi_transient": false,
 					"settings":
@@ -2309,11 +2472,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 20,
+					"stack_index": 26,
 					"type": "text"
 				},
 				{
-					"buffer": 30,
+					"buffer": 34,
 					"file": "static/index.html",
 					"semi_transient": false,
 					"settings":
@@ -2340,24 +2503,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 39,
+					"stack_index": 43,
 					"type": "text"
 				},
 				{
-					"buffer": 31,
+					"buffer": 35,
 					"file": "src/rules/Pawns.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5926,
+						"buffer_size": 6003,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3335,
-								3335
+								1507,
+								1507
 							]
 						],
 						"settings":
@@ -2368,14 +2531,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1467.0,
+						"translation.y": 955.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 24,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
-					"buffer": 32,
+					"buffer": 36,
 					"file": "static/styles/main.css",
 					"semi_transient": false,
 					"settings":
@@ -2401,11 +2564,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 27,
+					"stack_index": 32,
 					"type": "text"
 				},
 				{
-					"buffer": 33,
+					"buffer": 37,
 					"file": "src/rules/entities/Pawn.js",
 					"semi_transient": false,
 					"settings":
@@ -2432,11 +2595,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 28,
+					"stack_index": 8,
 					"type": "text"
 				},
 				{
-					"buffer": 34,
+					"buffer": 38,
 					"file": "src/rules/dto/Pawn.js",
 					"semi_transient": false,
 					"settings":
@@ -2463,11 +2626,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 35,
+					"stack_index": 39,
 					"type": "text"
 				},
 				{
-					"buffer": 35,
+					"buffer": 39,
 					"semi_transient": false,
 					"settings":
 					{
@@ -2491,11 +2654,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 38,
+					"stack_index": 42,
 					"type": "text"
 				},
 				{
-					"buffer": 36,
+					"buffer": 40,
 					"file": "src/lib/decorators/IterableOn.js",
 					"semi_transient": false,
 					"settings":
@@ -2519,11 +2682,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 41,
+					"stack_index": 45,
 					"type": "text"
 				},
 				{
-					"buffer": 37,
+					"buffer": 41,
 					"semi_transient": false,
 					"settings":
 					{
@@ -2548,11 +2711,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 42,
+					"stack_index": 46,
 					"type": "text"
 				},
 				{
-					"buffer": 38,
+					"buffer": 42,
 					"semi_transient": false,
 					"settings":
 					{
@@ -2577,7 +2740,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 40,
+					"stack_index": 44,
 					"type": "text"
 				}
 			]
@@ -2587,7 +2750,7 @@
 			"sheets":
 			[
 				{
-					"buffer": 5,
+					"buffer": 9,
 					"file": "src/rules/GameState.js",
 					"semi_transient": false,
 					"settings":
@@ -2615,11 +2778,11 @@
 						"translation.y": 90.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 31,
+					"stack_index": 35,
 					"type": "text"
 				},
 				{
-					"buffer": 27,
+					"buffer": 31,
 					"file": "src/rules/Actions.js",
 					"semi_transient": false,
 					"settings":
@@ -2646,11 +2809,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 26,
+					"stack_index": 31,
 					"type": "text"
 				},
 				{
-					"buffer": 15,
+					"buffer": 19,
 					"file": "src/lib/ActionsProvider.js",
 					"semi_transient": false,
 					"settings":
@@ -2678,7 +2841,7 @@
 						"translation.y": 1002.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 25,
+					"stack_index": 30,
 					"type": "text"
 				},
 				{
@@ -2694,8 +2857,8 @@
 						"selection":
 						[
 							[
-								778,
-								778
+								757,
+								757
 							]
 						],
 						"settings":
@@ -2709,7 +2872,7 @@
 						"translation.y": 90.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 15,
 					"type": "text"
 				}
 			]
@@ -2775,6 +2938,18 @@
 		"selected_items":
 		[
 			[
+				"pawns",
+				"src\\rules\\Pawns.js"
+			],
+			[
+				"valuation",
+				"src\\lib\\hexgrid\\HexValuation.spec.js"
+			],
+			[
+				"ai.",
+				"src\\ai\\AI.js"
+			],
+			[
 				"debugin",
 				"src\\ui\\DebugInfo.js"
 			],
@@ -2837,14 +3012,6 @@
 			[
 				"actions",
 				"src\\rules\\Actions.js"
-			],
-			[
-				"pawns",
-				"src\\rules\\Pawns.js"
-			],
-			[
-				"ai.",
-				"src\\ai\\AI.js"
 			],
 			[
 				"render",

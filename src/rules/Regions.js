@@ -120,11 +120,10 @@ function Regions (spec) {
 
     actions.setHandler("CHANGE_REGION_CAPITAL", (action, region, newCapital, prevCapital) => {
         region.capital = newCapital;
-        if (prevCapital && newCapital) {
-            action.schedule("MOVE_PAWN", pawns.pawnAt(prevCapital), newCapital);
-        } else if (prevCapital && !newCapital) {
+        if (prevCapital && pawns.pawnAt(prevCapital)) {
             action.schedule("DESTROY_PAWN", pawns.pawnAt(prevCapital));
-        } else if (!prevCapital && newCapital) {
+        }
+        if (newCapital) {
             action.schedule("CREATE_PAWN", pawns.TOWN, newCapital);
         }
         action.resolve();
@@ -187,6 +186,13 @@ function Regions (spec) {
     function hexesRemovedFromRegion(region, hexGroup) {
         region.hexes.remove(hexGroup);
 
+        if (region.capital && hexGroup.contains(region.capital)) {
+            // the region capital was just conqured
+            regions.onCapitalConquered.dispatch(region, region.capital);
+            pickNewCapital(region);
+            region.capital = null;
+        }
+
         // check if region is still connected
         let comps = region.hexes.components();
 
@@ -207,11 +213,6 @@ function Regions (spec) {
             }
         }
 
-        if (region.capital && hexGroup.contains(region.capital)) {
-            // the region capital was just conqured
-            regions.onCapitalConquered.dispatch(region, region.capital);
-            pickNewCapital(region);
-        }
         if (region.hexes.length===0) {
             actions.schedule('REMOVE_REGION', region);
         } else {

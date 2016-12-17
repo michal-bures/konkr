@@ -5,11 +5,10 @@ function easing(str) {
     return Phaser.Easing[s[0]][s[1]];
 }
 
-//extend(base,child) ... recursively adds properties from child object to base object
-function extend(base, child, stack) {
+//extendInPlace(base,child) ... recursively adds properties from child object to base object
+function extendInPlace(base, child, stack="") {
     expect(base).toBeA('object', 'invalid base object');
     expect(child).toBeA('object', 'invalid extender');
-    stack = stack || "";
     for (var key in child) {
         if (child.hasOwnProperty(key)) {
             if (typeof base[key] === 'object') {
@@ -21,6 +20,14 @@ function extend(base, child, stack) {
             } else {
                 base[key] = child[key];
             }
+        }
+    }
+}
+
+function extend(obj, props) {
+    for(var prop in props) {
+        if(props.hasOwnProperty(prop)) {
+            obj[prop] = props[prop];
         }
     }
 }
@@ -266,4 +273,13 @@ console.debug("TEST1:",a);
 */
 
 
-export { OrderedMap, Random, isFunction, isObject, assertDefined, signedNumber,  debounce };
+export { 
+    OrderedMap,
+    Random,
+    isFunction,
+    isObject,
+    assertDefined,
+    signedNumber,
+    debounce,
+    extend
+};

@@ -17,13 +17,7 @@ function GameState(spec) {
             return spec.extend({ 
                 actions: () => spec.actions && spec.actions.getNamedProxy(moduleName),
                 debug: () => spec.debug && spec.debug.getNamedProxy(moduleName),
-                log: () => spec.log && {
-                    debug: (...args) => console.debug(`${moduleName}>`, ...args),
-                    error: (...args) => console.error(`${moduleName}>`, ...args),
-                    warn: (...args) => console.warn(`${moduleName}>`, ...args),
-                    log: console.log,
-                    info: console.info,
-                }
+                log: () => spec.log && spec.log.getLogger(moduleName)
             });
         },
         ids: spec => new IdGenerator(spec),
@@ -71,17 +65,21 @@ function GameState(spec) {
     actions.setHandler('STORE_STATE', (action, name) => {
         log.debug("Saving current game state...");
         localStorage.setItem(name, JSON.stringify(toJSON()));
-        log.info("GameState saved into localStorage["+name+"]");
+        log.info("Game saved: "+name);
         action.resolve();
     },{ undo() {} });
 
     actions.setHandler('LOAD_STATE', (action, jsonOrKey) => {
+        let data;
         if (typeof jsonOrKey === 'string') {
-            log.debug(`Loading saved game from localStorage[${jsonOrKey}]`)
-            jsonOrKey = JSON.parse(localStorage.getItem(jsonOrKey));
+            log.debug(`Loading saved game from localStorage[${jsonOrKey}]`);
+            data = JSON.parse(localStorage.getItem(jsonOrKey));
+        } else {
+            data = jsonOrKey;
         }
         log.debug('Loading game data:',jsonOrKey);
-        fromJSON(jsonOrKey);
+        fromJSON(data);
+        log.info('Game loaded:',jsonOrKey);
         // do not resolve() this action because at this point actions module
         // no longer knows about it, much less expects it to be executing
     });
@@ -103,19 +101,20 @@ function GameState(spec) {
     });
 
     actions.setHandler('START_NEW_TURN', (action) => {
+        action.schedule('STORE_STATE','konkr_autosave_turn_start');
         players.forEach(player => {
             player.regions.forEach(region => action.schedule('COLLECT_REGION_INCOME',region));
             action.schedule('START_PLAYER_TURN', player);
-        });
+    });
         action.schedule('CHECK_VICTORY_CONDITIONS');
         action.resolve();
-    });
+    },{ undo() {} });
 
     actions.setHandler('CHECK_VICTORY_CONDITIONS', (action)=>{
         // Winning?? No such thing
         action.schedule('START_NEW_TURN');
         action.resolve();
-    });
+    },{ undo() {} });
 
     function toString() {
         return `[GameState]`;

@@ -20,6 +20,11 @@ PawnType.initEnum({
         upkeep: 2,
         defense: 1,
         might: 1,
+        merge: {
+            TROOP_1: 'TROOP_2',
+            TROOP_2: 'TROOP_3',
+            TROOP_3: 'TROOP_4'
+        }
     },
     TROOP_2: {
         isTroop: ()=>true,
@@ -27,6 +32,10 @@ PawnType.initEnum({
         upkeep: 6,
         defense: 2,
         might: 2,
+        merge: {
+            TROOP_1: 'TROOP_3',
+            TROOP_2: 'TROOP_4',
+        }
     },
     TROOP_3: {
         isTroop: ()=>true,
@@ -34,6 +43,9 @@ PawnType.initEnum({
         upkeep: 18,
         defense: 3,
         might: 3,
+        merge: {
+            TROOP_1: 'TROOP_4',
+        }
     },
     TROOP_4: {
         isTroop: ()=>true,
@@ -66,6 +78,7 @@ function Pawns(spec) {
         byId(id) { return _pawns[id]; },
         pawnAt,
         select,
+        getMergeResult,
         forEach,
         toDebugString,
         toJSON,
@@ -183,6 +196,11 @@ function Pawns(spec) {
         log.debug(`${pawn} moved from ${fromHex} to ${toHex}`);
         pawns.onMoved.dispatch(pawn,fromHex,toHex);
 
+    }
+
+    function getMergeResult(pawnType1, pawnType2) {
+        if (!pawnType1.merge || !pawnType1.merge[pawnType2.name]) return null;
+        return pawns[pawnType1.merge[pawnType2.name]];
     }
 
     function forEach(fn) {

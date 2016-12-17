@@ -70,7 +70,7 @@ function Players(spec) {
             activePlayer: activePlayer && _players.indexOf(activePlayer),
             grabbedPawn: grabbedPawn && grabbedPawn.name,
             grabbedPawnRegion: grabbedPawnRegion && grabbedPawnRegion.id,
-            movedUnits
+            get movedUnits() { return movedUnits; }
         };
     }
 
@@ -86,10 +86,16 @@ function Players(spec) {
     actions.setHandler('START_PLAYER_TURN', (action, player) => {
         if (activePlayer) throw Error(`Cannot start turn for ${player}, because another players turn is in progress: ${activePlayer}`);
         activePlayer = player;
+        action.data.previousMovedUnits=movedUnits;
         movedUnits = {};
         player.play();
         action.schedule('END_PLAYER_TURN', player);
         action.resolve();
+    },{
+        undo(action) {
+            movedUnits = action.data.previousMovedUnits;
+            activePlayer = null;
+        }
     });
 
     actions.setHandler('CONQUER_HEX', (action, hex, region) => {
@@ -113,25 +119,31 @@ function Players(spec) {
     }});
 
     actions.setHandler('GRAB_UNIT', (action, pawn) => {
-        if (movedUnits[pawn.hex.id]) return action.reject(`Tried to grab ${pawn}, which has already moved this turn.`);
-        if (!pawn.pawnType.isTroop()) return action.reject(`${pawn} is not movable by player!`);
+        if (movedUnits[pawn.hex.id]) throw Error(`Tried to grab ${pawn}, which has already moved this turn.`);
+        if (!pawn.pawnType.isTroop()) throw Error(`${pawn} is not movable by player!`);
         const region = regions.regionOf(pawn.hex);
-        if (!activePlayer.controls(region)) return action.reject(`Tried to grab ${pawn}, which does not belong to ${activePlayer}`);
-        grabbedPawn = pawn.pawnType;
+        if (!activePlayer.controls(region)) throw Error(`Tried to grab ${pawn}, which does not belong to ${activePlayer}`);
+
+        action.data.previousGrabbed = grabbedPawn;
+        addUnitToGrabbed(pawn.pawnType);
         grabbedPawnRegion = region;
-        actions.schedule('DESTROY_PAWN',pawn);
+        action.schedule('DESTROY_PAWN',pawn);
         action.resolve();
+    },{ 
+        undo(action) {
+            grabbedPawn = action.data.previousGrabbed;
+        }
     });
 
     actions.setHandler('BUY_UNIT', (action, unitType, region)=> {
         const cost = economy.priceOf(unitType);
-        if (!cost) return action.reject(`Unit ${unitType} cannot be bought by a player.`);
-        if (!region) return action.reject(`No region specified, who is supposed to pay for this?!`);
-        if (cost > economy.treasuryOf(region)) return action.reject(`Region ${region} cannot afford to buy ${unitType}.`);
-        if (grabbedPawn) return action.reject(`Cannot buy unit, because player is already holding one`);
+        if (!cost) throw Error(`Unit ${unitType} cannot be bought by a player.`);
+        if (!region) throw Error(`No region specified, who is supposed to pay for this?!`);
+        if (cost > economy.treasuryOf(region)) throw Error(`Region ${region} cannot afford to buy ${unitType}.`);
+        if (grabbedPawn) throw Error(`Cannot buy unit, because player is already holding one`);
         //TODO: Auto unit merging?
         action.schedule('CHANGE_REGION_TREASURY',region, -cost);
-        grabbedPawn = unitType;
+        addUnitToGrabbed(unitType);
         grabbedPawnRegion = region;
         action.resolve();
     },{
@@ -146,7 +158,19 @@ function Players(spec) {
         if (grabbedPawn) throw Error(`${player} tried to end turn with an unplaced pawn still grabbed.`);
         activePlayer = null;
         action.resolve();
-    });
+    },{ undo(action, player) {
+        activePlayer = player;
+    } });
+
+    function addUnitToGrabbed(pawnType) {
+        if (grabbedPawn) {
+            let result = pawns.getMergeResult(grabbedPawn, pawnType);
+            if (!result) throw Error(`Illegal attempt to merge ${grabbedPawn} with ${pawnType}`);
+            grabbedPawn = result;
+        } else {
+            grabbedPawn = pawnType;
+        }
+    }
 
     function getRegionsControlledBy(player) {
         //TODO less bullshit, more actual implementation

@@ -1,5 +1,6 @@
 const VALIDATE_ARGUMENTS = true; // validate argument values of every action call? (slower but detects errors)
 
+const MAX_HISTORY_SIZE=100; // don't keep undo history for more than the specified number of actions
 
 function ActionsProvider(spec, providerName, config) {
     let {log, debug} = spec;
@@ -15,6 +16,9 @@ function ActionsProvider(spec, providerName, config) {
         toString, 
         toDebugString,
         getNamedProxy,
+        getLast,
+        getCurrent,
+        getNext,
         toJSON,
         fromJSON
     };
@@ -27,7 +31,6 @@ function ActionsProvider(spec, providerName, config) {
                       //next action on the stack is started
 
     function toJSON() {
-        if (actionRunning) log.warn(`Unsafe serialization while ${currentAction()} is executing.`);
         return {
             queue: actionQueue.slice(actionRunning?1:0).map(a=>a.toJSON()),
             at: actionPointer,            
@@ -44,6 +47,16 @@ function ActionsProvider(spec, providerName, config) {
     function currentAction() {
         if (!actionRunning) return null;
         return actionQueue[actionPointer];
+    }
+
+    function getNext() {
+        return actionQueue[actionPointer+1] || null;
+    }
+    function getCurrent() {
+        return actionQueue[actionPointer] || null;
+    }
+    function getLast() {
+        return actionQueue[actionPointer-1] || null;
     }
 
     let handlers = {};
@@ -65,7 +78,7 @@ function ActionsProvider(spec, providerName, config) {
         --actionPointer;
     }
 
-    function attachGuard(guardFunc) {
+    function attachGuard(guardFunc, title) {
         guards.push(guardFunc);
         return {
             detach() {
@@ -86,12 +99,13 @@ function ActionsProvider(spec, providerName, config) {
             reject,
             undo,
             toJSON,
+            get args() { return args; },
             get name() { return name; },
             toString,
             descendants: 0,
             data: {}, // auxiliary data that can be assigned by handlers, useful for storing information needed for undo
             issuer:null,            
-            canBeUndone() { return !!handlers[name].undo; }
+            canBeUndone() { return !!handlers[name].undo; },
         });
 
         if (args.length != actionDefs[name].length) {
@@ -126,7 +140,7 @@ function ActionsProvider(spec, providerName, config) {
             if (processing) throw Error(`Attempt to restart action that is already running.`);
             processing = true;
             if (!handlers[name]) throw Error(`Missign handler for action ${name}`);
-            log.debug(`Now running ${name}`);
+            log.debug(`Now running ${self}`);
             handlers[name].handle(self,...args);
         }
 
@@ -154,7 +168,7 @@ function ActionsProvider(spec, providerName, config) {
         }
 
         function toJSON() {
-            log.debug(`converting ${self} to JSON`);
+            log.trace(`converting ${self} to JSON`);
             return {
                 name,
                 descendants: self.descendants,
@@ -204,7 +218,6 @@ function ActionsProvider(spec, providerName, config) {
                 actionQueue[actionPointer-1].descendants++;
             }
         } else {
-            log.debug(`Putting ${newAction} at ${actionPointer + currentAction().descendants+1}`);
             actionQueue.splice(actionPointer+currentAction().descendants+1,0,newAction);
             currentAction().descendants++;
         }
@@ -221,8 +234,14 @@ function ActionsProvider(spec, providerName, config) {
     function executeNext(lastAction) {
         if (actionRunning) throw Error(`executeNext() called while another action is still active`);
         guards.reduce((previousPromise, guard) => previousPromise.then(() => {
+            log.trace("Waiting on guard...");
             return guard(lastAction, actionQueue[actionPointer]);
         }), Promise.resolve()).then(() => {
+            if (actionPointer>MAX_HISTORY_SIZE+2) {
+                actionQueue.shift();
+                --actionPointer;
+            }
+            log.trace("All guards passed");
             if (actionPointer === actionQueue.length) return;
             actionRunning = true;
             actionQueue[actionPointer].start();
@@ -274,7 +293,11 @@ function ActionsProvider(spec, providerName, config) {
 
     function toDebugString() {
 
-        let ptr = 0;
+        let ptr = Math.max(0, actionPointer-3);
+        let treeAnnotation="";
+        if (ptr!==0) {
+            treeAnnotation=`  ✓ <i>(${ptr} more undoable actions)</i>\n`;
+        }
 
         function buildTree(prefix="", rootLevel=true) {
             if (ptr >= actionQueue.length) return "";
@@ -295,9 +318,9 @@ function ActionsProvider(spec, providerName, config) {
             } else if (i > actionPointer) {
                 return '⌛';
             } else if (actionRunning) {
-                return '▶▶';
+                return '⏵';
             } else {
-                return '⏸▶';
+                return '⏸';
             }
         }
 
@@ -306,9 +329,7 @@ function ActionsProvider(spec, providerName, config) {
                   .map(key => `* ${key} => ${handlers[key] && handlers[key].description}`).sort().join('\n');
 
         return `
-<b>${actionRunning?'Runnnig':'Next up'}:</b> ${actionQueue[actionPointer]}
-Queue:
-${buildTree()}
+${treeAnnotation}${buildTree()}
 
 Registered Handlers:
 ${tActionTypes}`;

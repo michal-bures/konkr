@@ -1,35 +1,34 @@
-class Pawn {
-    constructor(id, pawnType, hex) {
-        this._id = id;
-        this.pawnType = pawnType;
-        this._hex = hex;
-    }
+import { extend } from 'lib/util';
 
-    toJSON() {
+function Pawn(id, pawnType, hex) {
+
+    let currentHex = hex;
+
+    function toJSON() {
         return {
-            id: this._id,
-            type: this.pawnType.name,
-            hex: this.hex && this.hex.id,
+            id,
+            type: pawnType.name,
+            hex: hex && hex.id,
         };
     }
 
-    static fromJSON({grid, pawns}, {id, type, hex}) { return new Pawn(id, pawns[type], grid.getHexById(hex)); }
+    let self = Object.create(pawnType);
+    extend(self,{
+        get hex() { return currentHex; },
+        set hex(val) { currentHex = val; },
+        get id() { return id; },
+        toString,
+        toJSON,
+        pawnType: pawnType
+    });
+    self.Constructor = Pawn;
 
-    set hex(hex) {
-        this._hex = hex;
-    }
+    return self;
 
-    get hex() {
-        return this._hex;
-    }
-
-    get id() {
-        return this._id;
-    }
-
-    toString() {
-        return `[${this.pawnType} #${this.id} at ${this._hex}]`;
+    function toString() {
+        return `[${pawnType} #${id} at ${hex}]`;
     }        
 }
+Pawn.fromJSON = ({grid, pawns}, {id, type, hex}) => { return new Pawn(id, pawns[type], grid.getHexById(hex)); };
 
 export default Pawn;
