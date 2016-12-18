@@ -12,6 +12,14 @@ import AI from 'ai/AI';
 
 function GameState(spec) {
     let {log} = spec;
+
+    const self = Object.freeze({
+        get spec() { return gameStateSpec; },
+        onReset: new Phaser.Signal(),
+        toString,
+        toDebugString,
+        toJSON
+    });
     
     let gameStateSpec = spec.extend({
         useName: spec => (moduleName) => {
@@ -31,17 +39,10 @@ function GameState(spec) {
         warfare: spec => new Warfare(spec.useName('warfare')),
         landGen: spec => new LandGenerator(spec.useName('landGen')),
         players: spec => new Players(spec.useName('players')),
-        ai: spec => new AI(spec.useName('ai'))
+        ai: spec => new AI(spec.useName('ai')),
+        gameState: () => self
     });
     let {actions, players, regions} = gameStateSpec;
-
-    const self = Object.freeze({
-        get spec() { return gameStateSpec; },
-        onReset: new Phaser.Signal(),
-        toString,
-        toDebugString,
-        toJSON
-    });
 
     // order is important - modules that rely on objects from other modules must go last
     // for example pawns will want instances of hexes, so they need grid to be loaded

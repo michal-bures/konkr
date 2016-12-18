@@ -142,7 +142,7 @@ class HexGroup {
     }
 
     toString() {
-        return `[HexGroup (${this.length}): ${this.members.map(hex=>`#${hex.id}`).filter(a=>a!==undefined).join(",")}]`;
+        return `[HexGroup (${this.length}): ${this.members.filter(x=>x).map(hex=>hex.toString()).join(",")}]`;
     }
 }
 

@@ -1,13 +1,8 @@
-import * as Renderer from 'ui/Renderer';
-import HexSelectionProxy from 'ui/HexSelectionProxy';
-import Scrolling from 'ui/Scrolling';
-import RegionPanel from 'ui/RegionPanel';
-import GridOverlays from 'ui/GridOverlays';
-import UI from 'lib/controls/UI';
-import Messages from 'ui/Messages';
 
 import UIManager from 'ui/UIManager';
 import GameState from 'rules/GameState';
+
+import UI from 'lib/controls/ui';
 
 
 const DEFAULT_GAME_SETTTINGS = {
@@ -50,41 +45,19 @@ function Play(game) {
         };
         spec.log.setLevel(spec.log.getLevel()); // apply plugin
 
-
+        // Main injector for game mechanic modules
         gameState = new GameState(spec);
         gameSpec = gameState.spec;
 
-        gameUi = gameSpec.extend({
-            gameState: () => gameState,
-            ui: spec => new UIManager(spec),
-            landSprites: spec => new Renderer.LandSprites(spec),
-            regionBorders: spec => new Renderer.RegionBorders(spec),
-            selRegionHighlight: spec => new Renderer.SelectedRegionHighlight(spec),
-            pawnSprites: spec => new Renderer.Pawns(spec),
-            hexSelectionProxy: spec => new HexSelectionProxy(spec),
-            scrolling: spec => new Scrolling(spec),
-            uiRegionPanel: spec => new RegionPanel(spec),
-            gridOverlays: spec => new GridOverlays(spec),
-            messages: spec => new Messages(spec),
-        });
+        // Main injector for UI and, rendering and animation modules
+        gameUi = (new UIManager(gameSpec)).uiSpec;
+
         log = spec.log;
         window.c = gameUi;
         window.gameState = gameState;
     }
 
     function create() {
-        game.world.setBounds(0, 0, 3000, 3000);
-
-        //display layers z-order
-        game.world.add(gameUi.landSprites.group);          
-        game.world.add(gameUi.regionBorders.group);  
-        game.world.add(gameUi.selRegionHighlight.group);
-        game.world.add(gameUi.pawnSprites.group);          
-        game.world.add(gameUi.gridOverlays.group);  
-        game.world.add(gameUi.hexSelectionProxy.group);
-        game.world.add(gameUi.messages.group);  
-        game.world.add(gameUi.uiRegionPanel.group);  
-        game.stage.backgroundColor='#d5dfef';
 
         game.canvas.oncontextmenu = function (e) { 
             e.preventDefault(); 

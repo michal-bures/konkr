@@ -26,7 +26,7 @@ function Pawn(id, pawnType, hex) {
     return self;
 
     function toString() {
-        return `[${pawnType} #${id} at ${hex}]`;
+        return `[${pawnType.name} ♙${id} at ${hex}]`;
     }        
 }
 Pawn.fromJSON = ({grid, pawns}, {id, type, hex}) => { return new Pawn(id, pawns[type], grid.getHexById(hex)); };

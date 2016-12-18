@@ -122,87 +122,6 @@ function LandSprites(spec) {
     return landSprites;
 }
 
-
-
-const PAWN_OFFSET_TOP = -13;
-
-function Pawns ({game, log, pawns, gameState}) {
-    let pawnToSprite = {},
-        group = game.add.group();
-
-    let self = Object.freeze({ 
-        group,
-    });
-
-    class PawnSprite extends Phaser.Sprite {
-        constructor(pawn) {
-            const [x,y] = convertToWorldCoordinates(pawn.hex.position.x, pawn.hex.position.y);
-            super(game, x, y+Math.floor(PAWN_OFFSET_TOP/2), 'pawn');
-            this.anchor.set(0.5);
-            this.frame=pawn.pawnType.ordinal;
-            this.pawnId=pawn.id;
-            this.game=game;
-        }
-
-        updatePosition(animate=true) {
-            const pos = pawns.byId(this.pawnId).hex.position;
-            const [x,y] = convertToWorldCoordinates(pos.x, pos.y);
-            if (animate) {
-                this.game.add.tween(this).to( { x: x, y: Math.floor(y+PAWN_OFFSET_TOP/2) }, 500, "Linear", true);  
-            } else {
-                this.x = x;
-                this.y = y+Math.floor(PAWN_OFFSET_TOP/2);
-            }
-        }
-
-        refresh() {
-            this.frame=pawns.byId(this.pawnId).pawnType.ordinal;
-            this.updatePosition(false);
-        }
-    }
-
-    pawns.onCreated.add(ensureSpriteExists);
-
-    pawns.onDestroyed.add(pawn => {
-        const sprite = pawnToSprite[pawn.id];
-        if (!sprite) return;
-        delete pawnToSprite[pawn.id];
-        sprite.destroy();
-    });
-
-    pawns.onMoved.add(pawn => {
-        const sprite = pawnToSprite[pawn.id];
-        if (!sprite) throw Error(`${pawn} should have had a sprite assigned by now, but does not!`);
-        sprite.updatePosition();
-    });
-
-    gameState.onReset.add(()=>{
-        destroyOrphanedSprites();
-        pawns.forEach(ensureSpriteExists);
-    });
-
-
-    function ensureSpriteExists(pawn) {
-        if (pawnToSprite[pawn.id]) return;
-        var sprite = new PawnSprite(pawn);
-        group.add(sprite);
-        pawnToSprite[pawn.id] = sprite;
-    }
-
-    function destroyOrphanedSprites() {
-        for (const key in pawnToSprite) {
-            if (!pawns.byId(key)) {
-                pawnToSprite[key].destroy();
-                delete pawnToSprite[key];
-            } else {
-                pawnToSprite[key].refresh();
-            }
-        }        
-    }
-
-    return self;
-}
-
 class RegionBorders {
     constructor({game, regions, gameState}) {
         this.regions = regions;
@@ -278,7 +197,6 @@ export {
     drawOnHex,
     drawInnerHex,
     LandSprites, 
-    Pawns,
     RegionBorders,
     SelectedRegionHighlight,
     HEX_WIDTH,

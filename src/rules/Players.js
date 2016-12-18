@@ -52,6 +52,9 @@ function Players(spec) {
     let self = {
         byId(id) { return _players[id]; },
         ownerOf,
+        onPawnGrabbed: new Phaser.Signal(/* pawn */),
+        onPawnDropped: new Phaser.Signal(/* pawn */),
+        onConqueringHex: new Phaser.Signal(/* hex */),
         toDebugString,
         toJSON,
         fromJSON
@@ -138,6 +141,7 @@ function Players(spec) {
         action.schedule('CHANGE_HEXES_REGION', new HexGroup(hex), region);
         action.schedule('DROP_UNIT', hex);
         action.resolve();
+        self.onConqueringHex.dispatch(hex);
     }, { undo(action, hex) {
         delete movedUnits[hex.id];
     }});
@@ -148,6 +152,7 @@ function Players(spec) {
         const region = regions.regionOf(pawn.hex);
         if (!activePlayer.controls(region)) throw Error(`Tried to grab ${pawn}, which does not belong to ${activePlayer}`);
 
+        self.onPawnGrabbed.dispatch(pawn);
         action.data.previousGrabbed = grabbedPawn;
         addUnitToGrabbed(pawn.pawnType);
         grabbedPawnRegion = region;

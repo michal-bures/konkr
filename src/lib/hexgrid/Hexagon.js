@@ -11,7 +11,7 @@ class Hexagon {
     }
 
     toString() {
-        return `[Hex #${this.id} (${this.position.r},${this.position.c})]`;
+        return `⬡${this.id}`;
     }
 
 
