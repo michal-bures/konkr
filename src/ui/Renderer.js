@@ -192,11 +192,9 @@ function Pawns ({game, log, pawns, gameState}) {
     function destroyOrphanedSprites() {
         for (const key in pawnToSprite) {
             if (!pawns.byId(key)) {
-                log.debug("DESTROY", key);
                 pawnToSprite[key].destroy();
                 delete pawnToSprite[key];
             } else {
-                log.debug("REFRESH", key);
                 pawnToSprite[key].refresh();
             }
         }        

@@ -6,9 +6,10 @@ function Players(spec) {
     let { actions, economy, grid, pawns, regions, ids, log } = spec;
 
     class Player {
-        constructor(id, name) {
+        constructor(id, name, type) {
             this.id = id;
             this.name = name;
+            this.type = type;
         }
 
         get regions() {
@@ -60,7 +61,11 @@ function Players(spec) {
 
     function toJSON() {
         return {
-            players: _players.filter(x=>x).map(player=>({ id:player.id, type: player.type })),
+            players: _players.filter(x=>x).map(player=>({
+                id:player.id,
+                name: player.name,
+                type: player.type
+            })),
             activePlayer: activePlayer && _players.indexOf(activePlayer),
             grabbedPawn: grabbedPawn && grabbedPawn.name,
             grabbedPawnRegion: grabbedPawnRegion && grabbedPawnRegion.id,
@@ -70,7 +75,7 @@ function Players(spec) {
 
     function fromJSON(src) {
         _players.length = 0;
-        src.players.forEach(({type,id})=> _players[id]=new createPlayer(type, id));
+        src.players.forEach(({type,name,id})=> _players[id]=new createPlayer(type, name, id));
         activePlayer = src.activePlayer && self.byId(src.activePlayer);
         grabbedPawn = src.grabbedPawn && pawns[src.grabbedPawn];
         grabbedPawnRegion = src.grabbedPawnRegion && regions.byId(src.grabbedPawnRegion);
@@ -81,7 +86,7 @@ function Players(spec) {
         let p;
         switch (type) {
             case 'AI':
-                p = new Player(id,name);
+                p = new Player(id,name,type);
                 p.play = ()=> { actions.schedule("AI_PLAYER_BEGIN", p); };
                 break;
             default:
