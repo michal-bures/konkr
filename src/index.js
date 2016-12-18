@@ -30,8 +30,8 @@ var spec = new Injector(undefined,{
 
 
 //default loglevel
-log.setDefaultLevel(log.levels.DEBUG);
-log.setLevel(log.levels.DEBUG);
+log.setDefaultLevel(log.levels.WARN);
+log.setLevel(log.levels.WARN);
 
 //========================================================
 // GAME STATE: Init

@@ -5,8 +5,8 @@ function Adhoc(valuationFunc) {
         get,
     });
 
-    function get(hex) {
-        return valuationFunc(hex);
+    function get(hex, ...args) {
+        return valuationFunc(hex, ...args);
     }
 }
 

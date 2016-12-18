@@ -22,9 +22,13 @@ function Actions(spec) {
         'CONQUER_HEX': ["hex", "region"], // (hex, region)
         'BUY_UNIT': ["pawnType", "region"], // (unitType, region)
         'GRAB_UNIT': ["pawn"], // (pawn)
+        'DROP_UNIT': ["hex"], // (hex)
 
         // Handled by AI
-        'AI_MANAGE_REGION': ["player", "region"], // (player, region)
+        'AI_PLAYER_BEGIN': ["player"],
+        'AI_MANAGE_REGION': ["player", "region"],
+        'AI_TASK_NEXT_UNIT': ["player", "region"],
+        'AI_FREE_UP_HEX': ["hex"],
 
         // Handled by HexGrid
         'RESET_HEXGRID': ['plain','plain'], // (width, height)

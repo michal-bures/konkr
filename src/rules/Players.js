@@ -3,7 +3,7 @@ import HexGroup from 'lib/hexgrid/HexGroup';
 
 function Players(spec) {
 
-    let { actions, economy, grid, pawns, regions, ids } = spec;
+    let { actions, economy, grid, pawns, regions, ids, log } = spec;
 
     class Player {
         constructor(id, name) {
@@ -23,6 +23,15 @@ function Players(spec) {
             return this.controls(regions.regionOf(pawn.hex)) && !movedUnits[pawn.hex.id];
         }
 
+        getAvailableUnits(region) {
+            let ret = pawns.select({ 
+                hexes: region.hexes, 
+                custom: pawn=> pawn.isTroop() && this.canMoveUnit(pawn)
+            });
+            log.debug("available units: ", ret);
+            return ret;
+        }
+
         play() { throw Error(`Not implemented`); }
 
         toString() {
@@ -40,8 +49,7 @@ function Players(spec) {
         }
 
         play() {
-            regions.forEach(region => region.hasCapital() && actions.schedule('AI_MANAGE_REGION', this, region));
-            //TODO: What if two owned regions get merged while playing?
+            actions.schedule("AI_PLAYER_BEGIN", this);
         }
     }
 
@@ -70,7 +78,7 @@ function Players(spec) {
             activePlayer: activePlayer && _players.indexOf(activePlayer),
             grabbedPawn: grabbedPawn && grabbedPawn.name,
             grabbedPawnRegion: grabbedPawnRegion && grabbedPawnRegion.id,
-            get movedUnits() { return movedUnits; }
+            movedUnits: movedUnits
         };
     }
 
@@ -107,15 +115,10 @@ function Players(spec) {
             action.schedule('DESTROY_PAWN', pawns.pawnAt(hex));
         }
         action.schedule('CHANGE_HEXES_REGION', new HexGroup(hex), region);
-        action.schedule('CREATE_PAWN',grabbedPawn, hex);
-        grabbedPawn = null;
-        grabbedPawnRegion = null;
-        action.data.grabbedPawn = grabbedPawn;
+        action.schedule('DROP_UNIT', hex);
         action.resolve();
     }, { undo(action, hex, region) {
-        movedUnits[hex.id] = false;
-        grabbedPawn = action.data.grabbedPawn;
-        grabbedPawnRegion = region;
+        delete movedUnits[hex.id];
     }});
 
     actions.setHandler('GRAB_UNIT', (action, pawn) => {
@@ -134,6 +137,20 @@ function Players(spec) {
             grabbedPawn = action.data.previousGrabbed;
         }
     });
+
+    actions.setHandler('DROP_UNIT', (action, hex) => {
+        if (regions.regionOf(hex) != grabbedPawnRegion) throw Error(`Tried to drop pawn into a different region then it originates from.`);
+        if (pawns.pawnAt(hex)) throw Error(`Cannot drop pawn on ${hex} - already occupied by ${pawns.pawnAt(hex)} `);
+        action.schedule('CREATE_PAWN',grabbedPawn, hex);
+        action.data.grabbedPawn = grabbedPawn;
+        action.data.grabbedPawnRegion = grabbedPawnRegion;
+        grabbedPawn = null;
+        grabbedPawnRegion = null;
+        action.resolve();
+    }, { undo(action) {
+        grabbedPawn = action.data.grabbedPawn;
+        grabbedPawnRegion = action.data.grabbedPawnRegion;
+    }});
 
     actions.setHandler('BUY_UNIT', (action, unitType, region)=> {
         const cost = economy.priceOf(unitType);
@@ -161,6 +178,12 @@ function Players(spec) {
     },{ undo(action, player) {
         activePlayer = player;
     } });
+
+    // when the current region was merged into another one, make sure to update
+    // grabbedPawnRegion with the new region identity
+    regions.onMerged.add((srcRegion, rcvRegion)=>{
+        if (grabbedPawnRegion === srcRegion) grabbedPawnRegion = rcvRegion;
+    });
 
     function addUnitToGrabbed(pawnType) {
         if (grabbedPawn) {

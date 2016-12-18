@@ -268,7 +268,8 @@ function SelectedRegionHighlight({game,ui}) {
             drawHexBorders(graphics, hex, i => !hex.neighbour(i) || !region.hexes.contains(hex.neighbour(i)));
         });
         const {x,y} = graphics.getBounds();
-        sprite = game.add.sprite(x,y, graphics.generateTexture());
+        sprite = game.make.sprite(x,y, graphics.generateTexture());
+        group.add(sprite);
         graphics.destroy();
     }
 

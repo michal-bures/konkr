@@ -1,5 +1,5 @@
 import { assertDefined, OrderedMap } from 'lib/util';
-import { drawInnerHex } from 'ui/Renderer';
+import { drawInnerHex, convertToWorldCoordinates } from 'ui/Renderer';
 
 function GridOverlays({game, grid, log, debug, regions, gameState}) {
     
@@ -98,8 +98,16 @@ function GridOverlays({game, grid, log, debug, regions, gameState}) {
             graphics.drawRect(0,0,1,1);
             graphics.fillAlpha=0.7;
 
+            let textSprites = game.make.group();
+            let style={ font: 'Courier New', fontSize:'8pt', fill: 'white'};
+
             grid.forEach(hex=>{
-                drawInnerHex(graphics,hex, this.valuation.get(hex) || 0);
+                let val = this.valuation.get(hex);
+                if (!val) return;
+                const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
+                let txt = game.make.text(x,y+10,val, style);
+                txt.anchor.set(0.5,0.5);
+                textSprites.add(txt);
             });
 
             if (this.sprite) {
@@ -108,7 +116,7 @@ function GridOverlays({game, grid, log, debug, regions, gameState}) {
                 this.sprite = game.make.sprite(0, 0, graphics.generateTexture());
             }
             group.removeChildren();
-            group.add(this.sprite);
+            group.add(textSprites);
             graphics.destroy();
         }
     }

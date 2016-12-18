@@ -19,11 +19,7 @@ class HexGroup {
     }
 
     _findNewPivot() {
-        if (!this.length) return null;
-        for (const key in this.members) {
-            this._pivot = this.members[key];
-            return;
-        }
+        this._pivot = this.find(()=>true);
     }
 
     get pivot() {
@@ -108,6 +104,17 @@ class HexGroup {
 
     forEach(fn) {
         return this.members.forEach(fn);
+    }
+
+    map(fn) {
+        return this.members.filter(x=>x).map(fn);
+    }
+
+    find(fn) {
+        if (!this.length) return undefined;
+        for (const key in this.members) {
+            if (fn(this.members[key])) return this.members[key];
+        }
     }
 
     sort(fn) {

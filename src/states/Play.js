@@ -11,8 +11,8 @@ import GameState from 'rules/GameState';
 
 
 const DEFAULT_GAME_SETTTINGS = {
-    worldWidth: 10,
-    worldHeight: 10,
+    worldWidth: 60,
+    worldHeight: 60,
     numFactions: 4,   
 };
 
@@ -79,8 +79,8 @@ function Play(game) {
         game.world.add(gameUi.landSprites.group);          
         game.world.add(gameUi.regionBorders.group);  
         game.world.add(gameUi.selRegionHighlight.group);
-        game.world.add(gameUi.gridOverlays.group);  
         game.world.add(gameUi.pawnSprites.group);          
+        game.world.add(gameUi.gridOverlays.group);  
         game.world.add(gameUi.hexSelectionProxy.group);
         game.world.add(gameUi.messages.group);  
         game.world.add(gameUi.uiRegionPanel.group);  
@@ -103,7 +103,6 @@ function Play(game) {
 
         // DEBUG TOOLS SETUP
 
-        let nextStateCallbacks = [];
         let breakAfterEveryAction = true;
         let debugBreakCallback = null;
 
@@ -112,6 +111,8 @@ function Play(game) {
             switch (nextAction && nextAction.name) {
                 case 'STORE_STATE':
                     return (nextAction.args[0] === 'konkr_autosave_turn_start');
+                case 'START_PLAYER_TURN':
+                    return true;
                 default:
                     return false;
             }            
@@ -133,7 +134,11 @@ function Play(game) {
                 if (!breakAfterEveryAction) log.info('❚❚ Halted before ' + nextAction.name);
                 debugBreakCallback = resolve;
             } else {
-                setTimeout(resolve, 0);
+                if (prevAction && (prevAction.name==='END_PLAYER_TURN')) {
+                    setTimeout(resolve, 0);
+                } else {
+                    resolve();
+                }
             }
         }));
 
@@ -145,9 +150,9 @@ function Play(game) {
 
         nextTurnButton.addToGroup(game.world);
         nextTurnButton.onInputUp.add(() => {
-            if (nextStateCallbacks.length) {
+            /*if (nextStateCallbacks.length) {
                 nextStateCallbacks.pop()();
-            }
+            }*/
         });
 
         function setCommandHotkey(keyName,commandName) {
@@ -159,19 +164,21 @@ function Play(game) {
         }
 
         // Keyboard shortcuts
-        setCommandHotkey('BACKSPACE','Undo');
-        setCommandHotkey('N','⏯ Step');
-        setCommandHotkey('SPACEBAR','⏵ Play');
+        setCommandHotkey('BACKSPACE','actions.undo');
+        setCommandHotkey('N','actions.step');
+        setCommandHotkey('SPACEBAR','actions.play');
         setCommandHotkey('F1','gridOverlays.toggle');
+        setCommandHotkey('F8','gameState.storeSnapshot');
+        setCommandHotkey('F10','gameState.loadSnapshot');
         setCommandHotkey('O','gridOverlays.next');
-        setCommandHotkey('R','gameState.Reload turn');
+        setCommandHotkey('R','gameState.restartTurn');
 
         game.debug.reset();
         // DEBUG
 
         gameUi.debug.attachOverlayRenderer(gameUi.gridOverlays);
 
-        gameUi.debug.addCommand(null,'⏵ Play', ()=> {
+        gameUi.debug.addCommand('actions','play', ()=> {
             breakAfterEveryAction = false;
             if (debugBreakCallback) {
                 debugBreakCallback();
@@ -180,7 +187,7 @@ function Play(game) {
             log.info("⏵ Actions queue resumed");
         });
 
-        gameUi.debug.addCommand(null,'⏯ Step', ()=> {
+        gameUi.debug.addCommand('actions','step', ()=> {
             if (!breakAfterEveryAction) {
                 breakAfterEveryAction = true;
             }
@@ -191,35 +198,44 @@ function Play(game) {
             }
         });
 
-        gameUi.debug.addCommand(null,'Undo', ()=> {
+        gameUi.debug.addCommand('actions','undo', ()=> {
             if (!gameSpec.actions.getLast()) return;
             gameUi.messages.push('↶ '+gameSpec.actions.getLast().name);
             gameSpec.actions.undoLastAction();
         });
 
-        gameUi.debug.addCommand('gameState','Restart', ()=> {
+        gameUi.debug.addCommand('gameState','restart', ()=> {
             gameSpec.actions.abortAll();
             gameSpec.actions.schedule('RESTART_GAME');
         });
 
-        gameUi.debug.addCommand('gameState','New map', ()=> {
+        gameUi.debug.addCommand('gameState','newMap', ()=> {
             gameSpec.actions.abortAll();
             gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_prestart');
         });
 
-        gameUi.debug.addCommand('gameState','Reload turn', ()=> {
+        gameUi.debug.addCommand('gameState','restartTurn', ()=> {
             gameSpec.actions.abortAll();
             gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_turn_start');
         });
 
 
-        gameUi.debug.addCommand('gameState','Store snapshot', ()=> {
+        gameUi.debug.addCommand('gameState','storeSnapshot', ()=> {
             gameSpec.actions.schedule("STORE_STATE", "konkr_devsnapshot");
+            if (debugBreakCallback) {
+                debugBreakCallback();
+                debugBreakCallback = null;
+                breakAfterEveryAction = true;
+            }
         });
 
-        gameUi.debug.addCommand('gameState','Load snapshot', ()=> {
+        gameUi.debug.addCommand('gameState','loadSnapshot', ()=> {
             gameSpec.actions.abortAll();
-            gameSpec.actions.schedule("LOAD_STATE", JSON.parse(localStorage.getItem("konkr_devsnapshot")));
+            gameSpec.actions.schedule("LOAD_STATE", "konkr_devsnapshot");
+            if (debugBreakCallback) {
+                debugBreakCallback();
+                debugBreakCallback = null;
+            }
         });
 
         setupDebugDiv();

@@ -27,6 +27,7 @@ function Regions (spec) {
         onHexesChangedOwner: new Phaser.Signal(/* hexGroup */),
         onChanged: new Phaser.Signal(/* region */),
         onDestroyed: new Phaser.Signal(/* region */),
+        onMerged: new Phaser.Signal(/* srcRegion, rcvRegion */),
         toDebugString,
         toJSON,
         fromJSON
@@ -112,8 +113,10 @@ function Regions (spec) {
     actions.setHandler('MERGE_REGIONS',(action, region1, region2)=>{
         if (region1.hexes.length>region2.hexes.length) {
             action.schedule('CHANGE_HEXES_REGION', region2.hexes.clone(), region1);
+            regions.onMerged.dispatch(region2, region1);
         } else {
             action.schedule('CHANGE_HEXES_REGION', region1.hexes.clone(), region2);
+            regions.onMerged.dispatch(region1, region2);
         }        
         action.resolve();
     }, { undo() {} });
@@ -231,7 +234,7 @@ function Regions (spec) {
     function pickNewCapital(region) {
         const availableHexes = region.hexes.filter(hex=>!pawns.pawnAt(hex));
         const prevCapital = region.capital;
-        if (availableHexes.length === 0) {
+        if (availableHexes.length === 0 || region.hexes.length < MIN_SIZE_FOR_CAPITAL) {
             //TODO: clear some hex to make space for the new capital
             if (prevCapital) regions.onLostCapital.dispatch(region, prevCapital);
             actions.schedule('CHANGE_REGION_CAPITAL', region, null, prevCapital);

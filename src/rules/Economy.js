@@ -4,6 +4,7 @@ function Economy(spec) {
     let {log, pawns, actions, regions} = spec;
 
     let regionTreasury = new WeakMap();
+    let regionCapital = new WeakMap();
 
     const self = Object.freeze({
         priceOf,
@@ -69,6 +70,7 @@ function Economy(spec) {
         action.resolve();
     }, { undo() {} });    
 
+
     /// ACTION TRIGGERS
 
     regions.onLostCapital.add(region=>{
@@ -127,6 +129,13 @@ function Economy(spec) {
         self.onRegionTreasuryChanged.dispatch(region, value, oldValue);
     }
 
+    function capitalOf(region) {
+        return regionCapital.get(region);
+    }
+
+    function regionQualifiesForCapital(region) {
+        return region.hexes.length > 2;
+    }
 
     return self;
 }

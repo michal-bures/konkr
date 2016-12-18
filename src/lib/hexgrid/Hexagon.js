@@ -32,6 +32,35 @@ class Hexagon {
         return res;
     }
 
+    floodFind(searchFunc, floodCondition = ()=>true) {
+        let pending = new HexGroup([this]);
+        let visited = new HexGroup();
+        let nextPending;
+        const processHex = thisHex => {
+                visited.add(thisHex);
+                if (searchFunc(thisHex)) {
+                    return thisHex;
+                } else {
+                    nextPending.add(thisHex
+                        .neighbours()
+                        .filter((adjHex)=>filterCondition(adjHex,thisHex)));
+                    return null;
+                }
+        };
+        
+        const filterCondition = (thisHex,prevHex) =>
+            !visited.contains(thisHex) &&
+            floodCondition(thisHex,prevHex);
+
+        while (pending.length > 0) {
+            //log.debug("Pending:"+ pending.toString());
+            nextPending = new HexGroup();
+            let res = pending.find(processHex);
+            if (res) return res;
+            pending = nextPending;
+        }
+    }    
+
     forEach(fn) {
         fn(this);
     }

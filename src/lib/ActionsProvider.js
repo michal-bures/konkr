@@ -31,9 +31,11 @@ function ActionsProvider(spec, providerName, config) {
                       //next action on the stack is started
 
     function toJSON() {
+        // note: cannot store undo history, because some actions in it could refer to objects that will
+        //       no longer exist after load
         return {
-            queue: actionQueue.slice(actionRunning?1:0).map(a=>a.toJSON()),
-            at: actionPointer,            
+            queue: actionQueue.slice(actionRunning?actionPointer+1:actionPointer).map(a=>a.toJSON()),
+            at: 0,            
         };
     }
 
@@ -105,7 +107,7 @@ function ActionsProvider(spec, providerName, config) {
             descendants: 0,
             data: {}, // auxiliary data that can be assigned by handlers, useful for storing information needed for undo
             issuer:null,            
-            canBeUndone() { return !!handlers[name].undo; },
+            canBeUndone() { return !!handlers[name] && handlers[name].undo; },
         });
 
         if (args.length != actionDefs[name].length) {

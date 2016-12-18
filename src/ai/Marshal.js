@@ -31,9 +31,11 @@ function Marshal({pawns,economy,log},pawnList) {
         if (targetMight <= 1) targetMight = 1;
         if (targetMight > MAX_UNIT_MIGHT) return null;
         //1. check if we already have a troop fit for the job
-        if (pawnsByMight[targetMight].length) {
-            totalMight-=targetMight;
-            return { use: [pawnsByMight[targetMight].pop()], result: pawnTypeByMight[targetMight] };
+        for (let might = targetMight; might <= MAX_UNIT_MIGHT; ++might ) {
+            if (pawnsByMight[might].length) {
+                totalMight-=might;
+                return { use: [pawnsByMight[might].pop()], result: pawnTypeByMight[might] };
+            }
         }
         //2. if not, try to merge units
         let merge = findMerge(targetMight);
