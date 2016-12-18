@@ -3,6 +3,7 @@ function IdGenerator(spec) {
 
     return Object.freeze({
         next,
+        reset,
         toJSON() { return nextVal; },
         fromJSON(obj) { nextVal = obj; }
     });
@@ -11,6 +12,11 @@ function IdGenerator(spec) {
         if (!nextVal[key]) nextVal[key] = 1;
         return nextVal[key]++;
     }
+
+    function reset(key) {
+        nextVal[key] = 1;
+    }
+
 }
 
 export default IdGenerator;

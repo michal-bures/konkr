@@ -112,7 +112,7 @@ function Play(game) {
                 case 'STORE_STATE':
                     return (nextAction.args[0] === 'konkr_autosave_turn_start');
                 case 'START_PLAYER_TURN':
-                    return true;
+                    return (nextAction.args[0].id === 1);
                 default:
                     return false;
             }            

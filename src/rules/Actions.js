@@ -19,6 +19,7 @@ function Actions(spec) {
         'RESTART_GAME': [],
 
         // Handled by Players
+        'SETUP_PLAYERS': ['plain','plain'], // (numFactions, playerFaction)
         'START_PLAYER_TURN': ["player"], // (player)
         'END_PLAYER_TURN': ["player"], // (player)
         'CONQUER_HEX': ["hex", "region"], // (hex, region)

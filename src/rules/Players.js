@@ -40,29 +40,12 @@ function Players(spec) {
         }
     }
 
-    class GlobalAIPlayer extends Player {
-        constructor(id) {
-            super(id,"Global AI");
-        }
-
-        toJSON() {
-            return "GlobalAIPlayer";
-        }
-
-        play() {
-            actions.schedule("AI_PLAYER_BEGIN", this);
-        }
-    }
-
-    let _players = [];
+    const _players = [];
     
     let activePlayer = null,
         grabbedPawn = null,
         grabbedPawnRegion = null,
         movedUnits = {};
-
-    let p = new GlobalAIPlayer(ids.next('player'));
-    _players[p.id] = p;        
 
     // public API
     let self = {
@@ -77,7 +60,7 @@ function Players(spec) {
 
     function toJSON() {
         return {
-            players: _players.map(player=>player && player.id).filter(x=>x),
+            players: _players.filter(x=>x).map(player=>({ id:player.id, type: player.type })),
             activePlayer: activePlayer && _players.indexOf(activePlayer),
             grabbedPawn: grabbedPawn && grabbedPawn.name,
             grabbedPawnRegion: grabbedPawnRegion && grabbedPawnRegion.id,
@@ -86,13 +69,43 @@ function Players(spec) {
     }
 
     function fromJSON(src) {
-        _players = [];
-        src.players.forEach(id=> _players[id]=new GlobalAIPlayer(id));
+        _players.length = 0;
+        src.players.forEach(({type,id})=> _players[id]=new createPlayer(type, id));
         activePlayer = src.activePlayer && self.byId(src.activePlayer);
         grabbedPawn = src.grabbedPawn && pawns[src.grabbedPawn];
         grabbedPawnRegion = src.grabbedPawnRegion && regions.byId(src.grabbedPawnRegion);
         movedUnits = src.movedUnits;
     }
+
+    function createPlayer(type, name='(unnamed)', id=ids.next('player')) {
+        let p;
+        switch (type) {
+            case 'AI':
+                p = new Player(id,name);
+                p.play = ()=> { actions.schedule("AI_PLAYER_BEGIN", p); };
+                break;
+            default:
+                throw Error(`Unrecognized player type: ${type}`);
+        }
+        log.debug(`Created ${p}`);
+        return p;
+
+    }
+
+    actions.setHandler('SETUP_PLAYERS', (action, numFactions,playerFaction=0)=> {
+        _players.length = 0;
+        ids.reset('player');
+        for (let i = 0; i<numFactions; ++i) {
+            let newPlayer;
+            if (i===playerFaction) {
+                newPlayer = createPlayer('Human', 'Human player for faction '+i);
+            } else {
+                newPlayer = createPlayer('AI', 'AI for faction '+i);
+            }
+            _players[newPlayer.id] = newPlayer;
+        }
+        action.resolve();
+    });
 
     actions.setHandler('START_PLAYER_TURN', (action, player) => {
         if (activePlayer) throw Error(`Cannot start turn for ${player}, because another players turn is in progress: ${activePlayer}`);
@@ -202,20 +215,21 @@ function Players(spec) {
         return `
 ActivePlayer: ${activePlayer}
 MovedUnits: ${Object.keys(movedUnits).map(hex=>hex.toString()).join(', ')}
-Grabbed: ${(grabbedPawn ? `${grabbedPawn} (owned by ${grabbedPawnRegion})` : '(nothing)')}`;
+Grabbed: ${(grabbedPawn ? `${grabbedPawn} (owned by ${grabbedPawnRegion})` : '(nothing)')}
+
+Players:
+${_players.filter(x=>x).map(p=>` * ${p}`).join('\n')}
+`;
     }
 
     function getRegionsControlledBy(player) {
-        //TODO less bullshit, more actual implementation
-        let list = [];
-        regions.forEach(r=>{if(economy.capitalOf(r)) list.push(r); });
-        return list;
+        return regions.filter(r=>ownerOf(r) === player);
     }
 
     function ownerOf(region) {
         //TODO less bullshit, more actual implementation
         if (!economy.capitalOf(region)) return null;
-        return _players.filter(p=>p)[0];
+        return _players[region.faction+1];
     }
 
     return Object.freeze(self);

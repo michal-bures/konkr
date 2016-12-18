@@ -94,6 +94,7 @@ function GameState(spec) {
         action.schedule('RESET_HEXGRID', worldWidth, worldHeight);
         action.schedule('GENERATE_LANDMASS');
         action.schedule('RANDOMIZE_REGIONS', numFactions);
+        action.schedule('SETUP_PLAYERS', numFactions, -1);
         action.schedule('SET_INITIAL_TREASURY');
         action.schedule('STORE_STATE','konkr_autosave_gamestart');
         action.schedule('START_NEW_TURN');
