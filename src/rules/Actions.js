@@ -86,7 +86,7 @@ function Actions(spec) {
         hexGroup : {
             toJSON(hexes) { return hexes.toJSON(); },
             fromJSON(data) { return new HexGroup(data.map(hexId=>spec.grid.getHexById(hexId)));},
-            validate(val) { return !!val.getRandomHex; }
+            validate(val) { return !!val.borderIncludingShoreline; }
         },
         pawnType : {
             toJSON(pawnType) { return pawnType.name; },

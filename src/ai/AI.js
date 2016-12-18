@@ -2,10 +2,9 @@ import HexValuation from 'lib/hexgrid/HexValuation';
 import Marshal from 'ai/Marshal';
 import RegionEconomist from 'ai/Economist';
 import HexGroup from 'lib/hexgrid/HexGroup';
-import { Random } from 'lib/util';
 
 function AI(spec) {
-    let {actions, pawns, regions, economy, debug, log, grid} = spec;
+    let {actions, pawns, regions, economy, debug, log, grid, random} = spec;
 
     // list of hexes where the AI has definitively decided to place unit
     let commitedUnits = null;
@@ -37,7 +36,7 @@ function AI(spec) {
     actions.setHandler("AI_MANAGE_REGION", (action, player, region) => {
         actions.schedule("AI_TASK_NEXT_UNIT", player, region);
         action.resolve();
-    }, { undo(action) {
+    }, { undo() {
     }});
 
     actions.setHandler("AI_TASK_NEXT_UNIT", (action, player, region) => {
@@ -127,7 +126,7 @@ function AI(spec) {
                 .neighbours()
                 .filter(hex => warfare.defenseOf(hex) <= maxDefense)
                 .forEach(hex => {
-                    cache.set(hex,Random.integer(0,1000));
+                    cache.set(hex,random.integer(0,1000));
                 });
         }
 

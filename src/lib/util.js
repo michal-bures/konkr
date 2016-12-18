@@ -206,65 +206,7 @@ Cache.test = function() {
 //==================
 // RANDOMIZERS
 
-var Random = {
-    oneOf: function(array) {
-        return array[Random.integer(0,array.length)];
-    },
-    property: function(obj) {
-        var result;
-        var count = 0;
-        for (var prop in obj)
-            if (Math.random() < 1/++count)
-               result = prop;
-        return result;
-    },
-    //
-    integer: function(from, to) {
-        return Math.floor(Math.random()*(to-from+1))+from;
-    },
-    substring: function(str, length) {
-        length = length || Random.integer(1,str.length);
-        var start = Random.integer(0,str.length-length);
-        return str.substring(start, start+length);
-    }
-};
-Random.Selector = function Selector() {
-    this.list = [];
-    this.total = 0;
-};
 
-Random.Selector.prototype.add = function (item, weight) {
-    this.list.push({item:item, weight:weight});
-    this.total += weight;
-};
-Random.Selector.prototype.pickOne = function () {
-    if (!this.list.length) {
-        log.warn("Attempted to pick an item from an empty Random.Selector.");
-        return null;
-    }
-    var result = Math.random()*this.total;
-    var sum = 0;
-    var i = 0;
-    while (sum < result) {
-        sum += this.list[i++].weight;
-    }
-    return this.list[Math.max(0, i-1)].item;
-};
-
-Random.Selector.test = function() {
-    var s = new Random.Selector();
-    s.add("A",1);
-    s.add("B",2);
-    s.add("C",3);
-
-    var results = {
-        A:0, B:0, C:0
-    };
-    for (var n = 1; n<100000; ++n) {
-        ++results[s.pickOne()];
-    }
-    log.debug("Results: ", s, results);
-};
 /*
 var a = { a: { a1: 1, a2: 2}, b:'b' }
 var b = { a: { a1: 3 } }
@@ -276,7 +218,6 @@ console.debug("TEST1:",a);
 
 export { 
     OrderedMap,
-    Random,
     isFunction,
     isObject,
     assertDefined,

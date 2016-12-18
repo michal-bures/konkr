@@ -1,7 +1,7 @@
 import { signedNumber } from 'lib/util';
 
 function Economy(spec) {
-    let {log, pawns, actions, regions, grid} = spec;
+    let {log, pawns, actions, regions, grid, random} = spec;
 
     let regionTreasury = new WeakMap();
     let regionCapital = new WeakMap();
@@ -92,9 +92,9 @@ function Economy(spec) {
         if (availableHexes.length === 0) availableHexes = region.hexes;            
         if (availableHexes.lenght === 0) throw Error(`Cannot create capital for ${region} as it has no hexes!`);
 
-        let capitalHex = availableHexes.getRandomHex();
+        let capitalHex = random.hex(availableHexes);
         regionCapital.set(region,capitalHex);
-        if (pawns.pawnAt(capitalHex)) action.schedule("DESTROY_PAWN", capitalHex);
+        if (pawns.pawnAt(capitalHex)) action.schedule("DESTROY_PAWN", pawns.pawnAt(capitalHex));
         action.schedule("CREATE_PAWN", pawns.TOWN, capitalHex);
         self.onRegionGainedCapital.dispatch(region, capitalHex);
         action.resolve();

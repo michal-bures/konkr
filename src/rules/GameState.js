@@ -7,6 +7,7 @@ import Warfare from 'rules/Warfare';
 import { HexGrid } from 'lib/hexgrid/HexGrid';
 import IdGenerator from 'lib/IdGenerator';
 import LandGenerator from 'rules/LandGenerator';
+import RandomGenerator from 'lib/RandomGenerator';
 import AI from 'ai/AI';
 
 function GameState(spec) {
@@ -20,6 +21,7 @@ function GameState(spec) {
                 log: () => spec.log && spec.log.getLogger(moduleName)
             });
         },
+        random: () => new RandomGenerator(),
         ids: spec => new IdGenerator(spec),
         grid: spec => new HexGrid(spec),
         pawns: spec => new Pawns(spec.useName('pawns')),
@@ -43,7 +45,7 @@ function GameState(spec) {
 
     // order is important - modules that rely on objects from other modules must go last
     // for example pawns will want instances of hexes, so they need grid to be loaded
-    const STATEFUL_MODULES = ['grid','pawns','regions','economy','players','ai','ids','actions'];
+    const STATEFUL_MODULES = ['grid','pawns','regions','economy','players','ai','ids','random','actions'];
 
     function toJSON() {
         let obj = {};

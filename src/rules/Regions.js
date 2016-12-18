@@ -1,6 +1,5 @@
 //Region is a connected component on the map belonging to a signle faction
 
-import { Random } from 'lib/util';
 import IterableOn from 'lib/decorators/IterableOn';
 import HexGroup from 'lib/hexgrid/HexGroup';
 import Region from 'rules/entities/Region';
@@ -9,7 +8,7 @@ import UniqueHeap from 'lib/UniqueHeap';
 const MAX_NUMBER_OF_FACTIONS = 4;
 
 function Regions (spec) {
-    let { grid, log, actions, pawns, ids, debug } = spec;
+    let { grid, log, actions, ids, random } = spec;
 
     //private
     const _regions = [], //must be const in order not to break IterableOn
@@ -112,7 +111,7 @@ function Regions (spec) {
         numFactions = Math.min(numFactions, MAX_NUMBER_OF_FACTIONS);
         let hexFaction=[];
         grid.forEach((hex)=>{
-            hexFaction[hex.id] = Random.integer(1,numFactions);
+            hexFaction[hex.id] = random.integer(1,numFactions);
         });
         _regions.length = 0;
         grid.components((hex, prevHex) => hexFaction[hex.id] === hexFaction[prevHex.id])

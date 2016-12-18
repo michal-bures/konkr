@@ -1,5 +1,4 @@
 import HexGroupSet from './HexGroupSet';
-import { Random } from 'lib/util';
 
 class HexGroup {
     constructor(hexes) {
@@ -56,20 +55,6 @@ class HexGroup {
             }
         });
         return comps;
-    }
-
-    getRandomHex() {
-        if (!this.length) return null;
-        let i = Random.integer(0, this._length-1);
-        let n = 0;
-        var res = null;
-        this.members.some(hex => { 
-            if( n++ === i) {
-                res = hex;
-                return true;
-            }
-        });
-        return res;
     }
 
     getById(id) {
