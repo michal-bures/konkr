@@ -31,7 +31,7 @@ function GameState(spec) {
         players: spec => new Players(spec.useName('players')),
         ai: spec => new AI(spec.useName('ai'))
     });
-    let {actions, players} = gameStateSpec;
+    let {actions, players, regions} = gameStateSpec;
 
     const self = Object.freeze({
         get spec() { return gameStateSpec; },
@@ -43,7 +43,7 @@ function GameState(spec) {
 
     // order is important - modules that rely on objects from other modules must go last
     // for example pawns will want instances of hexes, so they need grid to be loaded
-    const STATEFUL_MODULES = ['grid','pawns','regions','economy','players','actions', 'ids'];
+    const STATEFUL_MODULES = ['grid','pawns','regions','economy','players','ai','ids','actions'];
 
     function toJSON() {
         let obj = {};
@@ -100,13 +100,28 @@ function GameState(spec) {
         action.resolve();
     });
 
+    actions.setHandler('PRE_TURN_EVENTS', action=> {
+        regions.forEach(r=>{
+            if (!players.ownerOf(r)) {
+                action.schedule('UPDATE_REGION_ECONOMY', r);
+            }
+        });
+        action.resolve();
+    }, { undo() {}});
+
+    actions.setHandler('POST_TURN_EVENTS', action=> {
+        action.schedule('CHECK_VICTORY_CONDITIONS');
+        action.resolve();
+    }, { undo() {}});
+
     actions.setHandler('START_NEW_TURN', (action) => {
+        action.schedule('PRE_TURN_EVENTS');
         action.schedule('STORE_STATE','konkr_autosave_turn_start');
         players.forEach(player => {
-            player.regions.forEach(region => action.schedule('COLLECT_REGION_INCOME',region));
+            player.regions.forEach(region => action.schedule('UPDATE_REGION_ECONOMY',region));
             action.schedule('START_PLAYER_TURN', player);
-    });
-        action.schedule('CHECK_VICTORY_CONDITIONS');
+        });
+        action.schedule('POST_TURN_EVENTS');
         action.resolve();
     },{ undo() {} });
 

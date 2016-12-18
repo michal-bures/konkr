@@ -1,7 +1,7 @@
 import { signedNumber } from 'lib/util';
 
 function Economy(spec) {
-    let {log, pawns, actions, regions} = spec;
+    let {log, pawns, actions, regions, grid} = spec;
 
     let regionTreasury = new WeakMap();
     let regionCapital = new WeakMap();
@@ -13,27 +13,35 @@ function Economy(spec) {
         treasuryOf,
         expensesOf,
         upkeepOfPawn,
+        capitalOf,
+        onRegionGainedCapital: new Phaser.Signal(/* region, hex */),
+        onRegionLostCapital: new Phaser.Signal(/* region */),
         onRegionTreasuryChanged: new Phaser.Signal(/* region, newValue, oldValue */),
         onRegionBankrupt: new Phaser.Signal(/* region */),
         toDebugString,
         toJSON() {
-            let ret = {};
-            regions.forEach(r=> {
-                if (treasuryOf(r)!==0) ret[r.id] = treasuryOf(r);
-            });
-            return ret;
+            return regions.filter(capitalOf).map(r=>(
+                {
+                    region: r.id,
+                    treasury: treasuryOf(r),
+                    capital: capitalOf(r).id
+                })
+            );
         },
         fromJSON(data) {
             regionTreasury = new WeakMap();
-            regions.forEach(r=> {
-                if (data[r.id]) regionTreasury.set(r,data[r.id]);
+            regionCapital = new WeakMap();
+            data.forEach(({region, treasury, capital})=>{
+                let r = regions.byId(region);
+                regionTreasury.set(r, treasury);
+                regionCapital.set(r, grid.getHexById(capital));
             });
         }
     });
 
     /// ACTION HANDLERS
 
-    actions.setHandler('CHANGE_REGION_TREASURY', (action, region, amount) => {
+    actions.setHandler('ADJUST_REGION_TREASURY', (action, region, amount) => {
         setTreasuryOf(region,treasuryOf(region) + amount);
         action.resolve();
     },
@@ -45,10 +53,11 @@ function Economy(spec) {
 
     actions.setHandler('SET_INITIAL_TREASURY', action => {
         regions.forEach(region=>{
-            actions.schedule('SET_REGION_TREASURY', region,netIncomeOf(region)*5);
+            actions.schedule('SET_REGION_TREASURY', region,netIncomeOf(region)*3);
+            action.schedule('UPDATE_REGION_ECONOMY',region);
         });
         action.resolve();
-    }, { undo() {} });    
+    });    
 
     actions.setHandler('SET_REGION_TREASURY', (action, region, amount) => {
         action.data.previousAmount = treasuryOf(region);
@@ -58,7 +67,62 @@ function Economy(spec) {
         undo(action,region) { setTreasuryOf(region,action.data.previousAmount); }
     });
 
+    actions.setHandler('UPDATE_REGION_ECONOMY', (action, region) => {
+        if (!capitalOf(region) && regionQualifiesForCapital(region)) {
+            action.schedule('SET_REGION_TREASURY',region,0);
+            action.schedule("CREATE_REGION_CAPITAL",region);
+            action.schedule('COLLECT_REGION_INCOME', region);
+        } else if (capitalOf(region) && !regionQualifiesForCapital(region)) {
+            action.schedule("DESTROY_REGION_CAPITAL",region);
+            action.schedule('KILL_TROOPS_IN_REGION', region);
+        } else if (capitalOf(region)) {
+            action.schedule('COLLECT_REGION_INCOME', region);
+        } else {
+            action.schedule('KILL_TROOPS_IN_REGION', region);
+        }
+        action.resolve();
+    }, {
+        undo() {}
+    });
+
+    actions.setHandler('CREATE_REGION_CAPITAL', (action, region)=> {
+        let availableHexes = region.hexes.filter(hex=>!pawns.pawnAt(hex));
+        if (regionCapital.get(region)) throw Error(`${region} already has a capital!`);
+        if (availableHexes.length === 0) availableHexes = region.hexes.filter(hex=>!pawns.pawnAt(hex).isTroop());            
+        if (availableHexes.length === 0) availableHexes = region.hexes;            
+        if (availableHexes.lenght === 0) throw Error(`Cannot create capital for ${region} as it has no hexes!`);
+
+        let capitalHex = availableHexes.getRandomHex();
+        regionCapital.set(region,capitalHex);
+        if (pawns.pawnAt(capitalHex)) action.schedule("DESTROY_PAWN", capitalHex);
+        action.schedule("CREATE_PAWN", pawns.TOWN, capitalHex);
+        self.onRegionGainedCapital.dispatch(region, capitalHex);
+        action.resolve();
+    },
+    {
+        undo(action, region) {
+            regionCapital.delete(region);
+        }
+    });    
+
+    actions.setHandler("DESTROY_REGION_CAPITAL", (action, region) => {
+        let oldCapital = regionCapital.get(region);
+        if (!oldCapital) return action.reject(`Cannot remove capital from ${region} that already lacks one!`);
+        regionCapital.delete(region);
+        action.schedule("DESTROY_PAWN", pawns.pawnAt(oldCapital));
+        self.onRegionLostCapital.dispatch(region);
+        action.data.oldCapital = oldCapital;
+        action.resolve();
+    },
+    {
+        undo(action, region) {
+            regionCapital.set(region, action.data.oldCapital);
+        }
+    });    
+
+
     actions.setHandler('COLLECT_REGION_INCOME', (action,region)=>{
+
         const oldValue = treasuryOf(region) || 0;
         let newValue = oldValue + netIncomeOf(region);
         if (newValue < 0) {
@@ -73,19 +137,24 @@ function Economy(spec) {
 
     /// ACTION TRIGGERS
 
-    regions.onLostCapital.add(region=>{
-        actions.schedule('SET_REGION_TREASURY',region,0);
+    regions.onChanged.add((region) => {
+        if (capitalOf(region) && !region.hexes.contains(capitalOf(region))) {
+            regionCapital.delete(region);
+        }
     });
 
-    regions.onGainedCapital.add(region=>{
-        actions.schedule('SET_REGION_TREASURY',region,0);
+    regions.onMerged.add((fromRegion, toRegion)=> {
+        if (capitalOf(fromRegion) && capitalOf(toRegion)) {
+            actions.schedule('ADJUST_REGION_TREASURY', toRegion, treasuryOf(fromRegion));
+            actions.schedule('DESTROY_REGION_CAPITAL', fromRegion);
+        }
     });
 
     // PUBLIC METHODS
 
     function toDebugString() {
         return regions.map(region => {
-            if (region.hasCapital()) return `* ${region.id}: ${treasuryOf(region) || 'N/A'} (${signedNumber(netIncomeOf(region))})`;
+            if (capitalOf(region)) return `* ${region} with capital at ${capitalOf(region)}: ${treasuryOf(region)} (${signedNumber(netIncomeOf(region))})`;
         }).filter(x=>x).join('\n');
     }
 
@@ -98,12 +167,12 @@ function Economy(spec) {
     }
 
     function incomeOf(region) {
-        if (!region.hasCapital()) return 0;
+        if (!capitalOf(region)) return 0;
         return region.hexes.length;
     }
 
     function expensesOf(region) {
-        if (!region.hasCapital()) return 0;
+        if (!capitalOf(region)) return 0;
         let sum = 0;
         region.hexes.forEach((hex) => {
             sum += upkeepOfPawn(pawns.pawnAt(hex));
@@ -134,7 +203,7 @@ function Economy(spec) {
     }
 
     function regionQualifiesForCapital(region) {
-        return region.hexes.length > 2;
+        return region.hexes.length >= 2;
     }
 
     return self;

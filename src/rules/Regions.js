@@ -4,9 +4,9 @@ import { Random } from 'lib/util';
 import IterableOn from 'lib/decorators/IterableOn';
 import HexGroup from 'lib/hexgrid/HexGroup';
 import Region from 'rules/entities/Region';
+import UniqueHeap from 'lib/UniqueHeap';
 
 const MAX_NUMBER_OF_FACTIONS = 4;
-const MIN_SIZE_FOR_CAPITAL = 2;
 
 function Regions (spec) {
     let { grid, log, actions, pawns, ids, debug } = spec;
@@ -21,9 +21,6 @@ function Regions (spec) {
         regionOf,
         byId,
         onCreated: new Phaser.Signal(/* region */),
-        onGainedCapital: new Phaser.Signal(/* region, hex */),
-        onLostCapital: new Phaser.Signal(/* region */),
-        onCapitalConquered: new Phaser.Signal(/* region, hex */),
         onHexesChangedOwner: new Phaser.Signal(/* hexGroup */),
         onChanged: new Phaser.Signal(/* region */),
         onDestroyed: new Phaser.Signal(/* region */),
@@ -75,11 +72,6 @@ function Regions (spec) {
             receivingRegion.hexes.add(hexOrGroup);
             // check if any regions shoudl merge with the region that gained land
             checkForRegionMerging(hexOrGroup);
-            // check if region gained capital
-            if (!receivingRegion.hasCapital() && receivingRegion.hexes.length >= MIN_SIZE_FOR_CAPITAL) {
-                pickNewCapital(receivingRegion);
-            }
-
             regions.onChanged.dispatch(receivingRegion);
         }
 
@@ -110,32 +102,11 @@ function Regions (spec) {
         }
     });
 
-    actions.setHandler('MERGE_REGIONS',(action, region1, region2)=>{
-        if (region1.hexes.length>region2.hexes.length) {
-            action.schedule('CHANGE_HEXES_REGION', region2.hexes.clone(), region1);
-            regions.onMerged.dispatch(region2, region1);
-        } else {
-            action.schedule('CHANGE_HEXES_REGION', region1.hexes.clone(), region2);
-            regions.onMerged.dispatch(region1, region2);
-        }        
+    actions.setHandler('MERGE_REGIONS',(action, absorbedRegion, receivingRegion)=>{
+        action.schedule('CHANGE_HEXES_REGION', absorbedRegion.hexes.clone(), receivingRegion);
+        regions.onMerged.dispatch(absorbedRegion, receivingRegion);
         action.resolve();
     }, { undo() {} });
-
-    actions.setHandler("CHANGE_REGION_CAPITAL", (action, region, newCapital, prevCapital) => {
-        region.capital = newCapital;
-        if (prevCapital && pawns.pawnAt(prevCapital)) {
-            action.schedule("DESTROY_PAWN", pawns.pawnAt(prevCapital));
-        }
-        if (newCapital) {
-            action.schedule("CREATE_PAWN", pawns.TOWN, newCapital);
-        }
-        action.resolve();
-    },
-    {
-        undo(action, region, newCapital, prevCapital) {
-            region.capital = prevCapital;
-        }
-    });    
 
     actions.setHandler('RANDOMIZE_REGIONS', (action, numFactions=99) => {
         numFactions = Math.min(numFactions, MAX_NUMBER_OF_FACTIONS);
@@ -151,7 +122,7 @@ function Regions (spec) {
 
     actions.setHandler('REMOVE_REGION', (action, region)=> {
         delete _regions[region.id];
-        if (region.hexes) {
+        if (region.hexes.length) {
             action.schedule('CHANGE_HEXES_REGION', region.hexes, null);
         }
         regions.onDestroyed.dispatch(region);
@@ -172,6 +143,8 @@ function Regions (spec) {
 
     function checkForRegionMerging(hexOrGroup) {
         if (!hexOrGroup.length) return;
+        let alreadyMerged = {};
+        let candidates = new UniqueHeap((a,b)=>b.hexes.length - a.hexes.length);
         hexOrGroup.border().forEach(hex1 => {
             let region1 = regionOf(hex1);
             if (!region1) return;
@@ -179,31 +152,37 @@ function Regions (spec) {
                 let region2 = regionOf(hex2);
                 if (!region2) return;
                 if (region1 !== region2 && region1.faction === region2.faction) {
-                    actions.schedule('MERGE_REGIONS', region1, region2);
+                    candidates.push(region1);
+                    candidates.push(region2);
+                    alreadyMerged[region1]=true;
                 }   
             });
         });
+
+        let strongestRegion = candidates.pop();
+        if (strongestRegion) {
+            let absorbedRegion;
+            while ((absorbedRegion = candidates.pop())) {
+                actions.schedule('MERGE_REGIONS', absorbedRegion, strongestRegion);
+            }
+        }
     }
 
     // for internal use from HEXES_CHANGED_OWNER only!! Does NOT update hexRegion
     function hexesRemovedFromRegion(region, hexGroup) {
         region.hexes.remove(hexGroup);
 
-        if (region.capital && hexGroup.contains(region.capital)) {
-            // the region capital was just conqured
-            regions.onCapitalConquered.dispatch(region, region.capital);
-            pickNewCapital(region);
-            region.capital = null;
-        }
-
         // check if region is still connected
         let comps = region.hexes.components();
 
         if (comps.length > 1) {
             // Oh shit boys, we have a split over here
-            if (region.hasCapital()) {
+
+            if (spec.economy.capitalOf(region)) {
+                let ownerOfCapital = comps.getOwnerOf(spec.economy.capitalOf(region));
                 // the component with capital is staying in this region
-                comps.remove(comps.getOwnerOf(region.capital));
+                if (ownerOfCapital) comps.remove(ownerOfCapital);
+                    else comps.popLargestGroup(); // capital was actually just conquered
             } else {
                 // the largest component is staying in this region
                 comps.popLargestGroup(); 
@@ -229,20 +208,6 @@ function Regions (spec) {
         _regions[region.id] = region;
         actions.schedule('CHANGE_HEXES_REGION', hexGroup, region);
         regions.onCreated.dispatch(region);
-    }
-
-    function pickNewCapital(region) {
-        const availableHexes = region.hexes.filter(hex=>!pawns.pawnAt(hex));
-        const prevCapital = region.capital;
-        if (availableHexes.length === 0 || region.hexes.length < MIN_SIZE_FOR_CAPITAL) {
-            //TODO: clear some hex to make space for the new capital
-            if (prevCapital) regions.onLostCapital.dispatch(region, prevCapital);
-            actions.schedule('CHANGE_REGION_CAPITAL', region, null, prevCapital);
-        } else {
-            let newCapital = availableHexes.getRandomHex();
-            if (!prevCapital) regions.onGainedCapital.dispatch(region, region.capital);
-            actions.schedule('CHANGE_REGION_CAPITAL', region, newCapital, prevCapital);
-        }            
     }
 
     function factionOf(hex) {

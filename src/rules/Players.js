@@ -16,7 +16,8 @@ function Players(spec) {
         }
 
         controls(region) {
-            return ownerOf(region) === this;
+            //cannot compare directly because sublasses don't share 'this'
+            return ownerOf(region) && (ownerOf(region).id === this.id);
         }
 
         canMoveUnit(pawn) {
@@ -66,6 +67,8 @@ function Players(spec) {
     // public API
     let self = {
         byId(id) { return _players[id]; },
+        ownerOf,
+        toDebugString,
         toJSON,
         fromJSON
     };
@@ -87,7 +90,7 @@ function Players(spec) {
         src.players.forEach(id=> _players[id]=new GlobalAIPlayer(id));
         activePlayer = src.activePlayer && self.byId(src.activePlayer);
         grabbedPawn = src.grabbedPawn && pawns[src.grabbedPawn];
-        grabbedPawnRegion = src.grabbedPawnRegion && regions.byId(grabbedPawnRegion);
+        grabbedPawnRegion = src.grabbedPawnRegion && regions.byId(src.grabbedPawnRegion);
         movedUnits = src.movedUnits;
     }
 
@@ -117,7 +120,7 @@ function Players(spec) {
         action.schedule('CHANGE_HEXES_REGION', new HexGroup(hex), region);
         action.schedule('DROP_UNIT', hex);
         action.resolve();
-    }, { undo(action, hex, region) {
+    }, { undo(action, hex) {
         delete movedUnits[hex.id];
     }});
 
@@ -159,7 +162,7 @@ function Players(spec) {
         if (cost > economy.treasuryOf(region)) throw Error(`Region ${region} cannot afford to buy ${unitType}.`);
         if (grabbedPawn) throw Error(`Cannot buy unit, because player is already holding one`);
         //TODO: Auto unit merging?
-        action.schedule('CHANGE_REGION_TREASURY',region, -cost);
+        action.schedule('ADJUST_REGION_TREASURY',region, -cost);
         addUnitToGrabbed(unitType);
         grabbedPawnRegion = region;
         action.resolve();
@@ -195,15 +198,23 @@ function Players(spec) {
         }
     }
 
+    function toDebugString() {
+        return `
+ActivePlayer: ${activePlayer}
+MovedUnits: ${Object.keys(movedUnits).map(hex=>hex.toString()).join(', ')}
+Grabbed: ${(grabbedPawn ? `${grabbedPawn} (owned by ${grabbedPawnRegion})` : '(nothing)')}`;
+    }
+
     function getRegionsControlledBy(player) {
         //TODO less bullshit, more actual implementation
         let list = [];
-        regions.forEach(r=>{if(r.hasCapital()) list.push(r); });
+        regions.forEach(r=>{if(economy.capitalOf(r)) list.push(r); });
         return list;
     }
 
     function ownerOf(region) {
         //TODO less bullshit, more actual implementation
+        if (!economy.capitalOf(region)) return null;
         return _players.filter(p=>p)[0];
     }
 

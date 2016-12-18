@@ -11,6 +11,8 @@ function Actions(spec) {
         // Handled by GameState
         'START_NEW_GAME': ['plain'], // ({ worldWidth, worldHeight, factions })
         'START_NEW_TURN': [],
+        'PRE_TURN_EVENTS': [],
+        'POST_TURN_EVENTS': [],
         'CHECK_VICTORY_CONDITIONS': [],
         'STORE_STATE': ['plain'], // ( localStorageItemName )
         'LOAD_STATE': ['plain'], // ( jsonData )
@@ -38,16 +40,19 @@ function Actions(spec) {
 
         // Handled by Regions
         'CHANGE_HEXES_REGION': ["hexGroup", "region"], // (hexes, region)
-        'CHANGE_REGION_CAPITAL': ["region", "hex", "hex"], // (region, hex, previousHex)
         'RANDOMIZE_REGIONS': ["plain"], // (numFactons)
         'MERGE_REGIONS': ["region","region"],
         'REMOVE_REGION': ["region"],
 
         // Handled by Economy
-        'COLLECT_REGION_INCOME': ["region"], // (regions)
+        'UPDATE_REGION_ECONOMY': ["region"],
+        'COLLECT_REGION_INCOME': ["region"],
         'SET_INITIAL_TREASURY': [], // -> reset treasury for all region in the world to an initial value based on size
         'SET_REGION_TREASURY': ["region", "plain"], // (region, amount)
-        'CHANGE_REGION_TREASURY': ["region", "plain"], // (region, changeAmount)
+        'ADJUST_REGION_TREASURY': ["region", "plain"], // (region, changeAmount)
+        'CREATE_REGION_CAPITAL': ["region"],
+        'DESTROY_REGION_CAPITAL': ["region"], 
+
 
         // Handled by Pawns
         'CREATE_PAWN': ["pawnType", "hex"], // (pawnType, hex)
@@ -70,7 +75,7 @@ function Actions(spec) {
         region : {
             toJSON(obj) { return obj.id; },
             fromJSON(id) { return spec.regions.byId(id); },
-            validate(val) { return !!(val && val.hasCapital); }
+            validate(val) { return !!(val && val.hexes); }
         },
         regions : {
             toJSON(regions) { return regions.map(r=>r.id); },

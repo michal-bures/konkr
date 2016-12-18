@@ -11,8 +11,8 @@ import GameState from 'rules/GameState';
 
 
 const DEFAULT_GAME_SETTTINGS = {
-    worldWidth: 60,
-    worldHeight: 60,
+    worldWidth: 15,
+    worldHeight: 15,
     numFactions: 4,   
 };
 

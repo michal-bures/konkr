@@ -24,6 +24,7 @@ function Manual(defaultValue, heapFunction = (a,b)=> b.val - a.val) {
         // return null if valuation is empty
         pop, 
         reset,
+        peek
     });
 
     function get(hex) {
@@ -47,6 +48,11 @@ function Manual(defaultValue, heapFunction = (a,b)=> b.val - a.val) {
 
     function reset() {
         data = {};
+        heap = new Heap(heapFunction);
+    }
+
+    function peek() {
+        return heap.peek();
     }
 
     function pop() {

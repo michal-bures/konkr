@@ -2,22 +2,31 @@ import HexValuation from 'lib/hexgrid/HexValuation';
 import Marshal from 'ai/Marshal';
 import RegionEconomist from 'ai/Economist';
 import HexGroup from 'lib/hexgrid/HexGroup';
+import { Random } from 'lib/util';
 
 function AI(spec) {
-    let {actions, pawns, regions, debug, log} = spec;
-
-    let ai = Object.freeze({
-        AttackOpportunities,
-        toDebugString,
-    });
+    let {actions, pawns, regions, economy, debug, log, grid} = spec;
 
     // list of hexes where the AI has definitively decided to place unit
     let commitedUnits = null;
 
+    let ai = Object.freeze({
+        AttackOpportunities,
+        toDebugString,
+        toJSON() { 
+            return {
+                commited: commitedUnits && commitedUnits.map(hex=>hex.id),
+            };
+        },
+        fromJSON(data) {
+            commitedUnits = data.commited && new HexGroup(data.commited.map(id=>grid.getHexById(id)));
+        }
+    });
+
     actions.setHandler("AI_PLAYER_BEGIN", (action,player) => {
         action.data.prevCommitedUnits = commitedUnits;
         commitedUnits = new HexGroup();
-        player.regions.forEach(region => region.hasCapital() && actions.schedule('AI_MANAGE_REGION', player, region));
+        player.regions.forEach(region => economy.capitalOf(region) && actions.schedule('AI_MANAGE_REGION', player, region));
         action.resolve();
     }, {
         undo(action) {
@@ -44,8 +53,9 @@ function AI(spec) {
         defenseBenefit.recalculate(commitedUnits);
         debug.valuation('defenseBenefit', defenseBenefit);
 
-        let defenseTarget = defenseBenefit.pop();
+        let defenseTarget = defenseBenefit.peek();
         if ( defenseTarget && defenseTarget.val >= 2 && economist.approvePawnPurchase(pawns.TOWER)) {
+            defenseBenefit.pop();
             log.debug(`Building tower on ${defenseTarget.hex}.`);
             action.schedule("AI_FREE_UP_HEX",defenseTarget.hex);
             action.schedule("BUY_UNIT", pawns.TOWER, region);
@@ -117,14 +127,15 @@ function AI(spec) {
                 .neighbours()
                 .filter(hex => warfare.defenseOf(hex) <= maxDefense)
                 .forEach(hex => {
-                    cache.set(hex,1);
+                    cache.set(hex,Random.integer(0,1000));
                 });
         }
 
         return Object.freeze({
             recalculate,
             get: cache.get,
-            pop: cache.pop
+            pop: cache.pop,
+            peek: cache.peek,
         });
     }
 
@@ -140,7 +151,9 @@ function AI(spec) {
 
         function recalculate(ignoredHexes) {
             region.hexes
-                .filter(hex=>!pawns.pawnAt(hex) || pawns.pawnAt(hex).isTroop())
+                .filter(hex=>{
+                    return !pawns.pawnAt(hex) || pawns.pawnAt(hex).isTroop();
+                })
                 .forEach(hex => {
                     let threat = 0;
                     hex.neighbours(sameRegion).forEach(adjacentHex=> {
@@ -151,6 +164,7 @@ function AI(spec) {
                             ));
                         }
                     });
+                    log.debug("Computed for "+ hex+": "+ threat);
                     cache.set(hex,threat);
                 });
         }
@@ -158,7 +172,8 @@ function AI(spec) {
         return Object.freeze({
             recalculate,
             get: cache.get,
-            pop: cache.pop
+            pop: cache.pop,
+            peek: cache.peek,
         });
     }
 

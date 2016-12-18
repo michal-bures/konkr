@@ -165,8 +165,6 @@ function Pawns(spec) {
             byType[t].push(pawn);
         });
         
-        log.debug(byType);
-
         let ret = [];
         for (const key in byType) {
             ret.push(`* ${key}:`);

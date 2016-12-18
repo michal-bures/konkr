@@ -1,11 +1,10 @@
 import HexGroup from 'lib/hexgrid/HexGroup';
 
 class Region {
-    constructor(id, faction, hexes=new HexGroup(), capital=null) {
+    constructor(id, faction, hexes=new HexGroup()) {
         this._id = id;
         this._hexes = hexes;
         this.faction = faction;
-        this.capital = capital;
     }
     
     get hexes() {
@@ -14,10 +13,6 @@ class Region {
     
     get id() { 
         return this._id; 
-    }
-
-    hasCapital() {
-        return !!this.capital; 
     }
 
     toJSON() {
@@ -29,12 +24,12 @@ class Region {
         };
     }
 
-    static fromJSON({grid},{id, faction, hexes, capital}) {
-        return new Region(id, faction, new HexGroup(hexes.map(hexId=>grid.getHexById(hexId))), grid.getHexById(capital));
+    static fromJSON({grid},{id, faction, hexes}) {
+        return new Region(id, faction, new HexGroup(hexes.map(hexId=>grid.getHexById(hexId))));
     }
 
     toString() {
-        return `[Region #${this.id} (${this.faction} ,${this._hexes.length} hexes,`+(this.hasCapital()?`capital at ${this.capital}`:"no capital")+")]";
+        return `[Region #${this.id} (F${this.faction} ,${this._hexes.length} hexes)]`;
     }
 }
 
