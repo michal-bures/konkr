@@ -100,6 +100,12 @@ function GameState(spec) {
         action.schedule('SETUP_PLAYERS', numFactions, playerFaction);
         action.schedule('SET_INITIAL_TREASURY');
         action.schedule('STORE_STATE','konkr_autosave_gamestart');
+        action.schedule('START_FIRST_TURN');
+        action.resolve();
+    });
+
+    actions.setHandler('START_FIRST_TURN', action=> {
+        self.onReset.dispatch();
         action.schedule('START_NEW_TURN');
         action.resolve();
     });

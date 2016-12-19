@@ -10,6 +10,7 @@ function Actions(spec) {
     "actions": {
         // Handled by GameState
         'START_NEW_GAME': ['plain'], // ({ worldWidth, worldHeight, factions })
+        'START_FIRST_TURN': [],
         'START_NEW_TURN': [],
         'PRE_TURN_EVENTS': [],
         'POST_TURN_EVENTS': [],

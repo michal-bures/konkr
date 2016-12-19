@@ -1,7 +1,7 @@
 import GameState from 'rules/GameState';
 import Marshal  from 'ai/Marshal';
 import Injector from 'lib/Injector';
-
+import log from 'loglevel';
 
 describe("Marshal", () => {
 
@@ -9,7 +9,7 @@ describe("Marshal", () => {
         return { pawnType: type };
     }
 
-    let spec = new GameState(new Injector(null,{log: ()=>console})).spec;
+    let spec = new GameState(new Injector(null,{log: ()=>log})).spec;
     let pawns = spec.pawns;
 
     it("recommends purchases if given empty list of units", () => {

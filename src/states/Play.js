@@ -6,9 +6,10 @@ import UI from 'lib/controls/ui';
 
 
 const DEFAULT_GAME_SETTTINGS = {
-    worldWidth: 15,
-    worldHeight: 15,
+    worldWidth: 20,
+    worldHeight: 20,
     numFactions: 4,   
+    playerFaction: -1,
 };
 
 function Play(game) { 
@@ -71,11 +72,10 @@ function Play(game) {
 
         function shouldBreakBefore(nextAction) {
             if (breakAfterEveryAction) return true;
-            return false;
             switch (nextAction && nextAction.name) {
                 case 'STORE_STATE':
                     return (nextAction.args[0] === 'konkr_autosave_turn_start');
-                case 'START_PLAYER_TURN':
+                case 'START_PLAYER_TURN_X':
                     return (nextAction.args[0].id === 1);
                 default:
                     return false;
@@ -90,7 +90,6 @@ function Play(game) {
         }
 
         gameSpec.actions.attachGuard((prevAction, nextAction) => new Promise(resolve => {
-            //if (debugBreakCallback) return setTimeout(resolve,0);
             if (shouldBreakAfter(prevAction)) {
                 log.info('❚❚ Halted after ' + prevAction.name);
                 debugBreakCallback = resolve;

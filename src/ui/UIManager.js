@@ -13,7 +13,6 @@ function UIManager(spec) {
     let {game, regions, log, gameState, actions} = spec,
         selectedRegion,
         selectedHex,
-        rootGroup = game.add.group(),
         scene,
         scenes = {},
         resumeActions, // stored callback for pending AWAIT_PLAYER_INPUT action
@@ -115,7 +114,12 @@ function UIManager(spec) {
     changeScene('SPECTATING');
 
     actions.attachGuard((prevAction, nextAction)=> new Promise(resolve => {
-        resolve();
+        switch (nextAction && nextAction.name) {
+            case 'START_PLAYER_TURN':
+                return uiElements.pawnSprites.flushAnimationQueue().then(resolve);
+            default:
+                resolve();
+        }
     }));
 
     actions.setHandler('AWAIT_PLAYER_INPUT', (action) => {
