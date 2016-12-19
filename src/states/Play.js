@@ -64,16 +64,6 @@ function Play(game) {
             gameUi.gridOverlays.group.visible = !gameUi.gridOverlays.group.visible;
         };
 
-        let { nextTurnButton } = new UI(gameSpec,{
-            name: 'nextTurnButton',
-            component: 'button',
-            sprite: 'nextTurnButton',
-            hAlign: 'right',
-            vAlign: 'bottom',
-            hOffset: 10,
-            vOffset: 10,
-        });
-
         // DEBUG TOOLS SETUP
 
         let breakAfterEveryAction = true;
@@ -81,6 +71,7 @@ function Play(game) {
 
         function shouldBreakBefore(nextAction) {
             if (breakAfterEveryAction) return true;
+            return false;
             switch (nextAction && nextAction.name) {
                 case 'STORE_STATE':
                     return (nextAction.args[0] === 'konkr_autosave_turn_start');
@@ -119,13 +110,6 @@ function Play(game) {
         gameState.onReset.add(()=> {
             log.info('❚❚ Halted after GameState.reset');
             breakAfterEveryAction = true;
-        });
-
-        nextTurnButton.addToGroup(game.world);
-        nextTurnButton.onInputUp.add(() => {
-            /*if (nextStateCallbacks.length) {
-                nextStateCallbacks.pop()();
-            }*/
         });
 
         function setCommandHotkey(keyName,commandName) {

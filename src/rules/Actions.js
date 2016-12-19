@@ -54,12 +54,14 @@ function Actions(spec) {
         'CREATE_REGION_CAPITAL': ["region"],
         'DESTROY_REGION_CAPITAL': ["region"], 
 
-
         // Handled by Pawns
         'CREATE_PAWN': ["pawnType", "hex"], // (pawnType, hex)
         'DESTROY_PAWN': ["pawn"], // (pawn)
         'MOVE_PAWN': ["pawn", "hex"], // (pawn, hex)
         'KILL_TROOPS_IN_REGION': ["region"], // (region)
+
+        // Handled by UIManager
+        'AWAIT_PLAYER_INPUT': [],
     },
 
     "types": {

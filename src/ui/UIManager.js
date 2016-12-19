@@ -5,14 +5,18 @@ import RegionPanel from './RegionPanel';
 import GridOverlays from './GridOverlays';
 import Messages from './Messages';
 import PawnSprites from './PawnSprites';
-import Injector from 'lib/Injector';
+import NextTurnButton from './NextTurnButton';
+import { extend } from 'lib/util';
 
 function UIManager(spec) {
     
-    let {game, regions, log, gameState} = spec,
+    let {game, regions, log, gameState, actions} = spec,
         selectedRegion,
         selectedHex,
+        rootGroup = game.add.group(),
         scene,
+        scenes = {},
+        resumeActions, // stored callback for pending AWAIT_PLAYER_INPUT action
         hoveredRegion,
         hoveredHex;
 
@@ -26,6 +30,7 @@ function UIManager(spec) {
         uiRegionPanel: spec => new RegionPanel(spec),
         gridOverlays: spec => new GridOverlays(spec),
         messages: spec => new Messages(spec),
+        nextTurnButton: spec => new NextTurnButton(spec),
         ui: () => self
     });
 
@@ -38,21 +43,28 @@ function UIManager(spec) {
         get uiSpec() { return uiElements; },
         selectHex,
         selectRegion,
+        endTurn,
         render,
         update,
         selectedRegion() { return selectedRegion; },
-        selectedHex() { return selectedHex; }
+        selectedHex() { return selectedHex; },
+        toDebugString
     });
 
     //display layers z-order
-    game.world.add(uiElements.landSprites.group);          
-    game.world.add(uiElements.regionBorders.group);  
-    game.world.add(uiElements.selRegionHighlight.group);
-    game.world.add(uiElements.pawnSprites.group);          
-    game.world.add(uiElements.gridOverlays.group);  
-    game.world.add(uiElements.hexSelectionProxy.group);
-    game.world.add(uiElements.messages.group);  
-    game.world.add(uiElements.uiRegionPanel.group);  
+    const Z_ORDER = [
+        'landSprites',
+        'regionBorders',
+        'selRegionHighlight',
+        'pawnSprites',
+        'gridOverlays',
+        'hexSelectionProxy',
+        'messages',
+        'uiRegionPanel',
+        'nextTurnButton',
+    ];
+    Z_ORDER.forEach(e => game.world.add(uiElements[e].group));
+
     game.stage.backgroundColor='#d5dfef';
     game.world.setBounds(0, 0, 3000, 3000);
 
@@ -70,9 +82,62 @@ function UIManager(spec) {
         }
     });
 
-    //scene = new ScenePlay();
 
-    gameState.onReset.add(()=>selectRegion(null));
+    function createScene(parent, name, elements) {
+        if (scenes[name]) throw Error(`Scene with name ${name} already exists`);
+        parent = parent || {elements:[]};
+        let obj = Object.create(parent);
+        extend(obj, {
+            name: name,
+            elements: Object.create(parent.elements),
+        });
+        elements.forEach(e=>obj.elements[e]=true);
+        scenes[name] = obj;
+        return obj;
+    }
+
+    let rootScene = createScene(null, 'root', []),
+        gamePlayScene = createScene(rootScene,'SPECTATING',[
+            'landSprites',
+            'regionBorders',
+            'pawnSprites',
+            'gridOverlays',
+            'hexSelectionProxy',
+            'messages',
+        ]),
+        playerTurn = createScene(gamePlayScene,'PLAYER_TURN', [
+            'selRegionHighlight',
+            'uiRegionPanel',
+            'nextTurnButton'
+        ]);
+
+    //default scene
+    changeScene('SPECTATING');
+
+    actions.attachGuard((prevAction, nextAction)=> new Promise(resolve => {
+        resolve();
+    }));
+
+    actions.setHandler('AWAIT_PLAYER_INPUT', (action) => {
+        if (scene!=playerTurn) changeScene('PLAYER_TURN');
+        resumeActions = action.resolve;
+    });
+
+    gameState.onReset.add(()=> {
+        changeScene('SPECTATING');
+        selectRegion(null);
+    });
+
+    function changeScene(nextSceneName) {
+        return new Promise(resolve=> {
+            if (!scenes[nextSceneName]) throw Error(`Invalid scene name ${nextSceneName}`);
+            scene = scenes[nextSceneName];
+            Z_ORDER.forEach(
+                elementId=>uiElements[elementId].group.visible=scene.elements[elementId]
+            );
+            resolve();
+        });
+    }
 
     function selectHex(hex) {
         selectedHex = hex;
@@ -85,12 +150,40 @@ function UIManager(spec) {
         self.onRegionSelected.dispatch(selectedRegion);
     }
 
+    function endTurn() {
+        if (!resumeActions) throw Error(`End turn called out of order`);
+        changeScene('SPECTATING').then(()=>{
+            resumeActions();
+            resumeActions = null;
+        });
+    }
+
+    function processActions() {
+        if (!resumeActions) throw Error(`processActions called out of order`);
+        actions.schedule('AWAIT_PLAYER_INPUT');
+        resumeActions();
+        resumeActions = null;
+    }
+
     function render() {
 
     }
 
     function update() {
 
+    }
+
+    function toDebugString() {
+        let elems = [];
+        for (let key in scene.elements) {
+            elems.push(key);
+        }
+
+        return `
+${resumeActions?'<b>Waiting for player input...</b>':'Spectator mode'}
+
+scene: ${scene.name}
+uiElements: ${elems.join(', ')}`;
     }
 
     return self;

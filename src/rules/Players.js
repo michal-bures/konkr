@@ -37,7 +37,7 @@ function Players(spec) {
         play() { throw Error(`Not implemented`); }
 
         toString() {
-            return `[Player ${this.name}]`;
+            return `[${this.name} #${this.id}]`;
         }
     }
 
@@ -92,6 +92,10 @@ function Players(spec) {
                 p = new Player(id,name,type);
                 p.play = ()=> { actions.schedule("AI_PLAYER_BEGIN", p); };
                 break;
+            case 'Local':
+                p = new Player(id,name,type);
+                p.play = ()=> { actions.schedule("AWAIT_PLAYER_INPUT"); };
+                break;
             default:
                 throw Error(`Unrecognized player type: ${type}`);
         }
@@ -103,12 +107,12 @@ function Players(spec) {
     actions.setHandler('SETUP_PLAYERS', (action, numFactions,playerFaction=0)=> {
         _players.length = 0;
         ids.reset('player');
-        for (let i = 0; i<numFactions; ++i) {
+        for (let i = 1; i<=numFactions; ++i) {
             let newPlayer;
             if (i===playerFaction) {
-                newPlayer = createPlayer('Human', 'Human player for faction '+i);
+                newPlayer = createPlayer('Local', 'Human player for faction '+i);
             } else {
-                newPlayer = createPlayer('AI', 'AI for faction '+i);
+                newPlayer = createPlayer('AI', 'AI player for faction '+i);
             }
             _players[newPlayer.id] = newPlayer;
         }
@@ -239,7 +243,7 @@ ${_players.filter(x=>x).map(p=>` * ${p}`).join('\n')}
     function ownerOf(region) {
         //TODO less bullshit, more actual implementation
         if (!economy.capitalOf(region)) return null;
-        return _players[region.faction+1];
+        return _players[region.faction];
     }
 
     return Object.freeze(self);

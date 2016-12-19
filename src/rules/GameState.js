@@ -92,12 +92,12 @@ function GameState(spec) {
         action.resolve();
     });
 
-    actions.setHandler('START_NEW_GAME',  (action, {worldWidth, worldHeight, numFactions}) => {
+    actions.setHandler('START_NEW_GAME',  (action, {worldWidth, worldHeight, numFactions, playerFaction=1}) => {
         action.schedule('STORE_STATE','konkr_autosave_prestart');
         action.schedule('RESET_HEXGRID', worldWidth, worldHeight);
         action.schedule('GENERATE_LANDMASS');
         action.schedule('RANDOMIZE_REGIONS', numFactions);
-        action.schedule('SETUP_PLAYERS', numFactions, -1);
+        action.schedule('SETUP_PLAYERS', numFactions, playerFaction);
         action.schedule('SET_INITIAL_TREASURY');
         action.schedule('STORE_STATE','konkr_autosave_gamestart');
         action.schedule('START_NEW_TURN');
