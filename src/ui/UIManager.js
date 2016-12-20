@@ -81,7 +81,8 @@ function UIManager(spec) {
 
     let scenes = {
         'FAST_SPECTATING': new Scene.FastSpectating(uiElements),
-        //'PLAYER_TURN': new Scene.PlayerTurn(uiElements),
+        'INSTANT_SPECTATING': new Scene.InstantSpectating(uiElements),
+        'PLAYER_TURN': new Scene.PlayerTurn(uiElements),
     };
 
 
@@ -172,7 +173,7 @@ function UIManager(spec) {
 
     function endTurn() {
         if (!resumeActions) throw Error(`End turn called out of order`);
-        changeScene('SPECTATING').then(()=>{
+        changeScene('FAST_SPECTATING').then(()=>{
             resumeActions();
             resumeActions = null;
         });

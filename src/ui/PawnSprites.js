@@ -12,6 +12,7 @@ function PawnSprites ({tweens, game, log, pawns, gameState, grid, players, econo
     let self = Object.freeze({ 
         group,
         create,
+        destroySprite,
         getOrCreate,
         morphSprite,
         atHex,
@@ -84,9 +85,15 @@ function PawnSprites ({tweens, game, log, pawns, gameState, grid, players, econo
         return spriteAtHex[hex.id];
     }
 
+    function destroySprite(hex) {
+        if (!spriteAtHex[hex.id]) return false;
+        spriteAtHex[hex.id].destroy();
+        delete spriteAtHex[hex.id];
+        return true;
+    }
+
     function getOrCreate(hex, pawnType) {
         return getOrCreateSprite(hex, pawnType);
-
     }
     function create(hex, pawnType) {
         return new PawnSprite(hex, pawnType);

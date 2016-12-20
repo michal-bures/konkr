@@ -6,10 +6,10 @@ import UI from 'lib/controls/ui';
 
 
 const DEFAULT_GAME_SETTTINGS = {
-    worldWidth: 10,
-    worldHeight: 10,
-    numFactions: 2,   
-    playerFaction: -1,
+    worldWidth: 20,
+    worldHeight: 20,
+    numFactions: 4,   
+    playerFaction: 1,
 };
 
 function Play(game) { 
@@ -72,6 +72,7 @@ function Play(game) {
 
         function shouldBreakBefore(nextAction) {
             if (breakAfterEveryAction) return true;
+            return false;
             switch (nextAction && nextAction.name) {
                 case 'STORE_STATE':
                     return (nextAction.args[0] === 'konkr_autosave_turn_start');

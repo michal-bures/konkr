@@ -52,13 +52,15 @@ function Scene(spec, cfg) {
 [${name}]
 bound to ${signalBindings.length} signals`;
     }
-
 }
 
 // Instances
 import FastSpectating from './FastSpectating';
+import InstantSpectating from './InstantSpectating';
+import PlayerTurn from './PlayerTurn';
 
+Scene.InstantSpectating = InstantSpectating;
 Scene.FastSpectating = FastSpectating;
-
+Scene.PlayerTurn = PlayerTurn;
 
 export default Scene;

@@ -16,8 +16,6 @@ function FastSpectating(spec){
         uiElements: { 'landSprites':true,
                       'regionBorders':true,
                       'pawnSprites':true,
-                      'gridOverlays':true,
-                      'hexSelectionProxy':true,
                       'messages':true },
         preActionGuards: {
             'END_PLAYER_TURN': flushAnimationQueue,
