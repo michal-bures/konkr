@@ -49,6 +49,8 @@ function LandSprites(spec) {
     //public
     let landSprites = Object.freeze({
         render,
+        refreshHexes,
+        synchronize,
         get group() { return group; }
     });
 
@@ -57,9 +59,7 @@ function LandSprites(spec) {
         hexToSprite = {},
         requiresSorting = false; // true => need to resort group before next render
 
-    regions.onHexesChangedOwner.add(refreshHexes);
-
-    gameState.onReset.add(() => {
+    function synchronize() {
         for (const hexId in hexToSprite) {
             if (!grid.getHexById(hexId)) {
                 hexToSprite[hexId].destroy();
@@ -67,7 +67,7 @@ function LandSprites(spec) {
             }
         }
         refreshHexes(grid.allHexes());
-    });
+    }
 
     function refreshHexes(hexes) {
         hexes.forEach( hex => {

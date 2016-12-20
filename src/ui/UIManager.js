@@ -18,6 +18,7 @@ function UIManager(spec) {
         selectedHex,
         scene,
         resumeActions, // stored callback for pending AWAIT_PLAYER_INPUT action
+        defaultSpectatorScene = 'FAST_SPECTATING',
         hoveredRegion,
         hoveredHex;
 
@@ -104,7 +105,7 @@ function UIManager(spec) {
     });
 
     //default scene
-    changeSceneNow('FAST_SPECTATING');
+    changeSceneNow(defaultSpectatorScene);
 
     actions.attachGuard((prevAction, nextAction)=> new Promise(resolve => {
 
@@ -127,7 +128,9 @@ function UIManager(spec) {
     });
 
     gameState.onReset.add(()=> {
-        changeScene('FAST_SPECTATING');
+        changeSceneNow(defaultSpectatorScene);
+        uiElements.landSprites.synchronize();
+        uiElements.pawnSprites.synchronize();
         selectRegion(null);
     });
 
@@ -173,7 +176,7 @@ function UIManager(spec) {
 
     function endTurn() {
         if (!resumeActions) throw Error(`End turn called out of order`);
-        changeScene('FAST_SPECTATING').then(()=>{
+        changeScene(defaultSpectatorScene).then(()=>{
             resumeActions();
             resumeActions = null;
         });

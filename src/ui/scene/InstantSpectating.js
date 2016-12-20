@@ -2,7 +2,7 @@ import Scene from './Scene';
 
 function InstantSpectating(spec){
 
-    let { pawnSprites } = spec;
+    let { pawnSprites, landSprites } = spec;
 
     return new Scene(spec, { 
         name: 'FastSpectating',
@@ -15,9 +15,9 @@ function InstantSpectating(spec){
                 onCreated,
                 onDestroyed,
             },
-            gameState: {
-                onReset
-            }
+            regions: {
+                onHexesChangedOwner: landSprites.refreshHexes
+            }    
         }
     });
 
@@ -26,10 +26,6 @@ function InstantSpectating(spec){
     }
     function onDestroyed(pawn) {
         pawnSprites.destroySprite(pawn.hex);
-    }
-
-    function onReset() {
-        pawnSprites.synchronize();
     }
 }
 

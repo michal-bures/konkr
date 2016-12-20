@@ -2,7 +2,7 @@ import Scene from './Scene';
 
 function PlayerTurn(spec){
 
-    let { pawnSprites } = spec;
+    let { pawnSprites, landSprites } = spec;
 
     return new Scene(spec, { 
         name: 'FastSpectating',
@@ -22,9 +22,10 @@ function PlayerTurn(spec){
                 onCreated,
                 onDestroyed,
             },
-            gameState: {
-                onReset
-            }
+            regions: {
+                onHexesChangedOwner: landSprites.refreshHexes
+            }    
+
         }
     });
 
@@ -36,9 +37,6 @@ function PlayerTurn(spec){
         pawnSprites.destroySprite(pawn.hex);
     }
 
-    function onReset() {
-        pawnSprites.synchronize();
-    }
 }
 
 export default PlayerTurn;

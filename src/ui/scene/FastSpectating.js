@@ -5,7 +5,7 @@ import Planner from 'lib/Planner';
 function FastSpectating(spec){
 
     let { log, economy,
-          pawnSprites } = spec;
+          pawnSprites, landSprites } = spec;
     
     let grabbedFrom = new HexGroup(), //list of hexes from which the currently grabbed unit was sourced
         boughtFrom = [],
@@ -25,9 +25,6 @@ function FastSpectating(spec){
                 onDroppedPawn,
                 onGrabbedPawn,
                 onBoughtPawn,
-            },
-            gameState: {
-                onReset
             }
         }
     });
@@ -51,10 +48,6 @@ function FastSpectating(spec){
 
     function onBoughtPawn(pawnType, region) {
         if (pawnType.isTroop()) boughtFrom.push({hex:economy.capitalOf(region), pawnType:pawnType});
-    }
-
-    function onReset() {
-        pawnSprites.synchronize();
     }
 
     function gatherPawnsTransition(moveFrom, spawnFrom, toHex) {
@@ -84,6 +77,7 @@ function FastSpectating(spec){
         return new Promise(resolve => {
             animationQueue.execute().then(()=> {
                 pawnSprites.synchronize();
+                landSprites.synchronize();
                 animationQueue = new Planner();
                 resolve();
             });
