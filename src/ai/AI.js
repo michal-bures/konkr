@@ -59,6 +59,7 @@ function AI(spec) {
             action.schedule("AI_FREE_UP_HEX",defenseTarget.hex);
             action.schedule("BUY_UNIT", pawns.TOWER, region);
             action.schedule("DROP_UNIT",defenseTarget.hex);
+            return action.resolve();
         }
 
         let attackOpportunities = null;

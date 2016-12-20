@@ -1,5 +1,5 @@
 const PAWN_OFFSET_TOP = -13;
-const BASE_TWEEN_DURATION = 1000;
+const BASE_TWEEN_DURATION = 500;
 
 import { convertToWorldCoordinates } from './Renderer';
 import HexGroup from 'lib/hexgrid/HexGroup';
@@ -9,6 +9,7 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
     let spriteAtHex = {},
         group = game.add.group(),
         grabbedFrom = new HexGroup(), //list of hexes from which the currently grabbed unit was sourced
+        boughtFrom = [],
         animationQueue = new Planner();
 
     let self = Object.freeze({ 
@@ -63,48 +64,73 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
         }
     }
 
-
-/*    pawns.onCreated.add(pawn=>{
-        getOrCreateSprite(pawn.hex, pawn.pawnType);
-    });*/
-
-    /*pawns.onDestroyed.add(pawn => {
-        const sprite = spriteAtHex[pawn.hex.id];
-        if (!sprite) return;
-        delete spriteAtHex[pawn.hex.id];
-        sprite.destroy();
-    });*/
-
     players.onGrabbedPawn.add(pawn => {
+        log.debug(`event: grabbed pawn ${pawn} from ${pawn.hex}`);
         grabbedFrom.add(pawn.hex);
     });
 
     players.onDroppedPawn.add((pawnType,targetHex) => {
-        grabbedFrom.forEach(srcHex=>{
-            animationQueue.addTask([srcHex, targetHex], pawnMoveTransition(srcHex, targetHex));
-        });
+        log.debug(`event: dropped pawn ${pawnType} at ${targetHex}`);
+        animationQueue.addTask(
+            grabbedFrom.toArray()
+            .concat(boughtFrom.map(({hex})=>hex))
+            .concat([targetHex]),
+            gatherPawnsTransition(grabbedFrom, boughtFrom, targetHex));
         animationQueue.addTask([targetHex], pawnMorphTransition(targetHex, pawnType));
-        grabbedFrom.clear();
+        grabbedFrom = new HexGroup();
+        boughtFrom = [];
     });
 
     players.onBoughtPawn.add((pawnType, region)=>{
-        //grabbedFrom.add(economy.capitalOf(region));
+        if (pawnType.isTroop()) boughtFrom.push({hex:economy.capitalOf(region), pawnType:pawnType});
     });
 
-    gameState.onReset.add(()=>{
+    gameState.onReset.add(synchronize);
+
+    function synchronize() {
         animationQueue = new Planner();
+        grabbedFrom = new HexGroup();
+        boughtFrom = [];
         destroyOrphanedSprites();
         pawns.forEach((pawn) => {
             getOrCreateSprite(pawn.hex, pawn.pawnType);
         });
-    });
-
+    }
 
     function flushAnimationQueue() {
         return new Promise(resolve => {
-            animationQueue.execute().then(resolve);
-            animationQueue = new Planner();
+            animationQueue.execute().then(()=> {
+                synchronize();
+                resolve();
+            });
         });
+    }
+
+    function gatherPawnsTransition(moveFrom, spawnFrom, toHex) {
+        return ()=>{
+            log.debug(`Gathering pawns moved from ${moveFrom} and bought from ${spawnFrom.map(({hex})=>hex)} at ${toHex}`);
+            let sprites = moveFrom.map(fromHex => {
+                            let ret = spriteAtHex[fromHex.id];
+                            if (!ret) throw Error(`Cannot start move transition from ${fromHex} - no pawn sprite present`);
+                            delete spriteAtHex[fromHex.id];
+                            return ret;
+                          }).concat(spawnFrom.map(({hex,pawnType})=>{
+                            let sprite = new PawnSprite(hex, pawnType);
+                            group.add(sprite);
+                            return sprite;
+                          }));
+            let promises = sprites.map(sprite=> {
+                return sprite.reposition(toHex).then(()=>{
+                    if (!spriteAtHex[toHex.id]) {
+                        spriteAtHex[toHex.id] = sprite;
+                    } else {
+                        // another sprite already present here, discard this one
+                        sprite.destroy();
+                    }
+                });
+            });
+            return Promise.all(promises);
+        }        
     }
 
     function pawnMoveTransition(fromHex, toHex) {
@@ -124,17 +150,33 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
         };
     }
 
+    function pawnSpawnFromTransition(pawnType,fromHex, toHex) {
+        return ()=>{
+            log.debug(`Runnning pawn spawn transition from ${fromHex} to ${toHex}`);
+            let sprite = new PawnSprite(fromHex, pawnType);
+            group.add(sprite);
+            return sprite.reposition(toHex).then(()=>{
+                if (!spriteAtHex[toHex.id]) {
+                    spriteAtHex[toHex.id] = sprite;
+                } else {
+                    // another sprite already present here, discard this one
+                    sprite.destroy();
+                }
+            });
+        };
+    }    
+
     function pawnMorphTransition(hex, toPawnType) {
         return ()=>{
-            log.debug(`Morphing pawn at ${hex} into ${toPawnType}`)
+            log.debug(`Morphing pawn at ${hex} into ${toPawnType}`);
             let oldSprite = spriteAtHex[hex.id];
+            if (oldSprite && (oldSprite.frame === toPawnType.ordinal)) return Promise.resolve();
             spriteAtHex[hex.id] = null;
             let newSprite = getOrCreateSprite(hex, toPawnType);
             if (oldSprite) oldSprite.fadeAway();
             return newSprite.fadeIn();
         };
     }
-
 
     function getOrCreateSprite(hex, pawnType) {
         if (spriteAtHex[hex.id]) {
@@ -152,6 +194,7 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
     function destroyOrphanedSprites() {
         for (const key in spriteAtHex) {
             if (!grid.getHexById(key) || !pawns.pawnAt(grid.getHexById(key))) {
+                log.debug("Destroyed orphaned sprite "+spriteAtHex[key].toString());
                 spriteAtHex[key].destroy();
                 delete spriteAtHex[key];
             }
@@ -166,7 +209,8 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
             str.push(` * ${key}: ${spriteAtHex[key]}`);
         }
         return `
-currently grabbed: ${grabbedFrom}
+grabbed from: ${grabbedFrom}
+bought from: ${boughtFrom}
 ${total} pawn sprites:
 ${str.join('\n')}`;
     }

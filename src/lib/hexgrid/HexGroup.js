@@ -114,6 +114,10 @@ class HexGroup {
         this.members = [];
     }
 
+    toArray() {
+        return this.members.filter(x=>x);
+    }
+
     get length() {
         return this._length;
     }

@@ -20,10 +20,17 @@ function UIManager(spec) {
         hoveredHex;
 
     let uiElements = spec.extend({
-        landSprites: spec => new Renderer.LandSprites(spec),
+        useName: spec => (moduleName) => {
+            return spec.extend({ 
+                actions: () => spec.actions && spec.actions.getNamedProxy(moduleName),
+                debug: () => spec.debug && spec.debug.getNamedProxy(moduleName),
+                log: () => spec.log && spec.log.getLogger(moduleName)
+            });
+        },
+        landSprites: spec => new Renderer.LandSprites(spec.useName('landSprites')),
         regionBorders: spec => new Renderer.RegionBorders(spec),
         selRegionHighlight: spec => new Renderer.SelectedRegionHighlight(spec),
-        pawnSprites: spec => new PawnSprites(spec),
+        pawnSprites: spec => new PawnSprites(spec.useName('pawnSprites')),
         hexSelectionProxy: spec => new HexSelectionProxy(spec),
         scrolling: spec => new Scrolling(spec),
         uiRegionPanel: spec => new RegionPanel(spec),
@@ -114,8 +121,8 @@ function UIManager(spec) {
     changeScene('SPECTATING');
 
     actions.attachGuard((prevAction, nextAction)=> new Promise(resolve => {
-        switch (nextAction && nextAction.name) {
-            case 'START_PLAYER_TURN':
+        switch (prevAction && prevAction.name) {
+            case 'END_PLAYER_TURN':
                 return uiElements.pawnSprites.flushAnimationQueue().then(resolve);
             default:
                 resolve();
