@@ -5,7 +5,7 @@ function HexSelectionProxy(spec) {
 
     let active = false,
         image = initImage(),
-        group = game.add.group(null);
+        group = game.make.group(null);
 
     group.add(image);
 

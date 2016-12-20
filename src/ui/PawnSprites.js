@@ -5,17 +5,18 @@ import { convertToWorldCoordinates } from './Renderer';
 import HexGroup from 'lib/hexgrid/HexGroup';
 import Planner from 'lib/Planner';
 
-function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
+function PawnSprites ({tweens, game, log, pawns, gameState, grid, players, economy}) {
     let spriteAtHex = {},
-        group = game.add.group(),
-        grabbedFrom = new HexGroup(), //list of hexes from which the currently grabbed unit was sourced
-        boughtFrom = [],
-        animationQueue = new Planner();
+        group = game.make.group();
 
     let self = Object.freeze({ 
         group,
+        create,
+        getOrCreate,
+        morphSprite,
+        atHex,
+        synchronize,
         toDebugString,
-        flushAnimationQueue,
     });
 
     class PawnSprite extends Phaser.Sprite {
@@ -24,6 +25,8 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
             super(game, x, y+Math.floor(PAWN_OFFSET_TOP/2), 'pawn');
             this.anchor.set(0.5);
             this.setType(pawnType);
+            this.hex = hex;
+            group.add(this);
         }
 
         setType(pawnType) {
@@ -31,12 +34,18 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
         }
 
         reposition(targetHex,animate=true) {
+            if (this.hex) delete spriteAtHex[this.hex];
             return new Promise( resolve => {
             const [x,y] = convertToWorldCoordinates(targetHex.position.x, targetHex.position.y);
                 if (animate) {
-                    const tween = this.game.add.tween(this).to( { x: x, y: Math.floor(y+PAWN_OFFSET_TOP/2) }, BASE_TWEEN_DURATION, Phaser.Easing.Sinusoidal.InOut, true);  
-                    tween.onComplete.add(resolve);
+                    const tween = tweens.add(this).to( { x: x, y: Math.floor(y+PAWN_OFFSET_TOP/2) }, BASE_TWEEN_DURATION, Phaser.Easing.Sinusoidal.InOut, true);  
+                    tween.onComplete.add(()=> {
+                        if (spriteAtHex[targetHex]) spriteAtHex[targetHex].destroy();
+                        spriteAtHex[targetHex] = this;
+                        resolve();
+                    });
                 } else {
+                    //TODO update spriteAtHex
                     this.x = x;
                     this.y = y+Math.floor(PAWN_OFFSET_TOP/2);
                     return resolve();
@@ -46,7 +55,7 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
 
         fadeAway() {
             return new Promise( resolve => {
-                const tween = this.game.add.tween(this).to( { alpha: 0 } , BASE_TWEEN_DURATION, "Linear", true );  
+                const tween = tweens.add(this).to( { alpha: 0 } , BASE_TWEEN_DURATION, "Linear", true );  
                 tween.onComplete.add(resolve);
             });
         }
@@ -54,7 +63,7 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
         fadeIn() {
             return new Promise( resolve => {
                 this.alpha = 0;
-                const tween = this.game.add.tween(this).to( { alpha: 1 } , BASE_TWEEN_DURATION, "Linear", true );  
+                const tween = tweens.add(this).to( { alpha: 1 } , BASE_TWEEN_DURATION, "Linear", true );  
                 tween.onComplete.add(resolve);
             });
         }
@@ -64,113 +73,33 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
         }
     }
 
-    players.onGrabbedPawn.add(pawn => {
-        log.debug(`event: grabbed pawn ${pawn} from ${pawn.hex}`);
-        grabbedFrom.add(pawn.hex);
-    });
-
-    players.onDroppedPawn.add((pawnType,targetHex) => {
-        log.debug(`event: dropped pawn ${pawnType} at ${targetHex}`);
-        animationQueue.addTask(
-            grabbedFrom.toArray()
-            .concat([targetHex]),
-            gatherPawnsTransition(grabbedFrom, boughtFrom, targetHex));
-        animationQueue.addTask([targetHex], pawnMorphTransition(targetHex, pawnType));
-        grabbedFrom = new HexGroup();
-        boughtFrom = [];
-    });
-
-    players.onBoughtPawn.add((pawnType, region)=>{
-        if (pawnType.isTroop()) boughtFrom.push({hex:economy.capitalOf(region), pawnType:pawnType});
-    });
-
-    gameState.onReset.add(synchronize);
-
     function synchronize() {
-        animationQueue = new Planner();
-        grabbedFrom = new HexGroup();
-        boughtFrom = [];
         destroyOrphanedSprites();
         pawns.forEach((pawn) => {
             getOrCreateSprite(pawn.hex, pawn.pawnType);
         });
     }
 
-    function flushAnimationQueue() {
-        return new Promise(resolve => {
-            animationQueue.execute().then(()=> {
-                synchronize();
-                resolve();
-            });
-        });
+    function atHex(hex) {
+        return spriteAtHex[hex.id];
     }
 
-    function gatherPawnsTransition(moveFrom, spawnFrom, toHex) {
-        return ()=>{
-            log.debug(`Gathering pawns moved from ${moveFrom} and bought from ${spawnFrom.map(({hex})=>hex)} at ${toHex}`);
-            let sprites = moveFrom.map(fromHex => {
-                            let ret = spriteAtHex[fromHex.id];
-                            if (!ret) throw Error(`Cannot start move transition from ${fromHex} - no pawn sprite present`);
-                            delete spriteAtHex[fromHex.id];
-                            return ret;
-                          }).concat(spawnFrom.map(({hex,pawnType})=>{
-                            let sprite = new PawnSprite(hex, pawnType);
-                            group.add(sprite);
-                            return sprite;
-                          }));
-            let promises = sprites.map(sprite=> {
-                return sprite.reposition(toHex).then(()=>{
-                    if (spriteAtHex[toHex.id]) spriteAtHex[toHex.id].destroy();
-                    spriteAtHex[toHex.id] = sprite;
-                });
-            });
-            return Promise.all(promises);
-        }        
+    function getOrCreate(hex, pawnType) {
+        return getOrCreateSprite(hex, pawnType);
+
+    }
+    function create(hex, pawnType) {
+        return new PawnSprite(hex, pawnType);
     }
 
-    function pawnMoveTransition(fromHex, toHex) {
-        return ()=>{
-            log.debug(`Runnning pawn transition from ${fromHex} to ${toHex}`);
-            if (!spriteAtHex[fromHex.id]) throw Error(`Cannot start move transition from ${fromHex} - no pawn sprite present`);
-            return spriteAtHex[fromHex.id].reposition(toHex).then(()=>{
-                if (!spriteAtHex[toHex.id]) {
-                    spriteAtHex[toHex.id] = spriteAtHex[fromHex.id];
-                } else {
-                    // another sprite already present here, discard this one
-                    spriteAtHex[fromHex.id].destroy();
-                }
-                log.debug(`pawn no longer at ${fromHex}`);
-                delete spriteAtHex[fromHex.id];
-            });
-        };
-    }
-
-    function pawnSpawnFromTransition(pawnType,fromHex, toHex) {
-        return ()=>{
-            log.debug(`Runnning pawn spawn transition from ${fromHex} to ${toHex}`);
-            let sprite = new PawnSprite(fromHex, pawnType);
-            group.add(sprite);
-            return sprite.reposition(toHex).then(()=>{
-                if (!spriteAtHex[toHex.id]) {
-                    spriteAtHex[toHex.id] = sprite;
-                } else {
-                    // another sprite already present here, discard this one
-                    sprite.destroy();
-                }
-            });
-        };
-    }    
-
-    function pawnMorphTransition(hex, toPawnType) {
-        return ()=>{
-            log.debug(`Morphing pawn at ${hex} into ${toPawnType}`);
-            let oldSprite = spriteAtHex[hex.id];
-            if (oldSprite && (oldSprite.frame === toPawnType.ordinal)) return Promise.resolve();
-            spriteAtHex[hex.id] = null;
-            let newSprite = getOrCreateSprite(hex, toPawnType);
-            if (oldSprite) oldSprite.fadeAway();
-            return newSprite.fadeIn();
-        };
+    function morphSprite(hex, toPawnType, animate=true) {
+        log.debug(`Morphing pawn at ${hex} into ${toPawnType}`);
+        let oldSprite = spriteAtHex[hex.id];
+        if (oldSprite && (oldSprite.frame === toPawnType.ordinal)) return Promise.resolve();
+        spriteAtHex[hex.id] = null;
+        let newSprite = getOrCreateSprite(hex, toPawnType);
+        if (oldSprite) oldSprite.fadeAway();
+        return newSprite.fadeIn();
     }
 
     function getOrCreateSprite(hex, pawnType) {
@@ -180,7 +109,6 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
         } else {
             log.debug(`Creating pawn sprite ${pawnType} at ${hex}`);
             let sprite = new PawnSprite(hex, pawnType);
-            group.add(sprite);
             spriteAtHex[hex.id] = sprite;
             return sprite;
         }
@@ -204,8 +132,6 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
             str.push(` * ${key}: ${spriteAtHex[key]}`);
         }
         return `
-grabbed from: ${grabbedFrom}
-bought from: ${boughtFrom}
 ${total} pawn sprites:
 ${str.join('\n')}`;
     }

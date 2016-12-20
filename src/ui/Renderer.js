@@ -53,7 +53,7 @@ function LandSprites(spec) {
     });
 
     //private
-    let group = game.add.group(),
+    let group = game.make.group(),
         hexToSprite = {},
         requiresSorting = false; // true => need to resort group before next render
 
@@ -127,7 +127,7 @@ class RegionBorders {
         this.regions = regions;
         this.game = game;
         this.needsRedraw = true;
-        this.group = game.add.group();
+        this.group = game.make.group();
 
         regions.onHexesChangedOwner.add(() => { this.needsRedraw = true; });
         gameState.onReset.add(() => { this.needsRedraw = true; });        
@@ -160,7 +160,7 @@ class RegionBorders {
 }
 
 function SelectedRegionHighlight({game,ui}) {
-    let group = game.add.group(),
+    let group = game.make.group(),
         sprite = null;
 
     ui.onSelectedRegionChanged.add(redraw);

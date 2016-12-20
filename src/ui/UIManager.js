@@ -6,18 +6,41 @@ import GridOverlays from './GridOverlays';
 import Messages from './Messages';
 import PawnSprites from './PawnSprites';
 import NextTurnButton from './NextTurnButton';
+import TweenManager from './TweenManager';
 import { extend } from 'lib/util';
+import Scene from './scene/Scene';
 
 function UIManager(spec) {
     
-    let {game, regions, log, gameState, actions} = spec,
-        selectedRegion,
+    let {game, regions, log, gameState, actions} = spec;
+        
+    let selectedRegion,
         selectedHex,
         scene,
-        scenes = {},
         resumeActions, // stored callback for pending AWAIT_PLAYER_INPUT action
         hoveredRegion,
         hoveredHex;
+
+
+
+    let self = Object.freeze({
+        onHexHovered: new Phaser.Signal(/* hex */),
+        onHexSelected: new Phaser.Signal(/* hex */),
+        onRegionSelected: new Phaser.Signal(/* region */),
+        onRegionHovered: new Phaser.Signal(/* region */),
+        onSelectedRegionChanged: new Phaser.Signal(/* region */),
+        get uiSpec() { return uiElements; },
+        changeScene,
+        changeSceneNow,
+        selectHex,
+        selectRegion,
+        endTurn,
+        render,
+        update,
+        selectedRegion() { return selectedRegion; },
+        selectedHex() { return selectedHex; },
+        toDebugString
+    });
 
     let uiElements = spec.extend({
         useName: spec => (moduleName) => {
@@ -37,25 +60,10 @@ function UIManager(spec) {
         gridOverlays: spec => new GridOverlays(spec),
         messages: spec => new Messages(spec),
         nextTurnButton: spec => new NextTurnButton(spec),
+        tweens: spec => new TweenManager(spec),
         ui: () => self
     });
 
-    let self = Object.freeze({
-        onHexHovered: new Phaser.Signal(/* hex */),
-        onHexSelected: new Phaser.Signal(/* hex */),
-        onRegionSelected: new Phaser.Signal(/* region */),
-        onRegionHovered: new Phaser.Signal(/* region */),
-        onSelectedRegionChanged: new Phaser.Signal(/* region */),
-        get uiSpec() { return uiElements; },
-        selectHex,
-        selectRegion,
-        endTurn,
-        render,
-        update,
-        selectedRegion() { return selectedRegion; },
-        selectedHex() { return selectedHex; },
-        toDebugString
-    });
 
     //display layers z-order
     const Z_ORDER = [
@@ -70,6 +78,12 @@ function UIManager(spec) {
         'nextTurnButton',
     ];
     Z_ORDER.forEach(e => game.world.add(uiElements[e].group));
+
+    let scenes = {
+        'FAST_SPECTATING': new Scene.FastSpectating(uiElements),
+        //'PLAYER_TURN': new Scene.PlayerTurn(uiElements),
+    };
+
 
     game.stage.backgroundColor='#d5dfef';
     game.world.setBounds(0, 0, 3000, 3000);
@@ -88,66 +102,61 @@ function UIManager(spec) {
         }
     });
 
-
-    function createScene(parent, name, elements) {
-        if (scenes[name]) throw Error(`Scene with name ${name} already exists`);
-        parent = parent || {elements:[]};
-        let obj = Object.create(parent);
-        extend(obj, {
-            name: name,
-            elements: Object.create(parent.elements),
-        });
-        elements.forEach(e=>obj.elements[e]=true);
-        scenes[name] = obj;
-        return obj;
-    }
-
-    let rootScene = createScene(null, 'root', []),
-        gamePlayScene = createScene(rootScene,'SPECTATING',[
-            'landSprites',
-            'regionBorders',
-            'pawnSprites',
-            'gridOverlays',
-            'hexSelectionProxy',
-            'messages',
-        ]),
-        playerTurn = createScene(gamePlayScene,'PLAYER_TURN', [
-            'selRegionHighlight',
-            'uiRegionPanel',
-            'nextTurnButton'
-        ]);
-
     //default scene
-    changeScene('SPECTATING');
+    changeSceneNow('FAST_SPECTATING');
 
     actions.attachGuard((prevAction, nextAction)=> new Promise(resolve => {
-        switch (prevAction && prevAction.name) {
-            case 'END_PLAYER_TURN':
-                return uiElements.pawnSprites.flushAnimationQueue().then(resolve);
-            default:
-                resolve();
+
+        let promises = [];
+        if (prevAction && scene.postActionGuards[prevAction.name]) {
+            promises.push(scene.postActionGuards[prevAction.name]);
         }
+        if (nextAction && scene.preActionGuards[nextAction.name]) {
+            promises.push(scene.preActionGuards[nextAction.name](resolve));
+        }
+
+        return Promise.all(promises).then(resolve);
     }));
 
+
+    // scene switching based on actions
     actions.setHandler('AWAIT_PLAYER_INPUT', (action) => {
-        if (scene!=playerTurn) changeScene('PLAYER_TURN');
+        if (scene!=scenes.PLAYER_TURN) changeScene('PLAYER_TURN');
         resumeActions = action.resolve;
     });
 
     gameState.onReset.add(()=> {
-        changeScene('SPECTATING');
+        changeScene('FAST_SPECTATING');
         selectRegion(null);
     });
 
     function changeScene(nextSceneName) {
         return new Promise(resolve=> {
-            if (!scenes[nextSceneName]) throw Error(`Invalid scene name ${nextSceneName}`);
-            scene = scenes[nextSceneName];
-            Z_ORDER.forEach(
-                elementId=>uiElements[elementId].group.visible=scene.elements[elementId]
-            );
-            resolve();
+            let prevScene = scene || { teardown: ()=>Promise.resolve() };
+            uiElements.tweens
+                .waitForAll()
+                .then(prevScene.teardown())
+                .then(()=>{
+                    _setupNextScene(nextSceneName);
+                    resolve();
+                });
+
         });
+    }
+
+    function changeSceneNow(nextSceneName) {
+        if (scene) scene.interrupt();
+        uiElements.tweens.stopAll();
+        _setupNextScene(nextSceneName);
+    }
+
+    function _setupNextScene(nextSceneName) {
+        if (!scenes[nextSceneName]) throw Error(`Invalid scene name ${nextSceneName}`);
+        scene = scenes[nextSceneName];
+        Z_ORDER.forEach(
+            elementId=>uiElements[elementId].group.visible=!!scene.uiElements[elementId]
+        );
+        scene.setup();
     }
 
     function selectHex(hex) {
