@@ -109,7 +109,7 @@ function Economy(spec) {
         let oldCapital = regionCapital.get(region);
         if (!oldCapital) return action.reject(`Cannot remove capital from ${region} that already lacks one!`);
         regionCapital.delete(region);
-        action.schedule("DESTROY_PAWN", pawns.pawnAt(oldCapital));
+        if (pawns.pawnAt(oldCapital) && pawns.pawnAt(oldCapital).pawnType===pawns.TOWN) action.schedule("DESTROY_PAWN", pawns.pawnAt(oldCapital));
         self.onRegionLostCapital.dispatch(region);
         action.data.oldCapital = oldCapital;
         action.resolve();

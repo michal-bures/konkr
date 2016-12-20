@@ -164,7 +164,6 @@ function AI(spec) {
                             ));
                         }
                     });
-                    log.debug("Computed for "+ hex+": "+ threat);
                     cache.set(hex,threat);
                 });
         }

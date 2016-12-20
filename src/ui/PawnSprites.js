@@ -34,7 +34,7 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
             return new Promise( resolve => {
             const [x,y] = convertToWorldCoordinates(targetHex.position.x, targetHex.position.y);
                 if (animate) {
-                    const tween = this.game.add.tween(this).to( { x: x, y: Math.floor(y+PAWN_OFFSET_TOP/2) }, BASE_TWEEN_DURATION, "Linear", true);  
+                    const tween = this.game.add.tween(this).to( { x: x, y: Math.floor(y+PAWN_OFFSET_TOP/2) }, BASE_TWEEN_DURATION, Phaser.Easing.Sinusoidal.InOut, true);  
                     tween.onComplete.add(resolve);
                 } else {
                     this.x = x;
@@ -73,7 +73,6 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
         log.debug(`event: dropped pawn ${pawnType} at ${targetHex}`);
         animationQueue.addTask(
             grabbedFrom.toArray()
-            .concat(boughtFrom.map(({hex})=>hex))
             .concat([targetHex]),
             gatherPawnsTransition(grabbedFrom, boughtFrom, targetHex));
         animationQueue.addTask([targetHex], pawnMorphTransition(targetHex, pawnType));
@@ -121,12 +120,8 @@ function PawnSprites ({game, log, pawns, gameState, grid, players, economy}) {
                           }));
             let promises = sprites.map(sprite=> {
                 return sprite.reposition(toHex).then(()=>{
-                    if (!spriteAtHex[toHex.id]) {
-                        spriteAtHex[toHex.id] = sprite;
-                    } else {
-                        // another sprite already present here, discard this one
-                        sprite.destroy();
-                    }
+                    if (spriteAtHex[toHex.id]) spriteAtHex[toHex.id].destroy();
+                    spriteAtHex[toHex.id] = sprite;
                 });
             });
             return Promise.all(promises);
