@@ -6,6 +6,7 @@ function Scene(spec, cfg) {
         preActionGuards=[],
         postActionGuards=[],
         bindSignals=[],
+        regionSelectFilter,
     } = cfg;
 
 
@@ -17,6 +18,7 @@ function Scene(spec, cfg) {
         interrupt,
         preActionGuards,
         postActionGuards,
+        regionSelectFilter,
         uiElements,
         get name() { return name; },
         toString() { return `[Scene ${name}]`;},
@@ -58,9 +60,11 @@ bound to ${signalBindings.length} signals`;
 import FastSpectating from './FastSpectating';
 import InstantSpectating from './InstantSpectating';
 import PlayerTurn from './PlayerTurn';
+import Debug from './Debug';
 
 Scene.InstantSpectating = InstantSpectating;
 Scene.FastSpectating = FastSpectating;
 Scene.PlayerTurn = PlayerTurn;
+Scene.Debug = Debug;
 
 export default Scene;

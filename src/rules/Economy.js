@@ -7,6 +7,7 @@ function Economy(spec) {
     let regionCapital = new WeakMap();
 
     const self = Object.freeze({
+        buyablePawns,
         priceOf,
         netIncomeOf,
         incomeOf,
@@ -53,7 +54,7 @@ function Economy(spec) {
 
     actions.setHandler('SET_INITIAL_TREASURY', action => {
         regions.forEach(region=>{
-            actions.schedule('SET_REGION_TREASURY', region,netIncomeOf(region)*3);
+            actions.schedule('SET_REGION_TREASURY', region,netIncomeOf(region)*5);
             action.schedule('UPDATE_REGION_ECONOMY',region);
         });
         action.resolve();
@@ -189,6 +190,15 @@ function Economy(spec) {
         return pawn.pawnType.upkeep || 0;
     }
 
+    function buyablePawns(region) {
+        const allowance = treasuryOf(region);
+        return pawns.pawnTypes.filter(pawnType => pawnType.price && (pawnType.price <= allowance));
+    }
+
+    function capitalOf(region) {
+        return regionCapital.get(region);
+    }
+
     // PRIVATE METHODS
 
     function setTreasuryOf(region,value) {
@@ -196,10 +206,6 @@ function Economy(spec) {
         if (value === oldValue) return;
         regionTreasury.set(region,value);
         self.onRegionTreasuryChanged.dispatch(region, value, oldValue);
-    }
-
-    function capitalOf(region) {
-        return regionCapital.get(region);
     }
 
     function regionQualifiesForCapital(region) {

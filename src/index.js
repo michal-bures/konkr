@@ -124,6 +124,7 @@ PrepareLevel.prototype = {
         spec.assetManager.load('hex');
         spec.assetManager.load('pawn');
         spec.assetManager.load('paneBackground');
+        spec.assetManager.load('regionPanel');
         spec.assetManager.load('nextTurnButton');
     },
 

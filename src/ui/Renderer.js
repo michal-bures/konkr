@@ -10,7 +10,7 @@ const HEX_EDGE_SIZE = Math.floor(HEX_HEIGHT/2);
 const LINE_HEIGHT = 28;//Math.floor(HEX_HEIGHT * 3/4);
 const HALF_LINE_HEIGHT = 14.5;//Math.floor(HEX_HEIGHT * 3/8);
 
-const OFFSET_TOP = 10 + Math.floor((HEX_HEIGHT-LINE_HEIGHT)/2);
+const OFFSET_TOP = 10;
 const OFFSET_LEFT = 10;
 
 function convertToWorldCoordinates(x,y) {
@@ -202,6 +202,7 @@ export {
     HEX_WIDTH,
     HEX_HEIGHT,
     LINE_HEIGHT,
+    HALF_LINE_HEIGHT,
     OFFSET_TOP,
     OFFSET_LEFT,
     HEX_EDGE_SIZE 

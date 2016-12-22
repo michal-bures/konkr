@@ -1,11 +1,11 @@
 import Scene from './Scene';
 
-function PlayerTurn(spec){
+function Debug(spec){
 
-    let { pawnSprites, landSprites, players } = spec;
+    let { pawnSprites, landSprites, hexSelectionProxy } = spec;
 
     return new Scene(spec, { 
-        name: 'PLAYER_TURN',
+        name: 'DEBUG',
         uiElements: {
             landSprites:true,
             regionBorders:true,
@@ -15,7 +15,6 @@ function PlayerTurn(spec){
             hexSelectionProxy:true,
             messages:true,
             uiRegionPanel:true,
-            nextTurnButton:true
         },
         bindSignals: {
             pawns: {
@@ -25,12 +24,14 @@ function PlayerTurn(spec){
             regions: {
                 onHexesChangedOwner: landSprites.refreshHexes
             }    
-        },
-        regionSelectFilter: (region) => {
-            return players.activePlayer.controls(region);
         }
-
     });
+
+    function setup() {
+        hexSelectionProxy.setFilter((region) => {
+
+        });
+    }
 
     function onCreated(pawn) {
         let p = pawnSprites.getOrCreate(pawn.hex, pawn.pawnType);
@@ -42,4 +43,4 @@ function PlayerTurn(spec){
 
 }
 
-export default PlayerTurn;
+export default Debug;

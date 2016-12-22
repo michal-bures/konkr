@@ -1,4 +1,4 @@
-import { HEX_WIDTH, LINE_HEIGHT, OFFSET_TOP, OFFSET_LEFT } from 'ui/Renderer';
+import { HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT, HALF_LINE_HEIGHT, OFFSET_TOP, OFFSET_LEFT, convertToWorldCoordinates } from 'ui/Renderer';
 
 function HexSelectionProxy(spec) {
     let {game,grid,debug,log,regions,pawns,ui, warfare} = spec;
@@ -46,8 +46,11 @@ function HexSelectionProxy(spec) {
         for (let key in debug.valuations) {
             ret.push(`${key}: ${debug.valuations[key].get(hex)}`);
         }
+        const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
 
-        return `Under cursor: ${hex}
+        return `
+Cursor world coords: ${game.input.activePointer.worldX},${game.input.activePointer.worldY}
+Under cursor: ${hex} (${x}, ${y})
 Faction: ${regions && regions.factionOf(hex)}
 Region:  ${regions && regions.regionOf(hex)}
 Pawn: ${pawns.pawnAt(hex)}

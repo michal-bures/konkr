@@ -25,7 +25,8 @@ function AssetManager(spec) {
 }
 
 AssetManager.images = {
-    'paneBackground' : ['assets/ui/paneBackground.png']
+    'paneBackground' : ['assets/ui/paneBackground.png'],
+    'regionPanel' : ['assets/ui/regionPanel.png']
 };
 
 AssetManager.spritesheets = {

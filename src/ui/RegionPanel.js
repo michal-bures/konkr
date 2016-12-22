@@ -4,29 +4,31 @@ import { assertDefined } from 'lib/util';
 function RegionPanel(spec) {
     let { log, game, economy, ui, regions } = spec;
 
-    let group = game.make.group(),
+    let group = null,
         currentRegion = null;
 
     let controls = new UI(spec,{
         name: 'mainContainer',
+        bgImage: 'regionPanel',
         component: 'pane',
-        hAlign: 'center',
-        vAlign: 'bottom',
-        width: '100%',
-        height: 30,
-        padding: 5,
+        align:Phaser.BOTTOM_CENTER,
         contains: [
             {
                 name: 'regionNameLabel',
                 component: 'label',
-                vAlign: 'center',
-                hAlign: 'left'
             },
             {
                 name: 'economyLabel',
+                style: { font: "20pt Bookman Old Style", fill: "black"},
                 component: 'label',
-                hAlign: 'center',
-                vAlign: 'center',
+                x:112,
+                y:48,
+            },
+            {
+                name: 'pawnShop',
+                component: 'pawnShop',
+                align: Phaser.BOTTOM_CENTER,
+                vOffset: -32,
             }
         ]
     });
@@ -34,11 +36,12 @@ function RegionPanel(spec) {
     let { 
         mainContainer, 
         regionNameLabel,
-        economyLabel
+        economyLabel,
+        pawnShop
     } = controls;
 
     assertDefined(mainContainer, regionNameLabel, economyLabel);
-    mainContainer.addToGroup(group);
+    group = mainContainer;
 
     ui.onRegionSelected.add(region => {
         setRegion(region);
@@ -67,20 +70,19 @@ function RegionPanel(spec) {
         if (!region) {
             regionNameLabel.text = '';
             economyLabel.text = '';
+            pawnShop.setStock([]);
         } else {
-            regionNameLabel.text = `Region #${region.id}`;
+            regionNameLabel.text = `#${region.id}`;
             const treasury = economy.treasuryOf(region);
             let netIncome = economy.netIncomeOf(region);
             const incomeColor = accountingColor(netIncome);
-            const projectedTreasury = treasury + netIncome;
             netIncome = (netIncome>=0?'+':'')+netIncome;
 
-            economyLabel.text = `${treasury} ${netIncome} = ${projectedTreasury}`;
+            economyLabel.text = `${treasury} ${netIncome}`;
             const offsetNetIncome = String(treasury).length+1;
-            const offsetProjected = offsetNetIncome+String(netIncome).length+1;
             economyLabel.resetColors();
             economyLabel.addColor(incomeColor, offsetNetIncome);
-            economyLabel.addColor('#888888', offsetProjected);            
+            pawnShop.setStock(economy.buyablePawns(region));
         }
     }
 }

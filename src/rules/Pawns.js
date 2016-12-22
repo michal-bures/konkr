@@ -77,6 +77,7 @@ function Pawns(spec) {
     let pawns = {
         byId(id) { return _pawns[id]; },
         pawnAt,
+        pawnTypes: PawnType.enumValues,
         select,
         getMergeResult,
         forEach,
@@ -241,5 +242,4 @@ function Pawns(spec) {
 
     return pawns;
 }
-
 export default Pawns;

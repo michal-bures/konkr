@@ -12,7 +12,7 @@ function FastSpectating(spec){
         animationQueue = new Planner();
 
     return new Scene(spec, { 
-        name: 'FastSpectating',
+        name: 'FAST_SPECTATING',
         uiElements: { 'landSprites':true,
                       'regionBorders':true,
                       'pawnSprites':true,
@@ -26,7 +26,7 @@ function FastSpectating(spec){
                 onGrabbedPawn,
                 onBoughtPawn,
             }
-        }
+        },
     });
 
     function onDroppedPawn(pawnType, targetHex) {

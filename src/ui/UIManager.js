@@ -33,8 +33,10 @@ function UIManager(spec) {
         get uiSpec() { return uiElements; },
         changeScene,
         changeSceneNow,
+        uiElementGroups: {},
         selectHex,
         selectRegion,
+        get scene() { return scene },
         endTurn,
         render,
         update,
@@ -84,6 +86,7 @@ function UIManager(spec) {
         'FAST_SPECTATING': new Scene.FastSpectating(uiElements),
         'INSTANT_SPECTATING': new Scene.InstantSpectating(uiElements),
         'PLAYER_TURN': new Scene.PlayerTurn(uiElements),
+        'DEBUG': new Scene.Debug(uiElements)
     };
 
 
@@ -170,6 +173,10 @@ function UIManager(spec) {
 
     function selectRegion(region) {
         if (selectedRegion === region) return;
+        if (region!==null && scene.regionSelectFilter && !scene.regionSelectFilter(region)) {
+            log.debug(`Selection of region ${region} denied by scene filter`);
+            return selectRegion(null);
+        }
         selectedRegion = region;
         self.onRegionSelected.dispatch(selectedRegion);
     }

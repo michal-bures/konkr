@@ -52,6 +52,7 @@ function Players(spec) {
     let self = {
         byId(id) { return _players[id]; },
         ownerOf,
+        get activePlayer() { return activePlayer },
         onGrabbedPawn: new Phaser.Signal(/* pawn */),
         onDroppedPawn: new Phaser.Signal(/* pawnType, hex */),
         onConqueringHex: new Phaser.Signal(/* hex */),

@@ -5,7 +5,7 @@ function InstantSpectating(spec){
     let { pawnSprites, landSprites } = spec;
 
     return new Scene(spec, { 
-        name: 'FastSpectating',
+        name: 'INSTANT_SPECTATING',
         uiElements: { 'landSprites':true,
                       'regionBorders':true,
                       'pawnSprites':true,

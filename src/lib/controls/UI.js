@@ -8,132 +8,66 @@ function generateComponentId() {
 
 
 const componentConstructors = {
-    'pane' : (...args) => new Pane(...args),
-    'label' : (...args) => new Label(...args),
-    'button' : (...args) => new Button(...args),
+    pane : (...args) => new Pane(...args),
+    label : (...args) => new Label(...args),
+    button : (...args) => new Button(...args),
+    pawnShop : (...args) => new PawnShop(...args)
 };
 
-class UIComponent {
-    constructor({game, log}, def, parent) {
+class UIComponent extends Phaser.Group {
+    constructor({game, log, debug, tweens}, def, parent) {
+        super(game);
         assertDefined(game, def);
         this.config = def;
+        this.debug=debug;
         this.name = def.name || def.component + '#'+ generateComponentId();
-        this.parentContainer = (parent && parent.getContainer()) || game;
+        this.parentGroup = parent || game.camera.view;
+        this.initGroup(def);
         this.game = game;
-        this.image = this.createDisplayObject(def, def.width, def.height);
-        assertDefined(this.image);
-        this.image.inputEnabled = true;
+        this.childComponents = [];
         this.reflow();
         if (parent) {
-            this.parentContainer.addChild(this.image);
+            this.parentGroup.add(this);
+            parent.childComponents.push(this);
         } else {
-            this.image.fixedToCamera = true;
+            this.fixedToCamera = true;
         }
     }
 
-    addToGroup(group) {
-        group.add(this.image);
-    }
-
-    createDisplayObject(def) {
-        return this.game.add.image();
-    }
-
-    getContainer() {
-        return null;
-    }
+    initGroup(def) {}
 
     reflow() {
-        let {width, height, hAlign, vAlign, x=0, y=0, hOffset=0, vOffset=0} = this.config;
+        let {width, height, align, x=0, y=0, hOffset=0, vOffset=0} = this.config;
         // percentual size
         if (String(width).endsWith('%')) {
-            this.image.width = (parseInt(width) / 100)*this.parentContainer.width;
+            this.width = (parseInt(width) / 100)*this.parentContainer.width;
         }
         if (String(height).endsWith('%')) {
-            this.image.height = (parseInt(height) / 100)*this.parentContainer.height;
+            this.height = (parseInt(height) / 100)*this.parentContainer.height;
         }
 
         // position/alignment
-        if (hAlign) {
-            this.setHAlign(hAlign, hOffset);  
+        if (align) {
+            this.alignIn(this.parentGroup,align,hOffset-this.parentGroup.x,vOffset-this.parentGroup.y);
         }  else {
-            this.image.x = x;
-        }
-        if (vAlign) {
-            this.setVAlign(vAlign, vOffset);
-        } else {
-            this.image.y = y;
+            this.x = x;
+            this.y = y;
         }
 
-        this.image.cameraOffset.x = this.image.x;
-        this.image.cameraOffset.y = this.image.y;
-    }
+        this.cameraOffset.x = this.x;
+        this.cameraOffset.y = this.y;
 
-    setHAlign(hAlign, hOffset) {
-        const img = this.image;
-        switch (hAlign) {
-            case 'left':
-                img.x = hOffset;
-                img.anchor.x = 0;
-                break;
-            case 'right':
-                img.x = this.parentContainer.width - hOffset;
-                img.anchor.x = 1;
-                break;
-            case 'center':
-                img.x = Math.floor(this.parentContainer.width/2);
-                img.anchor.x = 0.5;
-                break;
-            default:
-                throw Error('Illegal value for hAlign: '+hAlign);
-        }
-    }
-
-    setVAlign(vAlign, vOffset) {
-        const img = this.image;
-        switch (vAlign) {
-            case 'top':
-                img.y = vOffset;
-                img.anchor.y = 0;
-                break;
-            case 'bottom':
-                img.y = this.parentContainer.height - vOffset;
-                img.anchor.y = 1;
-                break;
-            case 'center':
-                img.y = Math.floor(this.parentContainer.height/2);
-                img.anchor.y = 0.5;
-                break;
-            default:
-                throw Error('Illegal value for vAlign: '+vAlign);
-        }      
+        console.debug(`Reflow children of ${this.name}`);
+        this.childComponents.forEach(child=>{
+            console.debug(`Reflow child ${child.name}`);
+            child.reflow();
+        });
     }
 }
 
 class Pane extends UIComponent {
-    constructor(spec, def, parent) {
-        super(spec, def, parent);
-        this.padding = def.padding || 0;
-        this._container = this.game.add.tileSprite(
-                                Math.floor(this.padding - this.image.width * this.image.anchor.x),
-                                Math.floor(this.padding - this.image.height * this.image.anchor.y),
-                                this.image.width-this.padding*2,
-                                this.image.height-this.padding*2,
-                                new Phaser.BitmapData(spec.game, 'blank', 1, 1));
-        this.image.addChild(this._container);
-    }
-
-    createDisplayObject({width, height}) {
-        return this.game.add.tileSprite(0, 0, width || 1, height || 1, 'paneBackground');
-    }
-
-    reflow() {
-        super.reflow();
-        if (!this._container) return;
-        this._container.x = Math.floor(this.padding - this.image.width * this.image.anchor.x);
-        this._container.y = Math.floor(this.padding - this.image.height * this.image.anchor.y);
-        this._container.width = this.image.width - this.padding*2;
-        this._container.height = this.image.height - this.padding*2;
+    initGroup({width, height, bgImage='paneBackground'}) {
+        this.add(this.game.add.sprite(0, 0, bgImage));
     }
 
     getContainer() {
@@ -142,33 +76,51 @@ class Pane extends UIComponent {
 }
 
 class Label extends UIComponent {
-    createDisplayObject({text}) {
-        var style = { font: "12pt Arial", fill: "black"};
-        return this.game.add.text(0, 0, text || '',style);
+    initGroup({text, style={ font: "12pt Bookman Old Style", fill: "black"}}) {
+        this._text= this.game.make.text(0, 0, text || '',style);
+        this.add(this._text);
     }
 
     get text() {
-        return this.image.text;
+        return this._text.text;
     }
 
     set text(val) {
-        this.image.text = val;
+        this._text.text = val;
     }
 
     addColor(...args) {
-        return this.image.addColor(...args);
+        return this._text.addColor(...args);
     }
 
     resetColors() {
-        this.image.colors=[];
+        this._text.colors=[];
     }
 }
 
+class PawnShop extends UIComponent {
+
+    setStock(pawnTypeArray) {
+        this.removeAll(true);
+        this.addMultiple(pawnTypeArray.map(pawnType=>{
+            const sprite = new Phaser.Sprite(this.game,0,0,'pawn');
+            sprite.frame = pawnType.ordinal;
+            return sprite;
+        }));
+        this.align(-1,1,32,32,Phaser.BOTTOM_CENTER);
+        // has to be called twice to properly take effect, don't ask me why :/
+        this.reflow();
+        this.reflow();
+    }
+}
+
+
 class Button extends UIComponent {
-    createDisplayObject({sprite}) {
+    initGroup({sprite}) {
         let btn = this.game.add.button(0, 0, sprite);
         this.onInputUp = btn.onInputUp;
         this.onInputDown = btn.onInputDown;
+        this.add(btn);
         return btn;
     }
 }
@@ -181,9 +133,10 @@ function UI (spec, def) {
         addComponent
     };
     addComponent(def);
+    components[0].reflow();
 
     const resizeHandler = debounce(()=> {
-        components.forEach(comp=>comp.reflow());
+        components[0].reflow();
     }, 100);
 
     game.scale.onSizeChange.add(resizeHandler);

@@ -125,6 +125,7 @@ function Play(game) {
         setCommandHotkey('N','actions.step');
         setCommandHotkey('SPACEBAR','actions.play');
         setCommandHotkey('F1','gridOverlays.toggle');
+        setCommandHotkey('F2','ui.toggleDebugScene');
         setCommandHotkey('F8','gameState.storeSnapshot');
         setCommandHotkey('F10','gameState.loadSnapshot');
         setCommandHotkey('O','gridOverlays.next');
@@ -134,6 +135,21 @@ function Play(game) {
         // DEBUG
 
         gameUi.debug.attachOverlayRenderer(gameUi.gridOverlays);
+
+        let sceneInterruptedByDebug = null;
+        gameUi.debug.addCommand('ui','toggleDebugScene', ()=> {
+            
+            if (sceneInterruptedByDebug) {
+                gameUi.ui.changeSceneNow(sceneInterruptedByDebug);
+                log.info("DEBUG OFF: Restored scene "+sceneInterruptedByDebug);
+                sceneInterruptedByDebug = null;
+            } else {
+                sceneInterruptedByDebug = gameUi.ui.scene.name;
+                gameUi.ui.changeSceneNow('DEBUG');
+                log.info("DEBUG ON: Switched to debug scene");
+            }
+        });
+
 
         gameUi.debug.addCommand('actions','play', ()=> {
             breakAfterEveryAction = false;
@@ -233,6 +249,8 @@ function Play(game) {
     function preload() {
         game.time.advancedTiming = true;
         game.time.desiredFps = 60;
+        //  Load the Google WebFont Loader script
+        game.load.script('webfont', '//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js');        
     }
 
     function update() {
