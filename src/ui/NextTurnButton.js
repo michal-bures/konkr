@@ -6,8 +6,8 @@ function NextTurnButton(spec) {
 
     let group;
 
-    let { button } = new UI(spec,{
-            name: 'button',
+    let { nextTurnButton } = new UI(spec,{
+            name: 'nextTurnButton',
             component: 'button',
             sprite: 'nextTurnButton',
             align: Phaser.BOTTOM_RIGHT,
@@ -15,11 +15,26 @@ function NextTurnButton(spec) {
             vOffset: -10,
         });
 
-    assertDefined(button);
-    group = button;
+    let { undoButton } = new UI(spec,{
+            name: 'undoButton',
+            component: 'button',
+            sprite: 'undoButton',
+            align: Phaser.BOTTOM_LEFT,
+            hOffset: -10,
+            vOffset: -10,
+        });
 
-    button.onInputUp.add(() => {
+    assertDefined(nextTurnButton);
+    group = game.make.group();
+    group.add(nextTurnButton);
+    group.add(undoButton);
+
+    nextTurnButton.onInputUp.add(() => {
         ui.endTurn();
+    });
+
+    undoButton.onInputUp.add(() => {
+        ui.undo();
     });
 
     return Object.freeze({

@@ -32,6 +32,7 @@ function Scene(spec, cfg) {
                     .add(bindSignals[moduleName][signalName]));
             });
         });
+        if (cfg.setup) cfg.setup();
     }
 
     function interrupt() {
@@ -46,6 +47,7 @@ function Scene(spec, cfg) {
 
     function teardown() {
         purgeSignalBindings();
+        if (cfg.teardown) cfg.teardown();
         return Promise.resolve();
     }
 

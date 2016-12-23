@@ -5,9 +5,10 @@ import { convertToWorldCoordinates } from './Renderer';
 import HexGroup from 'lib/hexgrid/HexGroup';
 import Planner from 'lib/Planner';
 
-function PawnSprites ({tweens, game, log, pawns, gameState, grid, players, economy}) {
+function PawnSprites ({tweens, game, log, pawns, regions, gameState, grid, players, economy}) {
     let spriteAtHex = {},
-        group = game.make.group();
+        group = game.make.group(),
+        idleHighlighting=false;
 
     let self = Object.freeze({ 
         group,
@@ -18,6 +19,8 @@ function PawnSprites ({tweens, game, log, pawns, gameState, grid, players, econo
         atHex,
         synchronize,
         toDebugString,
+        set highlightIdle(val) { setHighlightIdle(val); },
+        get highlightIdle() { return idleHighlighting; }
     });
 
     class PawnSprite extends Phaser.Sprite {
@@ -31,11 +34,67 @@ function PawnSprites ({tweens, game, log, pawns, gameState, grid, players, econo
             this.anchor.set(0.5);
             this.setType(pawnType);
             this.hex = hex;
+            this.flagSprite = null;
             group.add(this);
+        }
+
+        destroy() {
+            super.destroy();
+            this.stopJumping();
         }
 
         setType(pawnType) {
             this.frame=(pawnType?pawnType.ordinal:0);
+            this.pawnType = pawnType;
+        }
+
+        setFlag() {
+            if (!this.flagSprite) {
+                this.flagSprite=game.make.sprite(0,0,'flag');
+                this.flagSprite.anchor.set(0.5);
+                this.addChild(this.flagSprite);
+            }
+        }
+
+        removeFlag() {
+            if (!this.flagSprite) return;
+            this.removeChild(this.flagSprite);
+            this.flagSprite.destroy();
+            this.flagSprite = null;
+        }
+
+        startJumping() {
+            if (this.jumpTween) return;
+            this.jumpTween = game.add.tween(this).to({y:this.y-3},200,Phaser.Easing.Quadratic.In,true);
+            this.jumpTween.yoyo(200);
+            this.jumpTween.repeat(-1);
+        }
+
+        stopJumping() {
+            if (!this.jumpTween) return;
+            this.jumpTween.stop();
+            this.jumpTween=null;
+        }
+
+        refreshDecorations() {
+            if (!idleHighlighting && !this.hex) {
+                this.topJumping();
+                this.removeFlag();
+            } else {
+                if (this.pawnType === pawns.TOWN) {
+                    if (economy.treasuryOf(regions.regionOf(this.hex)) >= economy.priceOf(pawns.TROOP_1)) {
+                        this.setFlag();
+                    } else {
+                        this.removeFlag();
+                    }
+                } else if (this.pawnType.isTroop()) {
+                    if (players.activePlayer.canGrabPawn(pawns.pawnAt(this.hex))) {
+                        this.startJumping();
+                    } else {
+                        this.stopJumping();
+                    }
+                }
+            }
         }
 
         reposition(targetHex,animate=true) {
@@ -121,8 +180,23 @@ function PawnSprites ({tweens, game, log, pawns, gameState, grid, players, econo
             log.debug(`Creating pawn sprite ${pawnType} at ${hex}`);
             let sprite = new PawnSprite(pawnType,hex);
             spriteAtHex[hex.id] = sprite;
+            if (idleHighlighting && players.activePlayer.canGrabPawn(pawns.pawnAt(hex))) sprite.startJumping();
+
             return sprite;
         }
+    }
+
+    function setHighlightIdle(val) {
+        if (idleHighlighting===val) return;
+        idleHighlighting = val;
+        players.activePlayer.getAvailableUnits().forEach(pawn=>{
+            getOrCreateSprite(pawn.hex, pawn.pawnType).refreshDecorations();
+        });
+        players.activePlayer.regions.forEach(region=> {
+            if (economy.capitalOf(region)) {
+                getOrCreateSprite(economy.capitalOf(region), pawns.TOWN).refreshDecorations();
+            }
+        });
     }
 
     function destroyOrphanedSprites() {

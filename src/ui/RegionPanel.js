@@ -66,7 +66,7 @@ function RegionPanel(spec) {
 
 
     function refreshIfMatchingCurrentRegion(region) {
-        if(region === currentRegion) setRegion(region);
+        if(region === currentRegion) synchronize();
     }
 
 
@@ -85,7 +85,7 @@ function RegionPanel(spec) {
         if (!region) {
             mainContainer.hide();
         } else {
-            regionNameLabel.text = `#${region.id}`;
+            //regionNameLabel.text = `#${region.id}`;
             const treasury = economy.treasuryOf(region);
             let netIncome = economy.netIncomeOf(region);
             if (players.grabbedPawn) netIncome -= (players.grabbedPawn.upkeep || 0);

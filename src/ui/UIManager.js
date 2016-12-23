@@ -42,6 +42,7 @@ function UIManager(spec) {
         endTurn,
         render,
         update,
+        undo,
         processActions,
         get selectedRegion() { return selectedRegion; },
         get selectedHex() { return selectedHex; },
@@ -105,6 +106,11 @@ function UIManager(spec) {
         }
     });
 
+    regions.onMerged.add((srcRegion,tgtRegion)=> {
+        if (srcRegion === selectedRegion) selectRegion(tgtRegion);
+    });
+
+
     regions.onDestroyed.add(region=> {
         if (!selectedRegion) return;
         if (region === selectedRegion) {
@@ -131,11 +137,16 @@ function UIManager(spec) {
 
     // scene switching based on actions
     actions.setHandler('AWAIT_PLAYER_INPUT', (action) => {
+        action.data.prevScene = scene.name;
         if (scene!=scenes.PLAYER_TURN) changeScene('PLAYER_TURN');
         resumeActions = action.resolve;
     },
     {
-        undo() {}
+        undo(action) {
+            if (scene.name!=action.data.prevScene) {
+                changeScene(action.data.prevScene);
+            }
+        }
     });
 
     gameState.onReset.add(()=> {
@@ -155,6 +166,10 @@ function UIManager(spec) {
                 });
 
         });
+    }
+
+    function undo() {
+        actions.undoUntil('AWAIT_PLAYER_INPUT');
     }
 
     function changeSceneNow(nextSceneName) {

@@ -1,6 +1,6 @@
 const VALIDATE_ARGUMENTS = true; // validate argument values of every action call? (slower but detects errors)
 
-const MAX_HISTORY_SIZE=100; // don't keep undo history for more than the specified number of actions
+const MAX_HISTORY_SIZE=200; // don't keep undo history for more than the specified number of actions
 
 function ActionsProvider(spec, providerName, config) {
     let {log, debug} = spec;
@@ -11,6 +11,7 @@ function ActionsProvider(spec, providerName, config) {
         setHandler,
         schedule,
         undoLastAction,
+        undoUntil,
         checkHandlers,
         abortAll,
         toString, 
@@ -71,13 +72,37 @@ function ActionsProvider(spec, providerName, config) {
     Object.seal(handlers);
 
     function undoLastAction(){
-        if (actionRunning) throw Error('Cannot issue UNDO while another action is running');
+        _undoLast();
+        executeNext();
+    }
+
+    function _undoLast() {
         if (actionPointer===0) throw Error('No action left to undo');
-        let actionToUndo = actionQueue[actionPointer-1];
-        actionQueue.splice(actionPointer,actionToUndo.descendants);
+        let undoPointer = actionRunning?actionPointer:actionPointer-1;
+
+        let actionToUndo = actionQueue[undoPointer];
+        actionQueue.splice(undoPointer+1,actionToUndo.descendants);
         actionToUndo.descendants=0;
+        if (!actionToUndo.canBeUndone()) throw Error(`${actionToUndo} does not support undo`);
         actionToUndo.undo();
-        --actionPointer;
+        if (actionRunning) {
+            actionRunning = false;
+        } else {
+            --actionPointer;
+        }
+    }
+
+    function undoUntil(actionName) {
+        if (!actionQueue.slice(0,actionPointer-1).some(action=>action.name===actionName)) {
+            log.warn("No action left to undo");
+            return;
+        } 
+        if (actionRunning) _undoLast();
+        _undoLast();
+        while (actionQueue[actionPointer].name !== actionName) {
+            _undoLast();
+        }
+        executeNext();
     }
 
     function attachGuard(guardFunc, title) {
@@ -108,6 +133,7 @@ function ActionsProvider(spec, providerName, config) {
             data: {}, // auxiliary data that can be assigned by handlers, useful for storing information needed for undo
             issuer:null,            
             canBeUndone() { return !!handlers[name] && handlers[name].undo; },
+            canAbort() { return !!handlers[name] && handlers[name].abort; },
         });
 
         if (args.length != actionDefs[name].length) {
@@ -138,8 +164,8 @@ function ActionsProvider(spec, providerName, config) {
         }
 
         function start() {
-            if (resolution) throw Error(`Attempt to restart action that is already done.`);
-            if (processing) throw Error(`Attempt to restart action that is already running.`);
+            if (resolution) throw Error(`Attempt to restart action that is already done. (${self})`);
+            if (processing) throw Error(`Attempt to restart action that is already running. (${self})`);
             processing = true;
             if (!handlers[name]) throw Error(`Missign handler for action ${name}`);
             log.debug(`Now running ${self}`);
@@ -148,9 +174,10 @@ function ActionsProvider(spec, providerName, config) {
 
         function undo() {
             handlers[name].undo(self,...args);
+            log.debug(`Undone ${self}`);
             resolution = null;
+            processing = false;
         }
-
 
         // mark the action resolved and enable the planner to move on to the next action on the 
         // stack
@@ -285,7 +312,12 @@ function ActionsProvider(spec, providerName, config) {
     function setHandler(actionName, handle, config={}) {
         if (handlers[actionName] === undefined) throw Error(`Invalid action name '${actionName}'`);
         if (handlers[actionName]) throw Error(`Action '${actionName}' is already handled by '${handlers[actionName].description}' - cannot assign to '${config.description}'`);
-        handlers[actionName] = { handle, description: config.description, undo: config.undo };
+        handlers[actionName] = { 
+            handle, 
+            description: config.description, 
+            undo: config.undo,
+            abort: config.abort,
+        };
     }
 
     function toString() {
@@ -294,7 +326,7 @@ function ActionsProvider(spec, providerName, config) {
 
     function toDebugString() {
 
-        let ptr = Math.max(0, actionPointer-3);
+        let ptr = Math.max(0, actionPointer-5);
         let treeAnnotation="";
         if (ptr!==0) {
             treeAnnotation=`  ✓ <i>(${ptr} more undoable actions)</i>\n`;

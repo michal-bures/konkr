@@ -19,7 +19,9 @@ function TweenManager({game}) {
     }
 
     function waitForAll() {
-        return Promise.all(runningTweens().map(tween => new Promise(resolve=>tween.onComplete.add(resolve))))
+        return Promise.all(runningTweens().map(tween => new Promise(resolve=> {
+            tween.onComplete.add(resolve);
+        })))
                       .then(()=>{tweens=[];});
     }
 
