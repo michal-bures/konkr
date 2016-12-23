@@ -6,9 +6,9 @@ import UI from 'lib/controls/ui';
 
 
 const DEFAULT_GAME_SETTTINGS = {
-    worldWidth: 20,
-    worldHeight: 20,
-    numFactions: 4,   
+    worldWidth: 10,
+    worldHeight: 10,
+    numFactions: 2,   
     playerFaction: 1,
 };
 
@@ -67,15 +67,15 @@ function Play(game) {
 
         // DEBUG TOOLS SETUP
 
-        let breakAfterEveryAction = true;
+        let breakAfterEveryAction = false;
         let debugBreakCallback = null;
 
         function shouldBreakBefore(nextAction) {
             if (breakAfterEveryAction) return true;
             return false;
             switch (nextAction && nextAction.name) {
-                case 'STORE_STATE':
-                    return (nextAction.args[0] === 'konkr_autosave_turn_start');
+//                case 'STORE_STATE':
+//                    return (nextAction.args[0] === 'konkr_autosave_turn_start');
                 case 'START_PLAYER_TURN_X':
                     return (nextAction.args[0].id === 1);
                 default:
@@ -108,8 +108,8 @@ function Play(game) {
 
         //pause after game state has been reloaded
         gameState.onReset.add(()=> {
-            log.info('❚❚ Halted after GameState.reset');
-            breakAfterEveryAction = true;
+//            log.info('❚❚ Halted after GameState.reset');
+//            breakAfterEveryAction = true;
         });
 
         function setCommandHotkey(keyName,commandName) {
@@ -194,7 +194,10 @@ function Play(game) {
 
 
         gameUi.debug.addCommand('gameState','storeSnapshot', ()=> {
-            gameSpec.actions.schedule("STORE_STATE", "konkr_devsnapshot");
+            if (gameSpec.actions.getCurrent() && gameSpec.actions.getCurrent().name ==='AWAIT_PLAYER_INPUT') {
+                gameSpec.actions.schedule('AWAIT_PLAYER_INPUT');
+            }
+            gameState.storeState("konkr_devsnapshot");
             if (debugBreakCallback) {
                 debugBreakCallback();
                 debugBreakCallback = null;
@@ -203,8 +206,7 @@ function Play(game) {
         });
 
         gameUi.debug.addCommand('gameState','loadSnapshot', ()=> {
-            gameSpec.actions.abortAll();
-            gameSpec.actions.schedule("LOAD_STATE", "konkr_devsnapshot");
+            gameState.loadState("konkr_devsnapshot");
             if (debugBreakCallback) {
                 debugBreakCallback();
                 debugBreakCallback = null;
@@ -256,6 +258,7 @@ function Play(game) {
     function update() {
         gameUi.scrolling.update();
         gameUi.hexSelectionProxy.update();
+        gameUi.grabbedPawn.update();
     }
 
     function render() {

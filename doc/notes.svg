@@ -502,9 +502,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="132.11941"
-     inkscape:cy="289.46828"
+     inkscape:zoom="0.35355339"
+     inkscape:cx="152.32599"
+     inkscape:cy="100.06649"
      inkscape:document-units="px"
      inkscape:current-layer="g3518"
      showgrid="true"
@@ -521,7 +521,8 @@
      showborder="true"
      inkscape:snap-page="false"
      inkscape:object-nodes="true"
-     inkscape:object-paths="true">
+     inkscape:object-paths="true"
+     inkscape:showpageshadow="true">
     <inkscape:grid
        type="xygrid"
        id="grid2990"
@@ -540,7 +541,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -548,7 +549,7 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Ground"
-     style="display:none"
+     style="display:inline"
      sodipodi:insensitive="true">
     <g
        style="display:inline"
@@ -3312,7 +3313,7 @@
          sodipodi:cy="899.45032"
          sodipodi:rx="3.6239223"
          sodipodi:ry="3.7123106"
-         d="m 210.18749,899.45032 a 3.6239223,3.7123106 0 1 1 -7.24784,0 3.6239223,3.7123106 0 1 1 7.24784,0 z"
+         d="m 210.18749,899.45032 c 0,2.05025 -1.62248,3.71231 -3.62392,3.71231 -2.00144,0 -3.62392,-1.66206 -3.62392,-3.71231 0,-2.05026 1.62248,-3.71231 3.62392,-3.71231 2.00144,0 3.62392,1.66205 3.62392,3.71231 z"
          transform="matrix(0.89224066,0,0,0.89224066,-8.2623222,92.160962)"
          inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
          inkscape:export-xdpi="90"
@@ -3393,7 +3394,7 @@
          sodipodi:cy="915.73718"
          sodipodi:rx="4.59375"
          sodipodi:ry="1.8125"
-         d="m 308.5,915.73718 a 4.59375,1.8125 0 1 1 -9.1875,0 4.59375,1.8125 0 1 1 9.1875,0 z"
+         d="m 308.5,915.73718 c 0,1.00102 -2.05669,1.8125 -4.59375,1.8125 -2.53706,0 -4.59375,-0.81148 -4.59375,-1.8125 0,-1.00101 2.05669,-1.8125 4.59375,-1.8125 2.53706,0 4.59375,0.81149 4.59375,1.8125 z"
          transform="matrix(2.1959539,0,0,1.3793043,-459.80344,-353.60477)" />
       <rect
          style="color:#000000;fill:url(#linearGradient4683);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
@@ -3438,7 +3439,7 @@
          inkscape:export-xdpi="90"
          inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
          transform="matrix(0.89224066,0,0,0.89224066,22.737693,92.150711)"
-         d="m 210.18749,899.45032 a 3.6239223,3.7123106 0 1 1 -7.24784,0 3.6239223,3.7123106 0 1 1 7.24784,0 z"
+         d="m 210.18749,899.45032 c 0,2.05025 -1.62248,3.71231 -3.62392,3.71231 -2.00144,0 -3.62392,-1.66206 -3.62392,-3.71231 0,-2.05026 1.62248,-3.71231 3.62392,-3.71231 2.00144,0 3.62392,1.66205 3.62392,3.71231 z"
          sodipodi:ry="3.7123106"
          sodipodi:rx="3.6239223"
          sodipodi:cy="899.45032"
@@ -3573,7 +3574,7 @@
          sodipodi:nodetypes="cccsssccsc" />
       <path
          transform="matrix(0.64,0,0,2,86.780666,-913.34937)"
-         d="m 252,909.86218 a 12.5,2.5 0 1 1 -25,0 12.5,2.5 0 1 1 25,0 z"
+         d="m 252,909.86218 c 0,1.38071 -5.59644,2.5 -12.5,2.5 -6.90356,0 -12.5,-1.11929 -12.5,-2.5 0,-1.38071 5.59644,-2.5 12.5,-2.5 6.90356,0 12.5,1.11929 12.5,2.5 z"
          sodipodi:ry="2.5"
          sodipodi:rx="12.5"
          sodipodi:cy="909.86218"
@@ -3601,7 +3602,7 @@
          sodipodi:cy="909.86218"
          sodipodi:rx="12.5"
          sodipodi:ry="2.5"
-         d="m 252,909.86218 a 12.5,2.5 0 1 1 -25,0 12.5,2.5 0 1 1 25,0 z"
+         d="m 252,909.86218 c 0,1.38071 -5.59644,2.5 -12.5,2.5 -6.90356,0 -12.5,-1.11929 -12.5,-2.5 0,-1.38071 5.59644,-2.5 12.5,-2.5 6.90356,0 12.5,1.11929 12.5,2.5 z"
          transform="matrix(0.47999992,0,0,1.4999997,125.10069,-474.41804)"
          inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
          inkscape:export-xdpi="90"
@@ -3631,14 +3632,14 @@
          sodipodi:cy="909.86218"
          sodipodi:rx="12.5"
          sodipodi:ry="2.5"
-         d="m 252,909.86218 a 12.5,2.5 0 1 1 -25,0 12.5,2.5 0 1 1 25,0 z"
+         d="m 252,909.86218 c 0,1.38071 -5.59644,2.5 -12.5,2.5 -6.90356,0 -12.5,-1.11929 -12.5,-2.5 0,-1.38071 5.59644,-2.5 12.5,-2.5 6.90356,0 12.5,1.11929 12.5,2.5 z"
          transform="matrix(0.64,0,0,2,86.780666,-929.34937)"
          inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\pawn.png"
          inkscape:export-xdpi="90"
          inkscape:export-ydpi="90" />
       <path
          transform="matrix(0.64,0,0,2,86.780666,-929.34937)"
-         d="m 252,909.86218 a 12.5,2.5 0 1 1 -25,0 12.5,2.5 0 1 1 25,0 z"
+         d="m 252,909.86218 c 0,1.38071 -5.59644,2.5 -12.5,2.5 -6.90356,0 -12.5,-1.11929 -12.5,-2.5 0,-1.38071 5.59644,-2.5 12.5,-2.5 6.90356,0 12.5,1.11929 12.5,2.5 z"
          sodipodi:ry="2.5"
          sodipodi:rx="12.5"
          sodipodi:cy="909.86218"

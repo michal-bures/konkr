@@ -68,6 +68,13 @@ function Economy(spec) {
         undo(action,region) { setTreasuryOf(region,action.data.previousAmount); }
     });
 
+    actions.setHandler('UPDATE_PLAYER_ECONOMY',(action,player) => {
+        player.regions.forEach(region=>{
+            action.schedule('UPDATE_REGION_ECONOMY',region);
+        });
+        action.resolve();
+    });
+
     actions.setHandler('UPDATE_REGION_ECONOMY', (action, region) => {
         if (!capitalOf(region) && regionQualifiesForCapital(region)) {
             action.schedule('SET_REGION_TREASURY',region,0);
@@ -127,11 +134,13 @@ function Economy(spec) {
         const oldValue = treasuryOf(region) || 0;
         let newValue = oldValue + netIncomeOf(region);
         if (newValue < 0) {
-            newValue = 0;
             self.onRegionBankrupt.dispatch(region);
             actions.schedule('KILL_TROOPS_IN_REGION', region);
+            actions.schedule('SET_REGION_TREASURY', region, 0);
+            actions.schedule('COLLECT_REGION_INCOME', region);
+        } else {
+            actions.schedule('SET_REGION_TREASURY', region, newValue);
         }
-        actions.schedule('SET_REGION_TREASURY', region, newValue);
         action.resolve();
     }, { undo() {} });    
 

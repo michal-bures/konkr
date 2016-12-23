@@ -59,6 +59,7 @@ function AI(spec) {
             action.schedule("AI_FREE_UP_HEX",defenseTarget.hex);
             action.schedule("BUY_UNIT", pawns.TOWER, region);
             action.schedule("DROP_UNIT",defenseTarget.hex);
+            action.schedule("AI_TASK_NEXT_UNIT", player, region);
             return action.resolve();
         }
 
@@ -101,7 +102,7 @@ function AI(spec) {
         plan.use.forEach(pawn => {
             action.schedule('GRAB_UNIT', pawn);
         });
-        action.schedule('CONQUER_HEX', nextTarget, region);
+        action.schedule('CONQUER_HEX', nextTarget);
         action.schedule('AI_TASK_NEXT_UNIT', player, region);
         commitedUnits.add(nextTarget);
         action.resolve();

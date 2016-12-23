@@ -230,7 +230,6 @@ function ActionsProvider(spec, providerName, config) {
     function abortAll() {
         log.debug('Aborting all planed actions');
         actionQueue.splice(actionPointer+(actionRunning?1:0));
-        actionPointer=0;
     }
 
     function executeNext(lastAction) {

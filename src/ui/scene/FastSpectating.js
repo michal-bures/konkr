@@ -58,7 +58,7 @@ function FastSpectating(spec){
                             if (!sprite) throw Error(`Cannot start move transition from ${fromHex} - no pawn sprite present`);
                             return sprite;
                           }).concat(spawnFrom.map(({hex,pawnType})=>{
-                            let sprite = pawnSprites.create(hex, pawnType);
+                            let sprite = pawnSprites.create(pawnType, hex);
                             return sprite;
                           }));
             let promises = sprites.map(sprite=>sprite.reposition(toHex));

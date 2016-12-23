@@ -4,7 +4,7 @@ import { drawInnerHex, convertToWorldCoordinates } from 'ui/Renderer';
 function GridOverlays({game, grid, log, debug, regions, gameState}) {
     
     let overlays = new OrderedMap(),
-        group = game.add.group(),
+        group = game.make.group(),
         currentOverlay = null,
         dirty = true,
         enabled = false;

@@ -23,7 +23,7 @@ function Actions(spec) {
         'SETUP_PLAYERS': ['plain','plain'], // (numFactions, playerFaction)
         'START_PLAYER_TURN': ["player"], // (player)
         'END_PLAYER_TURN': ["player"], // (player)
-        'CONQUER_HEX': ["hex", "region"], // (hex, region)
+        'CONQUER_HEX': ["hex"], // (hex)
         'BUY_UNIT': ["pawnType", "region"], // (unitType, region)
         'GRAB_UNIT': ["pawn"], // (pawn)
         'DROP_UNIT': ["hex"], // (hex)
@@ -47,6 +47,7 @@ function Actions(spec) {
         'REMOVE_REGION': ["region"],
 
         // Handled by Economy
+        'UPDATE_PLAYER_ECONOMY': ["player"],
         'UPDATE_REGION_ECONOMY': ["region"],
         'COLLECT_REGION_INCOME': ["region"],
         'SET_INITIAL_TREASURY': [], // -> reset treasury for all region in the world to an initial value based on size
@@ -69,7 +70,7 @@ function Actions(spec) {
         player: {
             toJSON(obj) { return obj.id; },
             fromJSON(id) { return spec.players.byId(id); },
-            validate(val) { return !!(val && val.id); }
+            validate(val) { return !!(val && val.id !== undefined); }
         },
         hex : {
             toJSON(obj) { return obj.id; },

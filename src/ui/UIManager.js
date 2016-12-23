@@ -30,18 +30,21 @@ function UIManager(spec) {
         onRegionSelected: new Phaser.Signal(/* region */),
         onRegionHovered: new Phaser.Signal(/* region */),
         onSelectedRegionChanged: new Phaser.Signal(/* region */),
+
         get uiSpec() { return uiElements; },
         changeScene,
         changeSceneNow,
         uiElementGroups: {},
         selectHex,
         selectRegion,
+        buyPawn, //(pawnType)
         get scene() { return scene },
         endTurn,
         render,
         update,
-        selectedRegion() { return selectedRegion; },
-        selectedHex() { return selectedHex; },
+        processActions,
+        get selectedRegion() { return selectedRegion; },
+        get selectedHex() { return selectedHex; },
         toDebugString
     });
 
@@ -64,6 +67,7 @@ function UIManager(spec) {
         messages: spec => new Messages(spec),
         nextTurnButton: spec => new NextTurnButton(spec),
         tweens: spec => new TweenManager(spec),
+        grabbedPawn: spec => new Renderer.GrabbedPawn(spec),
         ui: () => self
     });
 
@@ -79,13 +83,14 @@ function UIManager(spec) {
         'messages',
         'uiRegionPanel',
         'nextTurnButton',
+        'grabbedPawn',
     ];
     Z_ORDER.forEach(e => game.world.add(uiElements[e].group));
 
     let scenes = {
         'FAST_SPECTATING': new Scene.FastSpectating(uiElements),
         'INSTANT_SPECTATING': new Scene.InstantSpectating(uiElements),
-        'PLAYER_TURN': new Scene.PlayerTurn(uiElements),
+        'PLAYER_TURN': new Scene.LocalPlayerTurn(uiElements),
         'DEBUG': new Scene.Debug(uiElements)
     };
 
@@ -128,12 +133,13 @@ function UIManager(spec) {
     actions.setHandler('AWAIT_PLAYER_INPUT', (action) => {
         if (scene!=scenes.PLAYER_TURN) changeScene('PLAYER_TURN');
         resumeActions = action.resolve;
+    },
+    {
+        undo() {}
     });
 
     gameState.onReset.add(()=> {
         changeSceneNow(defaultSpectatorScene);
-        uiElements.landSprites.synchronize();
-        uiElements.pawnSprites.synchronize();
         selectRegion(null);
     });
 
@@ -161,7 +167,15 @@ function UIManager(spec) {
         if (!scenes[nextSceneName]) throw Error(`Invalid scene name ${nextSceneName}`);
         scene = scenes[nextSceneName];
         Z_ORDER.forEach(
-            elementId=>uiElements[elementId].group.visible=!!scene.uiElements[elementId]
+            elementId=> {
+                let el = uiElements[elementId];
+                if (scene.uiElements[elementId]) {
+                    el.group.visible=true;
+                    if (el.synchronize) el.synchronize();
+                } else {
+                    el.group.visible=false;
+                }
+            }
         );
         scene.setup();
     }
@@ -173,10 +187,6 @@ function UIManager(spec) {
 
     function selectRegion(region) {
         if (selectedRegion === region) return;
-        if (region!==null && scene.regionSelectFilter && !scene.regionSelectFilter(region)) {
-            log.debug(`Selection of region ${region} denied by scene filter`);
-            return selectRegion(null);
-        }
         selectedRegion = region;
         self.onRegionSelected.dispatch(selectedRegion);
     }
@@ -194,6 +204,11 @@ function UIManager(spec) {
         actions.schedule('AWAIT_PLAYER_INPUT');
         resumeActions();
         resumeActions = null;
+    }
+
+    function buyPawn(pawnType) {
+        actions.schedule('BUY_UNIT', pawnType, selectedRegion);
+        processActions();
     }
 
     function render() {

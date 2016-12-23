@@ -3,7 +3,14 @@ import HexGroup from 'lib/hexgrid/HexGroup';
 
 function Players(spec) {
 
-    let { actions, economy, grid, pawns, regions, ids, log } = spec;
+    let { actions, economy, grid, pawns, regions, ids, log, warfare } = spec;
+
+    const _players = [];
+    
+    let activePlayer = null,
+        grabbedPawn = null,
+        grabbedPawnRegion = null,
+        movedUnits = {};
 
     class Player {
         constructor(id, name, type) {
@@ -21,14 +28,37 @@ function Players(spec) {
             return ownerOf(region) && (ownerOf(region).id === this.id);
         }
 
-        canMoveUnit(pawn) {
-            return this.controls(regions.regionOf(pawn.hex)) && !movedUnits[pawn.hex.id];
+        canGrabPawn(pawn) {
+            return pawn.isTroop() && this.controls(regions.regionOf(pawn.hex)) && !movedUnits[pawn.hex.id];
+        }
+
+        canDropPawnAt(hex) {
+            if (!grabbedPawn) return false;
+            if (regions.regionOf(hex)!=grabbedPawnRegion) return false;
+            if (pawns.pawnAt(hex)) {
+                return (pawns.getMergeResult(pawns.pawnAt(hex),grabbedPawn));
+            } else {
+                return true;
+            }
+        }
+
+        canConquerHex(hex) {
+            if (!grabbedPawn || !grabbedPawn.isTroop()) return false;
+            if (!grabbedPawnRegion.hexes.neighbours().contains(hex)) {
+                log.debug(`Cannot conquer ${hex} as it's not adjacent to the selected region`);
+                return false;
+            }
+            if (warfare.defenseOf(hex) >= grabbedPawn.might) {
+                log.debug(`Cannot conquer ${hex} - not enough might`);
+                return false;
+            }
+            return true;
         }
 
         getAvailableUnits(region) {
             let ret = pawns.select({ 
                 hexes: region.hexes, 
-                custom: pawn=> pawn.isTroop() && this.canMoveUnit(pawn)
+                custom: pawn=> pawn.isTroop() && this.canGrabPawn(pawn)
             });
             log.debug("available units: ", ret);
             return ret;
@@ -41,13 +71,6 @@ function Players(spec) {
         }
     }
 
-    const _players = [];
-    
-    let activePlayer = null,
-        grabbedPawn = null,
-        grabbedPawnRegion = null,
-        movedUnits = {};
-
     // public API
     let self = {
         byId(id) { return _players[id]; },
@@ -57,6 +80,8 @@ function Players(spec) {
         onDroppedPawn: new Phaser.Signal(/* pawnType, hex */),
         onConqueringHex: new Phaser.Signal(/* hex */),
         onBoughtPawn: new Phaser.Signal(/* pawnType, region */),
+        get grabbedPawn() { return grabbedPawn; },
+        get grabbedRegion() { return grabbedPawnRegion; },
         toDebugString,
         toJSON,
         fromJSON
@@ -98,6 +123,10 @@ function Players(spec) {
                 p = new Player(id,name,type);
                 p.play = ()=> { actions.schedule("AWAIT_PLAYER_INPUT"); };
                 break;
+            case 'Neutral':
+                p = new Player(id,name,type);
+                p.play = ()=>{};
+                break;
             default:
                 throw Error(`Unrecognized player type: ${type}`);
         }
@@ -136,15 +165,14 @@ function Players(spec) {
         }
     });
 
-    actions.setHandler('CONQUER_HEX', (action, hex, region) => {
+    actions.setHandler('CONQUER_HEX', (action, hex) => {
         if (!grabbedPawn) return action.reject(`Attempted to conquer ${hex} with no pawn grabbed!`);
-        if (!region) return action.reject(`Conquering region not specified`);
         movedUnits[hex.id] = true;
 
         if (pawns.pawnAt(hex)) {
             action.schedule('DESTROY_PAWN', pawns.pawnAt(hex));
         }
-        action.schedule('CHANGE_HEXES_REGION', new HexGroup(hex), region);
+        action.schedule('CHANGE_HEXES_REGION', new HexGroup(hex), grabbedPawnRegion);
         action.schedule('DROP_UNIT', hex);
         action.resolve();
         self.onConqueringHex.dispatch(grabbedPawn,hex);
@@ -172,7 +200,12 @@ function Players(spec) {
 
     actions.setHandler('DROP_UNIT', (action, hex) => {
         if (regions.regionOf(hex) != grabbedPawnRegion) throw Error(`Tried to drop pawn into a different region then it originates from.`);
-        if (pawns.pawnAt(hex)) throw Error(`Cannot drop pawn on ${hex} - already occupied by ${pawns.pawnAt(hex)} `);
+        if (pawns.pawnAt(hex)) {
+            let newType = pawns.getMergeResult(pawns.pawnAt(hex), grabbedPawn);
+            if (!newType) throw Error(`Cannot drop pawn on ${hex} - already occupied by ${pawns.pawnAt(hex)}, merge impossible.`);
+            actions.schedule('DESTROY_PAWN', pawns.pawnAt(hex));
+            grabbedPawn = newType;
+        }
         action.schedule('CREATE_PAWN',grabbedPawn, hex);
         action.data.grabbedPawn = grabbedPawn;
         action.data.grabbedPawnRegion = grabbedPawnRegion;
@@ -191,8 +224,6 @@ function Players(spec) {
         if (!cost) throw Error(`Unit ${unitType} cannot be bought by a player.`);
         if (!region) throw Error(`No region specified, who is supposed to pay for this?!`);
         if (cost > economy.treasuryOf(region)) throw Error(`Region ${region} cannot afford to buy ${unitType}.`);
-        if (grabbedPawn) throw Error(`Cannot buy unit, because player is already holding one`);
-        //TODO: Auto unit merging?
         action.schedule('ADJUST_REGION_TREASURY',region, -cost);
         addUnitToGrabbed(unitType);
         grabbedPawnRegion = region;
@@ -247,7 +278,6 @@ ${_players.filter(x=>x).map(p=>` * ${p}`).join('\n')}
 
     function ownerOf(region) {
         //TODO less bullshit, more actual implementation
-        if (!economy.capitalOf(region)) return null;
         return _players[region.faction];
     }
 

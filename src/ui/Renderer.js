@@ -43,6 +43,42 @@ function drawOnHex(graphics, hex, scale, path) {
     graphics.drawPolygon(path.map(p=>[(x + (p[0]*scale)), (y + (p[1]*scale))]));
 }
 
+function GrabbedPawn(spec) {
+    const {game, players, pawnSprites, log} = spec;
+
+    let group = game.make.group(),
+        sprite = pawnSprites.create();
+
+    sprite.fixedToCamera = true;
+    group.add(sprite);
+    group.visible = false;
+
+    return Object.freeze({
+        group,
+        synchronize,
+        update,
+    });
+
+    function synchronize() {
+        const pawnType = players.grabbedPawn;
+        if (pawnType) {
+            sprite.setType(pawnType);
+            group.visible = true;
+        } else {
+            group.visible = false;
+        }
+
+    }
+
+    function update() {
+        synchronize();
+        if (!group.visible) return;
+        sprite.cameraOffset.x = game.input.activePointer.x;
+        sprite.cameraOffset.y = game.input.activePointer.y;
+    }
+
+}
+
 function LandSprites(spec) {
     const {game, grid, gameState, regions} = spec;
     
@@ -196,6 +232,7 @@ export {
     convertToWorldCoordinates,
     drawOnHex,
     drawInnerHex,
+    GrabbedPawn,
     LandSprites, 
     RegionBorders,
     SelectedRegionHighlight,

@@ -1,7 +1,7 @@
 import { HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT, HALF_LINE_HEIGHT, OFFSET_TOP, OFFSET_LEFT, convertToWorldCoordinates } from 'ui/Renderer';
 
 function HexSelectionProxy(spec) {
-    let {game,grid,debug,log,regions,pawns,ui, warfare} = spec;
+    let {game,grid,debug,log,regions,pawns,ui, warfare, players} = spec;
 
     let active = false,
         image = initImage(),
@@ -31,9 +31,7 @@ function HexSelectionProxy(spec) {
         surface.events.onInputOut.add(() => active = false);
         surface.events.onInputDown.add(() => {
             const hex = getHexUnderCursor();
-            if (hex && regions.regionOf(hex)) {
-                ui.selectRegion(regions.regionOf(hex));
-            }
+            if (hex) ui.selectHex(hex);
         });
         return surface;
     }
@@ -51,6 +49,7 @@ function HexSelectionProxy(spec) {
         return `
 Cursor world coords: ${game.input.activePointer.worldX},${game.input.activePointer.worldY}
 Under cursor: ${hex} (${x}, ${y})
+Player: ${players.ownerOf(regions.regionOf(hex))}
 Faction: ${regions && regions.factionOf(hex)}
 Region:  ${regions && regions.regionOf(hex)}
 Pawn: ${pawns.pawnAt(hex)}

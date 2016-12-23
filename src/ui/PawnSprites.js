@@ -21,9 +21,13 @@ function PawnSprites ({tweens, game, log, pawns, gameState, grid, players, econo
     });
 
     class PawnSprite extends Phaser.Sprite {
-        constructor(hex, pawnType) {
-            const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
-            super(game, x, y+Math.floor(PAWN_OFFSET_TOP/2), 'pawn');
+        constructor(pawnType, hex) {
+            if (hex) {
+                const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
+                super(game, x, y+Math.floor(PAWN_OFFSET_TOP/2), 'pawn');
+            } else {
+                super(game, 0, 0, 'pawn');
+            }
             this.anchor.set(0.5);
             this.setType(pawnType);
             this.hex = hex;
@@ -31,7 +35,7 @@ function PawnSprites ({tweens, game, log, pawns, gameState, grid, players, econo
         }
 
         setType(pawnType) {
-            this.frame=pawnType.ordinal;
+            this.frame=(pawnType?pawnType.ordinal:0);
         }
 
         reposition(targetHex,animate=true) {
@@ -95,8 +99,8 @@ function PawnSprites ({tweens, game, log, pawns, gameState, grid, players, econo
     function getOrCreate(hex, pawnType) {
         return getOrCreateSprite(hex, pawnType);
     }
-    function create(hex, pawnType) {
-        return new PawnSprite(hex, pawnType);
+    function create(pawnType, hex) {
+        return new PawnSprite(pawnType, hex);
     }
 
     function morphSprite(hex, toPawnType, animate=true) {
@@ -115,7 +119,7 @@ function PawnSprites ({tweens, game, log, pawns, gameState, grid, players, econo
             return spriteAtHex[hex.id];
         } else {
             log.debug(`Creating pawn sprite ${pawnType} at ${hex}`);
-            let sprite = new PawnSprite(hex, pawnType);
+            let sprite = new PawnSprite(pawnType,hex);
             spriteAtHex[hex.id] = sprite;
             return sprite;
         }

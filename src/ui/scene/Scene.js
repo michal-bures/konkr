@@ -59,12 +59,12 @@ bound to ${signalBindings.length} signals`;
 // Instances
 import FastSpectating from './FastSpectating';
 import InstantSpectating from './InstantSpectating';
-import PlayerTurn from './PlayerTurn';
+import LocalPlayerTurn from './LocalPlayerTurn';
 import Debug from './Debug';
 
 Scene.InstantSpectating = InstantSpectating;
 Scene.FastSpectating = FastSpectating;
-Scene.PlayerTurn = PlayerTurn;
+Scene.LocalPlayerTurn = LocalPlayerTurn;
 Scene.Debug = Debug;
 
 export default Scene;

@@ -2,7 +2,7 @@ import Scene from './Scene';
 
 function Debug(spec){
 
-    let { pawnSprites, landSprites, hexSelectionProxy } = spec;
+    let { pawnSprites, landSprites, hexSelectionProxy, ui, regions } = spec;
 
     return new Scene(spec, { 
         name: 'DEBUG',
@@ -23,7 +23,10 @@ function Debug(spec){
             },
             regions: {
                 onHexesChangedOwner: landSprites.refreshHexes
-            }    
+            },
+            ui: {
+                onHexSelected
+            }   
         }
     });
 
@@ -39,6 +42,10 @@ function Debug(spec){
     }
     function onDestroyed(pawn) {
         pawnSprites.destroySprite(pawn.hex);
+    }
+
+    function onHexSelected(hex) {
+        ui.selectRegion(regions.regionOf(hex));
     }
 
 }

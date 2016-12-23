@@ -18,6 +18,8 @@ function GameState(spec) {
         onReset: new Phaser.Signal(),
         toString,
         toDebugString,
+        storeState,
+        loadState,
         toJSON
     });
     
@@ -66,13 +68,17 @@ function GameState(spec) {
     }
 
     actions.setHandler('STORE_STATE', (action, name) => {
-        log.debug("Saving current game state...");
-        localStorage.setItem(name, JSON.stringify(toJSON()));
-        log.info("Game saved: "+name);
+        storeState(name);
         action.resolve();
     },{ undo() {} });
 
-    actions.setHandler('LOAD_STATE', (action, jsonOrKey) => {
+    function storeState(name) {
+        log.debug("Saving current game state...");
+        localStorage.setItem(name, JSON.stringify(toJSON()));
+        log.info("Game saved: "+name);
+    }
+
+    function loadState(jsonOrKey) {
         let data;
         if (typeof jsonOrKey === 'string') {
             log.debug(`Loading saved game from localStorage[${jsonOrKey}]`);
@@ -82,7 +88,11 @@ function GameState(spec) {
         }
         log.debug('Loading game data:',jsonOrKey);
         fromJSON(data);
-        log.info('Game loaded:',jsonOrKey);
+        log.info('Game loaded:',jsonOrKey);        
+    }
+
+    actions.setHandler('LOAD_STATE', (action, jsonOrKey) => {
+        loadState(jsonOrKey);
         // do not resolve() this action because at this point actions module
         // no longer knows about it, much less expects it to be executing
     });
@@ -128,7 +138,7 @@ function GameState(spec) {
         action.schedule('PRE_TURN_EVENTS');
         action.schedule('STORE_STATE','konkr_autosave_turn_start');
         players.forEach(player => {
-            player.regions.forEach(region => action.schedule('UPDATE_REGION_ECONOMY',region));
+            action.schedule('UPDATE_PLAYER_ECONOMY',player);
             action.schedule('START_PLAYER_TURN', player);
         });
         action.schedule('POST_TURN_EVENTS');
