@@ -123,9 +123,11 @@ PrepareLevel.prototype = {
         //Shared assets
         spec.assetManager.load('hex');
         spec.assetManager.load('pawn');
+        spec.assetManager.load('flag');
         spec.assetManager.load('paneBackground');
         spec.assetManager.load('regionPanel');
         spec.assetManager.load('nextTurnButton');
+        spec.assetManager.load('undoButton');
     },
 
     create: function(game) {

@@ -26,15 +26,24 @@ function LocalPlayerTurn(spec){
             regions: {
                 onHexesChangedOwner: landSprites.refreshHexes
             },
+            economy: {
+                onRegionTreasuryChanged                
+            },
             ui: {
                 onHexSelected
             }
         },
-        regionSelectFilter: (region) => {
-            return players.activePlayer.controls(region);
-        }
-
+        setup,
+        teardown
     });
+
+    function setup() {
+        pawnSprites.highlightIdle = true;
+    }
+
+    function teardown() {
+        pawnSprites.highlightIdle = false;   
+    }
 
     function onPawnCreated(pawn) {
         let p = pawnSprites.getOrCreate(pawn.hex, pawn.pawnType);
@@ -52,10 +61,11 @@ function LocalPlayerTurn(spec){
                 actions.schedule('CONQUER_HEX', hex);
                 ui.processActions();
             }
-        } else if (pawns.pawnAt(hex) && players.activePlayer.canGrabPawn(pawns.pawnAt(hex))) {
-            actions.schedule('GRAB_UNIT', pawns.pawnAt(hex));
-            ui.processActions();
         } else {
+            if (pawns.pawnAt(hex) && players.activePlayer.canGrabPawn(pawns.pawnAt(hex))) {
+                actions.schedule('GRAB_UNIT', pawns.pawnAt(hex));
+                ui.processActions();
+            } 
             const r = regions.regionOf(hex);
             if (players.activePlayer.controls(r) && economy.capitalOf(r)) {
                 ui.selectRegion(regions.regionOf(hex));
@@ -63,6 +73,9 @@ function LocalPlayerTurn(spec){
                 ui.selectRegion(null);
             }
         }
+    }
+    function onRegionTreasuryChanged(region) {
+        pawnSprites.getOrCreate(economy.capitalOf(region), pawns.TOWN).refreshDecorations();
     }
 }
 

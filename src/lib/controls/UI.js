@@ -141,7 +141,7 @@ function PawnShop (spec,def, parent) {
             self.align(-1,1,32,32,Phaser.BOTTOM_CENTER);
             // has to be called twice to properly take effect, don't ask me why :/
             self.reflow();
-            self.reflow();
+            setTimeout(()=>{self.reflow();},0);
         }
     });
     return self;
@@ -172,7 +172,7 @@ function UI (spec, def) {
 
     const resizeHandler = debounce(()=> {
         components[0].reflow();
-    }, 100);
+    }, 200);
 
     game.scale.onSizeChange.add(resizeHandler);
 
@@ -187,7 +187,6 @@ function UI (spec, def) {
     }
 
     function createComponent(def, parent) {
-        log.debug("Creating UI component", def);
         let constructorFunc = componentConstructors[def.component];
         if (!constructorFunc) throw Error(`Unknown component type '${def.component}'`);
         return constructorFunc(spec,def,parent);

@@ -73,6 +73,8 @@ function Economy(spec) {
             action.schedule('UPDATE_REGION_ECONOMY',region);
         });
         action.resolve();
+    }, {
+        undo() {}
     });
 
     actions.setHandler('UPDATE_REGION_ECONOMY', (action, region) => {

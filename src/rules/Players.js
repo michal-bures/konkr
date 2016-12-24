@@ -56,6 +56,12 @@ function Players(spec) {
         }
 
         getAvailableUnits(region) {
+            if (!region) {
+                return this.regions.reduce(
+                    (result,nextRegion)=>result.concat(this.getAvailableUnits(nextRegion)), 
+                []);
+            }
+
             let ret = pawns.select({ 
                 hexes: region.hexes, 
                 custom: pawn=> pawn.isTroop() && this.canGrabPawn(pawn)
@@ -75,7 +81,7 @@ function Players(spec) {
     let self = {
         byId(id) { return _players[id]; },
         ownerOf,
-        get activePlayer() { return activePlayer },
+        get activePlayer() { return activePlayer; },
         onGrabbedPawn: new Phaser.Signal(/* pawn */),
         onDroppedPawn: new Phaser.Signal(/* pawnType, hex */),
         onConqueringHex: new Phaser.Signal(/* hex */),
@@ -200,6 +206,8 @@ function Players(spec) {
 
     actions.setHandler('DROP_UNIT', (action, hex) => {
         if (regions.regionOf(hex) != grabbedPawnRegion) throw Error(`Tried to drop pawn into a different region then it originates from.`);
+        action.data.grabbedPawn = grabbedPawn;
+        action.data.grabbedPawnRegion = grabbedPawnRegion;
         if (pawns.pawnAt(hex)) {
             let newType = pawns.getMergeResult(pawns.pawnAt(hex), grabbedPawn);
             if (!newType) throw Error(`Cannot drop pawn on ${hex} - already occupied by ${pawns.pawnAt(hex)}, merge impossible.`);
@@ -207,8 +215,6 @@ function Players(spec) {
             grabbedPawn = newType;
         }
         action.schedule('CREATE_PAWN',grabbedPawn, hex);
-        action.data.grabbedPawn = grabbedPawn;
-        action.data.grabbedPawnRegion = grabbedPawnRegion;
 
         self.onDroppedPawn.dispatch(grabbedPawn,hex);
         grabbedPawn = null;
@@ -237,7 +243,7 @@ function Players(spec) {
     });
 
     actions.setHandler('END_PLAYER_TURN', (action, player) => {
-        if (player!=activePlayer)  throw Error(`${player} requested to end hist turn but it's not his turn currently!`);
+        if (player!=activePlayer)  throw Error(`${player} requested to end his turn but it's not his turn currently!`);
         if (grabbedPawn) throw Error(`${player} tried to end turn with an unplaced pawn still grabbed.`);
         activePlayer = null;
         action.resolve();

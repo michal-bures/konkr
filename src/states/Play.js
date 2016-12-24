@@ -6,9 +6,9 @@ import UI from 'lib/controls/UI';
 
 
 const DEFAULT_GAME_SETTTINGS = {
-    worldWidth: 10,
-    worldHeight: 10,
-    numFactions: 2,   
+    worldWidth: 20,
+    worldHeight: 20,
+    numFactions: 4,   
     playerFaction: 1,
 };
 
@@ -33,6 +33,14 @@ function Play(game) {
 
     function init(spec) {
 
+
+        // Main injector for game mechanic modules
+        gameState = new GameState(spec);
+        gameSpec = gameState.spec;
+
+        // Main injector for UI and, rendering and animation modules
+        gameUi = (new UIManager(gameSpec)).uiSpec;
+
         // logging plugin that display some messages directly on screen
         // must be initialized before more loggers are forked from the root logger
         var originalFactory = spec.log.methodFactory;
@@ -46,13 +54,6 @@ function Play(game) {
         };
         spec.log.setLevel(spec.log.getLevel()); // apply plugin
 
-        // Main injector for game mechanic modules
-        gameState = new GameState(spec);
-        gameSpec = gameState.spec;
-
-        // Main injector for UI and, rendering and animation modules
-        gameUi = (new UIManager(gameSpec)).uiSpec;
-
         log = spec.log;
         window.c = gameUi;
         window.gameState = gameState;
@@ -62,16 +63,18 @@ function Play(game) {
 
         game.canvas.oncontextmenu = function (e) { 
             e.preventDefault(); 
-            gameUi.gridOverlays.group.visible = !gameUi.gridOverlays.group.visible;
+            gameUi.ui.undo();
         };
 
         // DEBUG TOOLS SETUP
 
         let breakAfterEveryAction = false;
         let debugBreakCallback = null;
+        let breakBeforeAction = null;
 
         function shouldBreakBefore(nextAction) {
-            if (breakAfterEveryAction) return true;
+            if (breakAfterEveryAction || nextAction === breakBeforeAction) return true;
+
             return false;
             switch (nextAction && nextAction.name) {
 //                case 'STORE_STATE':
@@ -122,7 +125,8 @@ function Play(game) {
 
         // Keyboard shortcuts
         setCommandHotkey('BACKSPACE','actions.undo');
-        setCommandHotkey('N','actions.step');
+        setCommandHotkey('N','actions.stepInto');
+        setCommandHotkey('M','actions.stepOver');
         setCommandHotkey('SPACEBAR','actions.play');
         setCommandHotkey('F1','gridOverlays.toggle');
         setCommandHotkey('F2','ui.toggleDebugScene');
@@ -160,10 +164,20 @@ function Play(game) {
             log.info("⏵ Actions queue resumed");
         });
 
-        gameUi.debug.addCommand('actions','step', ()=> {
-            if (!breakAfterEveryAction) {
-                breakAfterEveryAction = true;
+        gameUi.debug.addCommand('actions','stepInto', ()=> {
+            breakBeforeAction = null;
+            breakAfterEveryAction = true;
+            if (debugBreakCallback) {
+                log.info("⏯ "+ (gameSpec.actions.getCurrent() && gameSpec.actions.getCurrent().name));
+                debugBreakCallback();
+                debugBreakCallback = null;
             }
+        });
+
+        gameUi.debug.addCommand('actions','stepOver', ()=> {
+            breakAfterEveryAction = false;
+            breakBeforeAction = gameUi.actions.getNext();
+            log.info(`WILL BREAK BEFORE ${breakBeforeAction}`);
             if (debugBreakCallback) {
                 log.info("⏯ "+ (gameSpec.actions.getCurrent() && gameSpec.actions.getCurrent().name));
                 debugBreakCallback();
@@ -174,6 +188,7 @@ function Play(game) {
         gameUi.debug.addCommand('actions','undo', ()=> {
             if (!gameSpec.actions.getLast()) return;
             gameUi.messages.push('↶ '+gameSpec.actions.getLast().name);
+            breakAfterEveryAction = true;
             gameSpec.actions.undoLastAction();
         });
 

@@ -32,7 +32,9 @@ AssetManager.images = {
 AssetManager.spritesheets = {
     'hex' : ['assets/hex.png', HEX_WIDTH, 42],
     'pawn' : ['assets/pawn.png', 32,48],
-    'nextTurnButton' : ['assets/ui/nextTurnButton.png', 67,29]
+    'flag' : ['assets/flag.png', 32,48],
+    'nextTurnButton' : ['assets/ui/nextTurnButton.png', 67,29],
+    'undoButton' : ['assets/ui/undoButton.png', 67,29]
 };
 
 export default AssetManager;
