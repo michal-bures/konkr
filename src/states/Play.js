@@ -2,7 +2,7 @@
 import UIManager from 'ui/UIManager';
 import GameState from 'rules/GameState';
 
-import UI from 'lib/controls/ui';
+import UI from 'lib/controls/UI';
 
 
 const DEFAULT_GAME_SETTTINGS = {
