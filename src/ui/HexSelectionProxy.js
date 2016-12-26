@@ -29,9 +29,11 @@ function HexSelectionProxy(spec) {
         });        
         surface.events.onInputOver.add(() => active = true);
         surface.events.onInputOut.add(() => active = false);
-        surface.events.onInputDown.add(() => {
-            const hex = getHexUnderCursor();
-            if (hex) ui.selectHex(hex);
+        surface.events.onInputDown.add((obj,pointer) => {
+            if (pointer.leftButton.isDown) {
+                const hex = getHexUnderCursor();
+                if (hex) ui.selectHex(hex);
+            }
         });
         return surface;
     }

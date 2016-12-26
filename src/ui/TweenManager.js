@@ -6,6 +6,7 @@ function TweenManager({game}) {
         waitForAll,
         stopAll,
         toDebugString,
+        get tweens() { return tweens; }
     });
 
     function add(target) {
@@ -19,6 +20,7 @@ function TweenManager({game}) {
     }
 
     function waitForAll() {
+        tweens = tweens.filter(tween => tween.isRunning && tween.target.exists);
         return Promise.all(runningTweens().map(tween => new Promise(resolve=> {
             tween.onComplete.add(resolve);
         })))

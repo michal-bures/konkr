@@ -15,7 +15,7 @@ module.exports = {
   entry: {
     app: [
       'babel-polyfill',
-      path.resolve(__dirname, 'src/main.js')
+      path.resolve(__dirname, 'src/index.js')
     ],
     vendor: ['pixi', 'p2', 'phaser', 'webfontloader']
 
@@ -57,6 +57,9 @@ module.exports = {
     tls: 'empty'
   },
   resolve: {
+    root : [
+        path.resolve(__dirname,'src'),
+    ],
     alias: {
       'phaser': phaser,
       'pixi': pixi,

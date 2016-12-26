@@ -37,6 +37,7 @@ function Play(game) {
         // Main injector for game mechanic modules
         gameState = new GameState(spec);
         gameSpec = gameState.spec;
+        gameSpec.resolveAll(); //makes sure all modules are intialized and have registered their action handlers
 
         // Main injector for UI and, rendering and animation modules
         gameUi = (new UIManager(gameSpec)).uiSpec;
@@ -243,16 +244,18 @@ function Play(game) {
         const debugDiv = document.getElementById("debug");
         const debugSelect = document.getElementById("debugModeSelect");
 
-        if (!debugDiv) return;
+        if (!debugDiv || !debugSelect) return;
         debugSelect.innerHTML= gameUi.listConstructors().sort().map(key => (gameUi[key].toDebugString?`<option value='${key}'>${key}</option>`:'')).join('');
         debugSelect.onchange = () => { refreshDebugTab(debugSelect.value); };
         setInterval(refreshDebugTab, 100);
     }
 
     function refreshDebugTab(name = debugTabName) {
+        const debugSelectButtons = document.getElementById("debugCommandButtons");
+        if (!debugSelectButtons) return;
         if (debugTabName!==name) {
             //changed tab
-            gameUi.debug.generateDebugCommandsHTML(document.getElementById("debugCommandButtons"),name);
+            gameUi.debug.generateDebugCommandsHTML(debugSelectButtons,name);
         }
 
         debugTabName=name;
