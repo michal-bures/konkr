@@ -1,18 +1,14 @@
-/* exported AssetManager */
-/* globals -AssetManager */
-
-import { HEX_WIDTH, HEX_HEIGHT } from 'ui/Renderer';
-
-function AssetManager(spec) {
+function AssetManager(spec, data) {
     let { game, log } = spec;
+    let { images, spritesheets } = data;
 
     let load = (id) => {
         var args;
-        if (AssetManager.images[id]) {
-            args = [id].concat(AssetManager.images[id]);
+        if (images[id]) {
+            args = [id].concat(images[id]);
             game.load.image.apply(game.load,args);
-        } else if (AssetManager.spritesheets[id]) {
-            args = [id].concat(AssetManager.spritesheets[id]);
+        } else if (spritesheets[id]) {
+            args = [id].concat(spritesheets[id]);
             game.load.spritesheet.apply(game.load,args);
         } else {
             log.error("Unknown asset requested:",id);
@@ -20,21 +16,18 @@ function AssetManager(spec) {
     };
 
     return Object.freeze({
-        load
+        load,
+        loadAll
     });
+
+    function loadAll() {
+        for (const img in images) {
+            load(img);
+        }
+        for (const spr in spritesheets) {
+            load(spr);
+        }
+    }
 }
-
-AssetManager.images = {
-    'paneBackground' : ['assets/ui/paneBackground.png'],
-    'regionPanel' : ['assets/ui/regionPanel.png']
-};
-
-AssetManager.spritesheets = {
-    'hex' : ['assets/hex.png', HEX_WIDTH, 42],
-    'pawn' : ['assets/pawn.png', 32,48],
-    'flag' : ['assets/flag.png', 32,48],
-    'nextTurnButton' : ['assets/ui/nextTurnButton.png', 67,29],
-    'undoButton' : ['assets/ui/undoButton.png', 67,29]
-};
 
 export default AssetManager;

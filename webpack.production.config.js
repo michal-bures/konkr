@@ -40,7 +40,7 @@ module.exports = {
     }),
     new webpack.optimize.OccurenceOrderPlugin(),
     new webpack.optimize.DedupePlugin(),
-    new webpack.optimize.CommonsChunkPlugin(/* chunkName= */"vendor", /* filename= */"vendor.bundle.js"),    
+    new webpack.optimize.CommonsChunkPlugin(/* chunkName= */"vendor", /* filename= */"vendor.bundle.js"),
   ],
   module: {
     loaders: [
@@ -48,7 +48,8 @@ module.exports = {
       { test: /\.js$/, loader: 'babel', include: path.join(__dirname, 'src') },
       { test: /pixi\.js/, loader: 'expose?PIXI' },
       { test: /phaser-split\.js$/, loader: 'expose?Phaser' },
-      { test: /p2\.js/, loader: 'expose?p2' }
+      { test: /p2\.js/, loader: 'expose?p2' },
+      { test: /\.jpe?g$|\.gif$|\.png$|\.svg$|\.woff$|\.ttf$|\.wav$|\.mp3$/, loader: "file" }
     ]
   },
   node: {
@@ -59,6 +60,7 @@ module.exports = {
   resolve: {
     root : [
         path.resolve(__dirname,'src'),
+        path.resolve(__dirname,'static'),
     ],
     alias: {
       'phaser': phaser,
