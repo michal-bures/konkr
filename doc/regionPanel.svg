@@ -85,9 +85,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.979899"
-     inkscape:cx="38.852387"
-     inkscape:cy="40.808083"
+     inkscape:zoom="0.49497475"
+     inkscape:cx="-469.40963"
+     inkscape:cy="-143.76625"
      inkscape:document-units="px"
      inkscape:current-layer="layer2"
      showgrid="true"
@@ -132,7 +132,8 @@
      inkscape:groupmode="layer"
      id="layer3"
      inkscape:label="BG"
-     sodipodi:insensitive="true">
+     sodipodi:insensitive="true"
+     style="display:none">
     <rect
        style="opacity:0.7;color:#000000;fill:#afdde9;fill-opacity:0.86000001;fill-rule:nonzero;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        id="rect8726"
@@ -145,8 +146,7 @@
      inkscape:label="Display"
      inkscape:groupmode="layer"
      id="layer1"
-     style="display:inline"
-     sodipodi:insensitive="true">
+     style="display:inline">
     <path
        style="color:#000000;fill:#ffffff;fill-opacity:0.79599998;fill-rule:nonzero;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 24,996.36218 200,0 24,56.00002 -248,0 z"
@@ -162,9 +162,9 @@
        sodipodi:rx="4"
        sodipodi:ry="2"
        d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
-       transform="translate(-1252,232)" />
+       transform="translate(-1252.5065,348.51273)" />
     <path
-       transform="translate(-1252,230)"
+       transform="translate(-1252.5065,346.51273)"
        d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
        sodipodi:ry="2"
        sodipodi:rx="4"
@@ -182,9 +182,9 @@
        sodipodi:rx="4"
        sodipodi:ry="2"
        d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
-       transform="translate(-1252,228)" />
+       transform="translate(-1252.5065,344.51273)" />
     <path
-       transform="translate(-1252,226)"
+       transform="translate(-1252.5065,342.51273)"
        d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
        sodipodi:ry="2"
        sodipodi:rx="4"
@@ -202,9 +202,9 @@
        sodipodi:rx="4"
        sodipodi:ry="2"
        d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
-       transform="translate(-1258.1768,233.82322)" />
+       transform="translate(-1258.6833,350.33595)" />
     <path
-       transform="translate(-1258.1768,231.82322)"
+       transform="translate(-1258.6833,348.33595)"
        d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
        sodipodi:ry="2"
        sodipodi:rx="4"
@@ -222,7 +222,7 @@
        sodipodi:rx="4"
        sodipodi:ry="2"
        d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
-       transform="translate(-1258.1768,229.82322)" />
+       transform="translate(-1258.6833,346.33595)" />
   </g>
   <g
      inkscape:groupmode="layer"
@@ -420,5 +420,15 @@
          x="-127.87514"
          id="tspan3580"
          sodipodi:role="line">80</tspan></text>
+    <rect
+       style="opacity:0.5;color:#000000;fill:#00ff00;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect4462"
+       width="24"
+       height="24"
+       x="88"
+       y="1140.3622"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\goldCoins.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
   </g>
 </svg>

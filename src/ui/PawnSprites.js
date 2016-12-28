@@ -44,6 +44,7 @@ function PawnSprites ({tweens, game, log, pawns, regions, gameState, grid, playe
         }
 
         setType(pawnType) {
+            if (this.pawnType === pawnType) return;
             this.frame=(pawnType?pawnType.ordinal:0);
             this.pawnType = pawnType;
         }
@@ -74,11 +75,12 @@ function PawnSprites ({tweens, game, log, pawns, regions, gameState, grid, playe
             if (!this.jumpTween) return;
             this.jumpTween.stop();
             this.jumpTween=null;
+            this.reposition(this.hex, false);
         }
 
         refreshDecorations() {
-            if (!idleHighlighting && !this.hex) {
-                this.topJumping();
+            if (!idleHighlighting || !this.hex) {
+                this.stopJumping();
                 this.removeFlag();
             } else {
                 if (this.pawnType === pawns.TOWN) {
@@ -99,6 +101,8 @@ function PawnSprites ({tweens, game, log, pawns, regions, gameState, grid, playe
 
         reposition(targetHex,animate=true) {
             if (this.hex) delete spriteAtHex[this.hex];
+            const wasJumping = !!this.jumpTween;
+            if (wasJumping) this.stopJumping();
             return new Promise( resolve => {
             const [x,y] = convertToWorldCoordinates(targetHex.position.x, targetHex.position.y);
                 if (animate) {
@@ -106,12 +110,14 @@ function PawnSprites ({tweens, game, log, pawns, regions, gameState, grid, playe
                     tween.onComplete.add(()=> {
                         if (spriteAtHex[targetHex]) spriteAtHex[targetHex].destroy();
                         spriteAtHex[targetHex] = this;
+                        if (wasJumping) this.startJumping();
+                        //TODO: what if jumping is oprdered to stop during animation?!
                         resolve();
                     });
                 } else {
-                    //TODO update spriteAtHex
                     this.x = x;
                     this.y = y+Math.floor(PAWN_OFFSET_TOP/2);
+                    if (wasJumping) this.startJumping();
                     return resolve();
                 }
             });

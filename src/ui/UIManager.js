@@ -143,9 +143,7 @@ function UIManager(spec) {
     },
     {
         undo(action) {
-            if (scene.name!=action.data.prevScene) {
-                changeScene(action.data.prevScene);
-            }
+            changeScene(action.data.prevScene);
         }
     });
 
