@@ -4,7 +4,7 @@ function Scrolling(spec) {
         dragStartPoint = null;
 
     return Object.freeze({
-        update
+        update        
     });
 
     function update() {

@@ -17,7 +17,7 @@ const componentConstructors = {
     horizontalGroup : (...args) => new HorizontalGroup(...args)
 };
 
-function UIComponent({game, log, debug, tweens}, def, parent) {
+function UIComponent({game, log, debug, tweens, ui}, def, parent) {
     let self = game.add.group(),
         config = def,
         name = def.name || def.component + '#'+ generateComponentId(),
@@ -60,7 +60,6 @@ function UIComponent({game, log, debug, tweens}, def, parent) {
     }
 
     function childResized(child) {
-        log.debug(`EVT: ${child} resized`);
         self.onResized.dispatch();
         if (!parent) reflow();
     }
@@ -100,19 +99,14 @@ function UIComponent({game, log, debug, tweens}, def, parent) {
     function reflow() {
         let { align, x=0, y=0, hOffset=0, vOffset=0} = def;
 
-        log.debug(`REFLOW ${self}`);
-
         if (hidden) return;
         // position/alignment
         if (align) {
-            log.debug(`Align self(${self.width}x${self.height}) at ${align} relative to ${self.parentGroup.alignObject} offset (${hOffset}, ${vOffset})`);
             self.alignIn(self.parentGroup.anchorObject || self.parentGroup,align,hOffset,vOffset);
         }  else {
             self.x = x;
             self.y = y;
         }
-
-        log.debug(`x: ${self.left}, y: ${self.top}`);
 
         self.cameraOffset.x = self.x - game.camera.view.x;
         self.cameraOffset.y = self.y - game.camera.view.y;
@@ -235,11 +229,7 @@ function UI (spec, def) {
     addComponent(def);
     components[0].reflow();
 
-    const resizeHandler = debounce(()=> {
-        components[0].reflow();
-    }, 200);
-
-    game.scale.onSizeChange.add(resizeHandler);
+    spec.ui.onResize.add(()=>components[0].reflow());
 
     function addComponent(def, parent) {
         if (self[def.name]) throw new Error(`Duplicate component name '${def.name}'`);

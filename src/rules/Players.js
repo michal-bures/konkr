@@ -175,7 +175,11 @@ function Players(spec) {
         movedUnits[hex.id] = true;
 
         if (pawns.pawnAt(hex)) {
-            action.schedule('DESTROY_PAWN', pawns.pawnAt(hex));
+            if (economy.capitalOf(regions.regionOf(hex)) === hex) {
+                actions.schedule('DESTROY_REGION_CAPITAL',regions.regionOf(hex));
+            } else {
+                action.schedule('DESTROY_PAWN', pawns.pawnAt(hex));
+            }
         }
         action.schedule('CHANGE_HEXES_REGION', new HexGroup(hex), grabbedPawnRegion);
         action.schedule('DROP_UNIT', hex);

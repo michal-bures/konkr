@@ -60,6 +60,7 @@ function LocalPlayerTurn(spec){
             if (players.activePlayer.canDropPawnAt(hex)) {
                 actions.schedule('DROP_UNIT', hex);
                 sfx.dropPawn();
+                if (!players.grabbedPawn.isTroop()) feedbackSymbols.showDefendedBy(hex, players.grabbedPawn.defense);
                 ui.processActions();
             } else if (players.activePlayer.canConquerHex(hex)) {
                 actions.schedule('CONQUER_HEX', hex);
@@ -91,7 +92,7 @@ function LocalPlayerTurn(spec){
         }
     }
     function onRegionTreasuryChanged(region) {
-        pawnSprites.getOrCreate(economy.capitalOf(region), pawns.TOWN).refreshDecorations();
+        if (economy.capitalOf(region)) pawnSprites.getOrCreate(economy.capitalOf(region), pawns.TOWN).refreshDecorations();
     }
 }
 

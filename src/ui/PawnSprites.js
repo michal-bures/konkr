@@ -84,7 +84,8 @@ function PawnSprites ({tweens, game, log, pawns, regions, gameState, grid, playe
                 this.removeFlag();
             } else {
                 if (this.pawnType === pawns.TOWN) {
-                    if (economy.treasuryOf(regions.regionOf(this.hex)) >= economy.priceOf(pawns.TROOP_1)) {
+                    if (players.activePlayer.controls(regions.regionOf(this.hex)) &&
+                        economy.treasuryOf(regions.regionOf(this.hex)) >= economy.priceOf(pawns.TROOP_1)) {
                         this.setFlag();
                     } else {
                         this.removeFlag();

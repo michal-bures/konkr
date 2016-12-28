@@ -10,8 +10,8 @@ function NextTurnButton(spec) {
             name: 'nextTurnButton',
             component: 'button',
             sprite: 'nextTurnButton',
-            align: Phaser.BOTTOM_RIGHT,
-            hOffset: -10,
+            align: Phaser.BOTTOM_CENTER,
+            hOffset: 100,
             vOffset: -10,
         });
 
@@ -19,8 +19,8 @@ function NextTurnButton(spec) {
             name: 'undoButton',
             component: 'button',
             sprite: 'undoButton',
-            align: Phaser.BOTTOM_LEFT,
-            hOffset: -10,
+            align: Phaser.BOTTOM_CENTER,
+            hOffset: -100,
             vOffset: -10,
         });
 

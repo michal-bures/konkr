@@ -7,13 +7,13 @@ import Messages from './Messages';
 import PawnSprites from './PawnSprites';
 import NextTurnButton from './NextTurnButton';
 import TweenManager from './TweenManager';
-import { extend } from 'lib/util';
+import { extend, debounce } from 'lib/util';
 import Scene from './scene/Scene';
 import SFX from './SFX';
 
 function UIManager(spec) {
     
-    let {game, regions, log, gameState, actions, players} = spec;
+    let {game, regions, log, gameState, actions, players, grid} = spec;
         
     let selectedRegion,
         selectedHex,
@@ -25,6 +25,7 @@ function UIManager(spec) {
         onHexSelected: new Phaser.Signal(/* hex */),
         onRegionSelected: new Phaser.Signal(/* region */),
         onSelectedRegionChanged: new Phaser.Signal(/* region */),
+        onResize: new Phaser.Signal(),
 
         get uiSpec() { return uiElements; },
         changeScene,
@@ -97,7 +98,6 @@ function UIManager(spec) {
 
 
     game.stage.backgroundColor='#d5dfef';
-    game.world.setBounds(0, 0, 3000, 3000);
 
     regions.onChanged.add((region) => {
         if (!selectedRegion) return;
@@ -150,7 +150,26 @@ function UIManager(spec) {
     gameState.onReset.add(()=> {
         changeSceneNow(defaultSpectatorScene);
         selectRegion(null);
+        updateWorldBounds();
     });
+
+    const resizeHandler = debounce(()=> {
+        updateWorldBounds();
+        self.onResize.dispatch();
+    }, 200);
+
+    game.scale.onSizeChange.add(resizeHandler);
+
+
+    function updateWorldBounds() {
+        let bounds = Renderer.calculateWorldBounds(grid);
+        if (bounds.width<game.camera.width) {
+            let neededPadding = game.camera.width - bounds.width;
+            bounds.left -= neededPadding/2;
+            bounds.right += neededPadding/2;
+        }
+        game.world.setBounds(bounds.left, bounds.top, bounds.width, bounds.height);
+    }
 
     function changeScene(nextSceneName) {
         return new Promise(resolve=> {

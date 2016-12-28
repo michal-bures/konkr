@@ -65,7 +65,8 @@ ${ret.join('\n')}`;
             const pawn = hex && pawns.pawnAt(hex);
             const region = hex && regions.regionOf(hex);
             const str = [
-                `${game.input.activePointer.x},${game.input.activePointer.y}`,
+                `${game.input.activePointer.x},${game.input.activePointer.y} ->`,
+                `${game.input.activePointer.worldX},${game.input.activePointer.worldY}`,
                 (pawn?'♙'+pawn.id:null),
                 (region?'♔'+region.id:null),
                 (hex?hex.toString():null),

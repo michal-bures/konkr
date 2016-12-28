@@ -10,11 +10,17 @@ const HEX_EDGE_SIZE = Math.floor(HEX_HEIGHT/2);
 const LINE_HEIGHT = 28;//Math.floor(HEX_HEIGHT * 3/4);
 const HALF_LINE_HEIGHT = 14.5;//Math.floor(HEX_HEIGHT * 3/8);
 
-const OFFSET_TOP = 10;
-const OFFSET_LEFT = 10;
+const OFFSET_TOP = 20;
+const OFFSET_LEFT = 20;
 
 function convertToWorldCoordinates(x,y) {
-    return [ Math.floor(OFFSET_LEFT + HEX_WIDTH + x * HEX_WIDTH), Math.floor(OFFSET_TOP + y * LINE_HEIGHT + HALF_LINE_HEIGHT)];
+    return [ Math.floor(OFFSET_LEFT + HEX_WIDTH + x * HEX_WIDTH), Math.floor(OFFSET_TOP + y * LINE_HEIGHT + HALF_HEX_HEIGHT)];
+}
+
+function calculateWorldBounds(grid) {
+    return new Phaser.Rectangle(0,0,
+        grid.width * HEX_WIDTH + OFFSET_LEFT*2 + HALF_HEX_WIDTH,
+        grid.height * LINE_HEIGHT + OFFSET_TOP*2 + HEX_HEIGHT-LINE_HEIGHT);
 }
 
 let HEX_POLYGON = [[-0.5,-0.25], [0,-0.5], [0.5,-0.25], [0.5,0.25], [0,0.5], [-0.5,0.25], [-0.5,-0.25]];
@@ -158,10 +164,11 @@ function LandSprites(spec) {
     return landSprites;
 }
 
-function FeedbackSymbols({game, tweens, warfare, log, debug}) {
+function FeedbackSymbols({game, tweens, warfare, log, debug, regions}) {
     //public
     let self = Object.freeze({
         showDefendersOf,
+        showDefendedBy,
         add,
         get group() { return group; }
     });
@@ -169,25 +176,46 @@ function FeedbackSymbols({game, tweens, warfare, log, debug}) {
     //private
     let group = game.make.group();
 
+    function cleanup(sprite) {
+        group.remove(sprite);
+        sprite.destroy();
+    }
+
     function showDefendersOf(hex, minMight=0) {
         warfare.defendersOf(hex, minMight).forEach(defender=> {
-            add(defender, hex, 0);
+            add(defender, hex, 0, 'BOUNCE_BACK');
         });
     }
 
-    function add(fromHex, toHex, frame) {
+    function showDefendedBy(hex, might=99) {
+        hex.neighbours()
+           .filter(hex2=>regions.regionOf(hex2) === regions.regionOf(hex) &&
+                         warfare.defenseOf(hex2)<might)
+           .forEach(hex2=> add(hex, hex2, 1, 'FADE'));
+    }
+
+    function add(fromHex, toHex, frame, effect) {
         const [fx,fy] = convertToWorldCoordinates(fromHex.position.x, fromHex.position.y);
         const [tx,ty] = convertToWorldCoordinates(toHex.position.x, toHex.position.y);
         const sprite = game.add.sprite(fx,fy,'shieldSymbol');
-        log.debug(`ADDED SYMBOL ${fx},${fy} -> ${tx},${ty}`);
         group.add(sprite);
         sprite.frame = frame;
         sprite.alpha = 0;
         sprite.anchor.set(0.5);
-        tweens.add(sprite).to({x:tx, y:ty, alpha: 1}, 200, Phaser.Easing.Quadratic.Out, true).yoyo(200).onComplete.add(()=> {
-            group.remove(sprite);
-            sprite.destroy();
-        });
+        let t1 = tweens.add(sprite).to({x:tx, y:ty, alpha: 1}, 200, Phaser.Easing.Quadratic.Out, true);
+
+        switch (effect) {
+            case 'BOUNCE_BACK':
+                t1.yoyo(200).onComplete.add(cleanup);
+                break;
+            case 'FADE':
+                let t2 =tweens.add(sprite).to({alpha:0}, 1000);
+                t1.chain(t2);
+                t2.onComplete.add(cleanup);
+                break;
+            default: 
+                t1.onComplete.add(cleanup);
+        }
     }
 
     return self;
@@ -307,6 +335,7 @@ function ConquerableHexesHighlight({game,ui, players, warfare}) {
 }
 
 export { 
+    calculateWorldBounds,
     convertToWorldCoordinates,
     drawOnHex,
     drawInnerHex,

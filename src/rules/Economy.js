@@ -122,6 +122,7 @@ function Economy(spec) {
         if (pawns.pawnAt(oldCapital) && pawns.pawnAt(oldCapital).pawnType===pawns.TOWN) action.schedule("DESTROY_PAWN", pawns.pawnAt(oldCapital));
         self.onRegionLostCapital.dispatch(region);
         action.data.oldCapital = oldCapital;
+        action.schedule('SET_REGION_TREASURY',region,0);
         action.resolve();
     },
     {

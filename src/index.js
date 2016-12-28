@@ -45,6 +45,7 @@ Boot.prototype= {
 
     create: function() {
         game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
+        game.scale.pageAlignHorizontally = true;
         game.state.start("PrepareLevel");
 
     }
