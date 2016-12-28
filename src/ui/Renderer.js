@@ -74,7 +74,7 @@ function GrabbedPawn(spec) {
         synchronize();
         if (!group.visible) return;
         sprite.cameraOffset.x = game.input.activePointer.x;
-        sprite.cameraOffset.y = game.input.activePointer.y;
+        sprite.cameraOffset.y = game.input.activePointer.y-10;
     }
 
 }

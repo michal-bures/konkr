@@ -29,9 +29,11 @@ function HexSelectionProxy(spec) {
         });        
         surface.events.onInputOver.add(() => active = true);
         surface.events.onInputOut.add(() => active = false);
-        surface.events.onInputDown.add(() => {
-            const hex = getHexUnderCursor();
-            if (hex) ui.selectHex(hex);
+        surface.events.onInputDown.add((target, pointer) => {
+            if (pointer.leftButton.isDown) {
+                const hex = getHexUnderCursor();
+                if (hex) ui.selectHex(hex);
+            }
         });
         return surface;
     }
@@ -60,7 +62,7 @@ ${ret.join('\n')}`;
     function update() {
         if (active) {
             const hex = getHexUnderCursor();
-            debug.set('pointer at',(hex? hex.toString():null));
+            debug.set('pointer at',`${hex? hex.toString():'N/A'} ${game.input.activePointer.x},${game.input.activePointer.y}`);
         }
     }
 

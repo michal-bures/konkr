@@ -22,25 +22,45 @@ function UIComponent({game, log, debug, tweens}, def, parent) {
         name = def.name || def.component + '#'+ generateComponentId(),
         parentGroup = parent || game.camera.view,
         childComponents = [],
+        // if anchorObject is specified, it's used as bounding box when positioning this component and laying 
+        // out its children (instead of using the actual bounding box of the group itself); that way, even if the group
+        // bounding box unexpectedly expands due to badly positioned (out-of-bounds) children, layout and 
+        // positioning of other children within the group and the group itself will not be affected
+        anchorObject = null,
         hidden = false;
 
     extend(self, {
         get name() { return name; },
+        get anchorObject() { return anchorObject; },
+        set anchorObject(val) { anchorObject = val; },
         initGroup,
         reflow,
         show,
         hide,
         config,
         childComponents,
-        parentGroup
+        parentGroup,
+        onResized: new Phaser.Signal(),
+        childResized,
+        toString
     });
-    
+
     reflow();
     if (parent) {
         parentGroup.add(self);
         parent.childComponents.push(self);
+        self.onResized.add(()=>parent.childResized(self));
     } else {
         self.fixedToCamera = true;
+    }
+
+    function childResized(child) {
+        log.debug(`EVT: ${child} resized`);
+        if (parent) {
+            parent.childResized(self);
+        } else {
+            reflow();
+        }
     }
 
     function initGroup() {}
@@ -68,38 +88,45 @@ function UIComponent({game, log, debug, tweens}, def, parent) {
             self.y = game.height;
             self.cameraOffset.y=self.y;
             tweens.add(self.cameraOffset).to({y:targetY}, SHOWHIDE_DURATION, Phaser.Easing.Quadratic.InOut, true);
-//            onComplete.add(reflow);
         }
     }
 
     function reflow() {
         let { align, x=0, y=0, hOffset=0, vOffset=0} = def;
 
+        log.debug(`REFLOW ${self}`);
+
         if (hidden) return;
         // position/alignment
         if (align) {
-            self.alignIn(self.parentGroup,align,hOffset-self.parentGroup.x,vOffset-self.parentGroup.y);
+            log.debug(`Align self(${self.width}x${self.height}) at ${align} relative to ${self.parentGroup.alignObject} offset (${hOffset}, ${vOffset})`);
+            self.alignIn(self.parentGroup.anchorObject || self.parentGroup,align,hOffset,vOffset);
         }  else {
             self.x = x;
             self.y = y;
         }
 
-        self.cameraOffset.x = self.x;
-        self.cameraOffset.y = self.y;
+        log.debug(`x: ${self.left}, y: ${self.top}`);
 
-        console.debug(`Reflow children of ${self.name}`);
+        self.cameraOffset.x = self.x - game.camera.view.x;
+        self.cameraOffset.y = self.y - game.camera.view.y;
+
         self.childComponents.forEach(child=>{
-            console.debug(`Reflow child ${child.name}`);
             child.reflow();
         });
     }
+
+    function toString() {
+        return `[UIComponent ${name}]`;
+    }
+
     return self;
 }
 
 function Pane(spec, def, parent) {
     let self = new UIComponent(spec, def, parent);
     let {bgImage='paneBackground'} = def;
-    self.add(spec.game.add.sprite(0, 0, bgImage));
+    self.anchorObject=self.add(spec.game.add.sprite(0, 0, bgImage));
 
     return self;
 }
@@ -139,9 +166,7 @@ function PawnShop (spec,def, parent) {
                 return sprite;
             }));
             self.align(-1,1,32,32,Phaser.BOTTOM_CENTER);
-            // has to be called twice to properly take effect, don't ask me why :/
-            self.reflow();
-            setTimeout(()=>{self.reflow();},0);
+            self.onResized.dispatch();
         }
     });
     return self;
