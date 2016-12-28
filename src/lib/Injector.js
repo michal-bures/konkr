@@ -51,6 +51,10 @@ function Injector(parent=Object, extension) {
         return self[name];
     };
 
+    self.resolveAll = function() {
+        Object.keys(_constructors).forEach(key=>self.resolve(key));
+    };
+
     self.toDebugString = function() {
         const instantiated = Object.keys(_resolved);
         const sleeping = Object.keys(_constructors).filter(name => !_resolved[name]);

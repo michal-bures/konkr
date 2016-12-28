@@ -1,6 +1,6 @@
 import log from 'loglevel';
 
-import AssetManager from 'lib/AssetManager';
+import GameAssets from 'ui/assets/GameAssets';
 import Injector from 'lib/Injector';
 import DebugInfo from 'ui/DebugInfo';
 
@@ -19,12 +19,12 @@ function nextId() { return ++idCounter; }
 
 //init globals
 
-game = new Phaser.Game(1024, 550, Phaser.AUTO, 'content');
+game = new Phaser.Game(1024, 400, Phaser.AUTO, 'konkr_game_container');
 
 var spec = new Injector(undefined,{
     log: () => log,
     game: () => game,
-    assetManager: spec => new AssetManager(spec),
+    assets: spec => new GameAssets(spec),
     debug: spec => new DebugInfo(spec),
 });
 
@@ -121,13 +121,7 @@ PrepareLevel.prototype = {
 
     preload: function() {
         //Shared assets
-        spec.assetManager.load('hex');
-        spec.assetManager.load('pawn');
-        spec.assetManager.load('flag');
-        spec.assetManager.load('paneBackground');
-        spec.assetManager.load('regionPanel');
-        spec.assetManager.load('nextTurnButton');
-        spec.assetManager.load('undoButton');
+        spec.assets.loadAll();
     },
 
     create: function(game) {

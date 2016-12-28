@@ -68,6 +68,7 @@ class DebugInfo {
     }
 
     generateDebugCommandsHTML(enclosingDiv, category) {
+        if (!enclosingDiv) return;
         enclosingDiv.innerHTML="";
         this.globalCommands.concat(this.commands[category]||[]).forEach(cmd=> {
           let newButton = document.createElement('input');

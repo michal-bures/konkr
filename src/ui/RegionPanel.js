@@ -14,33 +14,47 @@ function RegionPanel(spec) {
         align:Phaser.BOTTOM_CENTER,
         contains: [
             {
-                name: 'regionNameLabel',
-                component: 'label',
-            },
-            {
-                name: 'economyLabel',
-                style: { font: "20pt Bookman Old Style", fill: "black"},
-                component: 'label',
-                x:112,
-                y:48,
-            },
-            {
                 name: 'pawnShop',
                 component: 'pawnShop',
                 align: Phaser.BOTTOM_CENTER,
                 vOffset: -32,
+            },
+            {
+                name: 'stats',
+                component: 'horizontalGroup',
+                align: Phaser.BOTTOM_CENTER,
+                spacing: 3,
+                contains: [
+                    {
+                        name: 'goldIcon',
+                        component: 'pane',
+                        bgImage: 'goldCoins',
+                    },
+                    {
+                        name: 'treasuryLabel',
+                        style: { font: "20pt Bookman Old Style", fill: "black"},
+                        component: 'label',
+                    },
+                    {
+                        name: 'incomeLabel',
+                        style: { font: "10pt Bookman Old Style", fill: "black"},
+                        component: 'label',
+                        hOffset: 10,
+                    },
+
+                ]
             }
         ]
     });
 
     let { 
         mainContainer, 
-        regionNameLabel,
-        economyLabel,
+        treasuryLabel,
+        incomeLabel,
         pawnShop,
     } = controls;
 
-    assertDefined(mainContainer, regionNameLabel, economyLabel);
+    assertDefined(mainContainer, treasuryLabel, incomeLabel);
     group = mainContainer;
 
     ui.onRegionSelected.add(region => {
@@ -92,10 +106,9 @@ function RegionPanel(spec) {
             const incomeColor = accountingColor(netIncome);
             netIncome = (netIncome>=0?'+':'')+netIncome;
 
-            economyLabel.text = `${treasury} ${netIncome}`;
-            const offsetNetIncome = String(treasury).length+1;
-            economyLabel.resetColors();
-            economyLabel.addColor(incomeColor, offsetNetIncome);
+            treasuryLabel.text = treasury;
+            incomeLabel.text = netIncome;
+            incomeLabel.addColor(incomeColor, 0);
             pawnShop.setStock(economy.buyablePawns(region));
             mainContainer.show();
         }

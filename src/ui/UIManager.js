@@ -12,7 +12,7 @@ import Scene from './scene/Scene';
 
 function UIManager(spec) {
     
-    let {game, regions, log, gameState, actions} = spec;
+    let {game, regions, log, gameState, actions, players} = spec;
         
     let selectedRegion,
         selectedHex,
@@ -170,6 +170,7 @@ function UIManager(spec) {
 
     function undo() {
         actions.undoUntil('AWAIT_PLAYER_INPUT');
+        changeSceneNow('PLAYER_TURN');
     }
 
     function changeSceneNow(nextSceneName) {
@@ -208,6 +209,10 @@ function UIManager(spec) {
 
     function endTurn() {
         if (!resumeActions) throw Error(`End turn called out of order`);
+        if (players.grabbedPawn) {
+            log.warn("Can't end turn while holding a pawn!");
+            return;
+        }
         changeScene(defaultSpectatorScene).then(()=>{
             resumeActions();
             resumeActions = null;

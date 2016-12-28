@@ -13,7 +13,8 @@ const componentConstructors = {
     pane : (...args) => new Pane(...args),
     label : (...args) => new Label(...args),
     button : (...args) => new Button(...args),
-    pawnShop : (...args) => new PawnShop(...args)
+    pawnShop : (...args) => new PawnShop(...args),
+    horizontalGroup : (...args) => new HorizontalGroup(...args)
 };
 
 function UIComponent({game, log, debug, tweens}, def, parent) {
@@ -33,37 +34,42 @@ function UIComponent({game, log, debug, tweens}, def, parent) {
         get name() { return name; },
         get anchorObject() { return anchorObject; },
         set anchorObject(val) { anchorObject = val; },
-        initGroup,
-        reflow,
+        // update the position of this component within parent container and call recursively 
+        // on child components;
+        // WARNING: component width/height changes should NOT occur inside reflow to avoid inifinite 
+        // loops of parent.reflow->child.resize->parent.reflow->child.resize->...
+        // instead, only resize component based on an independent trigger and trigger onResize
+        reflow, 
         show,
         hide,
         config,
         childComponents,
-        parentGroup,
-        onResized: new Phaser.Signal(),
         childResized,
+        parentGroup,
+        reflowChildren: true,
+        onResized: new Phaser.Signal(),
+        addComponent,
         toString
     });
 
     reflow();
     if (parent) {
-        parentGroup.add(self);
-        parent.childComponents.push(self);
-        self.onResized.add(()=>parent.childResized(self));
+        parent.addComponent(self);
     } else {
         self.fixedToCamera = true;
     }
 
     function childResized(child) {
         log.debug(`EVT: ${child} resized`);
-        if (parent) {
-            parent.childResized(self);
-        } else {
-            reflow();
-        }
+        self.onResized.dispatch();
+        if (!parent) reflow();
     }
 
-    function initGroup() {}
+    function addComponent(component) {
+        childComponents.push(component);
+        component.onResized.add(()=>self.childResized(component));
+        self.add(component);
+    }
 
     function hide() {
         if (hidden) return;
@@ -111,7 +117,7 @@ function UIComponent({game, log, debug, tweens}, def, parent) {
         self.cameraOffset.x = self.x - game.camera.view.x;
         self.cameraOffset.y = self.y - game.camera.view.y;
 
-        self.childComponents.forEach(child=>{
+        if (self.reflowChildren) self.childComponents.forEach(child=>{
             child.reflow();
         });
     }
@@ -147,7 +153,11 @@ function Label(spec, def, parent) {
     });
     Object.defineProperty(self, 'text', {
         get() { return self._text.text; },
-        set(val) { self._text.text = val; }
+        set(val) { 
+            if (self._text.text === val) return;
+            self._text.text = val; 
+            self.onResized.dispatch();
+        }
     });
     return self;
 }
@@ -169,6 +179,36 @@ function PawnShop (spec,def, parent) {
             self.onResized.dispatch();
         }
     });
+    return self;
+}
+
+function HorizontalGroup (spec, def, parent) {
+    let self = new UIComponent(spec, def, parent);
+    let spacing = def.spacing || 0;
+
+    function refreshLayout() {
+        let x = 0;
+        self.childComponents.forEach(member => {
+            member.x = x;
+            member.y = member.config.hOffset || 0; // TODO: replace with a nicer impl
+            x+=spacing + member.width;
+        });
+    }
+
+    let addComponentBase = self.addComponent;
+    let childResizedBase = self.childResized;
+    extend(self, {
+        reflowChildren:false,
+        addComponent(component) {
+            addComponentBase(component);
+            refreshLayout();
+        },
+        childResized(child) {
+            refreshLayout();
+            childResizedBase(child);
+        },
+    });
+
     return self;
 }
 

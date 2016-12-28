@@ -231,14 +231,16 @@ function Players(spec) {
         if (!region) throw Error(`No region specified, who is supposed to pay for this?!`);
         if (cost > economy.treasuryOf(region)) throw Error(`Region ${region} cannot afford to buy ${unitType}.`);
         action.schedule('ADJUST_REGION_TREASURY',region, -cost);
+        action.data.grabbedPawn = grabbedPawn;
+        action.data.grabbedPawnRegion = grabbedPawnRegion;
         addUnitToGrabbed(unitType);
         grabbedPawnRegion = region;
         self.onBoughtPawn.dispatch(unitType, region);
         action.resolve();
     },{
-        undo() {
-            grabbedPawn=null;
-            grabbedPawnRegion=null;
+        undo(action) {
+            grabbedPawn = action.data.grabbedPawn;
+            grabbedPawnRegion = action.data.grabbedPawnRegion;
         }
     });
 
