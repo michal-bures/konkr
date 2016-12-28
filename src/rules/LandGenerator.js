@@ -3,7 +3,7 @@ import noisejs from 'noisejs';
 
 function LandGenerator({actions, grid, log}) {
     actions.setHandler('GENERATE_LANDMASS', action=> {
-        worldGenSolid();
+        worldGenPerlin();
         action.resolve();
     });
 
@@ -15,8 +15,8 @@ function LandGenerator({actions, grid, log}) {
 
     function worldGenPerlin() {
         const MIN_SIZE = 20;
-        const SMOOTHNESS = 8;
-        const WATER_LEVEL = 0.7;
+        const SMOOTHNESS = 10;
+        const WATER_LEVEL = 0.5;
 
         let noise, comps, largest, tries, seed;
         const generatorFunc = (p=>{

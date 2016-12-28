@@ -19,7 +19,7 @@ function nextId() { return ++idCounter; }
 
 //init globals
 
-game = new Phaser.Game(1024, 400, Phaser.AUTO, 'konkr_game_container');
+game = new Phaser.Game(100, 100, Phaser.AUTO, 'konkr_game_container');
 
 var spec = new Injector(undefined,{
     log: () => log,
@@ -36,18 +36,27 @@ log.setLevel(log.levels.DEBUG);
 //========================================================
 // GAME STATE: Init
 
-var Boot = function(game) {
+var Boot = function() {
 };
 Boot.prototype= {
     preload: function() {
+        spec.assets.loadAll();
 
     },
 
     create: function() {
         game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
+        game.stage.backgroundColor='#d5dfef';
         game.scale.pageAlignHorizontally = true;
-        game.state.start("PrepareLevel");
+        var txt = game.add.text(game.width/2,game.height/2,"Konkr.io",{fill:"black", font:"24px Bookman Old Style"});
+        txt.anchor.set(0.5);
+        this.lblLoadingPhase = game.add.text(game.world.width/2,game.world.height/2+60,"Please wait...",{fill:"white", font:"16px Bookman Old Style"});
+        this.lblLoadingPhase.anchor.set(0.5);
+    },
 
+    update: function() {
+        this.lblLoadingPhase.destroy();
+        game.state.start("Play", true, false, spec);
     }
 };
 
@@ -122,19 +131,12 @@ PrepareLevel.prototype = {
 
     preload: function() {
         //Shared assets
-        spec.assets.loadAll();
     },
 
     create: function(game) {
-        var txt = game.add.text(game.width/2,game.height/2,"Načítám...",{fill:"white"});
-        txt.anchor.set(0.5);
-        this.lblLoadingPhase = game.add.text(game.world.width/2,game.world.height/2+60,"...",{fill:"white", font:"16px Arial"});
-        this.lblLoadingPhase.anchor.set(0.5);
     },
 
     update: function() {
-        this.lblLoadingPhase.destroy();
-        game.state.start("Play", true, false, spec);
     },
 
     render: function() {

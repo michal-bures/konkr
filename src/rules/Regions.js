@@ -5,7 +5,7 @@ import HexGroup from 'lib/hexgrid/HexGroup';
 import Region from 'rules/entities/Region';
 import UniqueHeap from 'lib/UniqueHeap';
 
-const MAX_NUMBER_OF_FACTIONS = 4;
+const MAX_NUMBER_OF_FACTIONS = 6;
 
 function Regions (spec) {
     let { grid, log, actions, ids, random } = spec;

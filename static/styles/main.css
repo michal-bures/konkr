@@ -18,12 +18,12 @@ pre {
   margin: 0;
 }
 
-div#content {
-    height:80%;
+div#konkr_game_container {
+    height:75%;
 }
 
 div#debug {
-    height:200px;
+    height:25%;
     overflow:auto;
     background-color: #cccccc;
 }

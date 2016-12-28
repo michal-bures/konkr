@@ -96,9 +96,6 @@ function UIManager(spec) {
         'DEBUG': new Scene.Debug(uiElements)
     };
 
-
-    game.stage.backgroundColor='#d5dfef';
-
     regions.onChanged.add((region) => {
         if (!selectedRegion) return;
         if (region === selectedRegion) {
@@ -225,7 +222,10 @@ function UIManager(spec) {
     }
 
     function endTurn() {
-        if (!resumeActions) throw Error(`End turn called out of order`);
+        if (!resumeActions) {
+            log.warn(`End turn called out of order`);
+            return;
+        }
         if (players.grabbedPawn) {
             log.warn("Can't end turn while holding a pawn!");
             return;

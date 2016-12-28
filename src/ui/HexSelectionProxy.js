@@ -30,7 +30,7 @@ function HexSelectionProxy(spec) {
         surface.events.onInputOver.add(() => active = true);
         surface.events.onInputOut.add(() => active = false);
         surface.events.onInputDown.add((target, pointer) => {
-            if (pointer.leftButton.isDown) {
+            if (!pointer.rightButton.isDown) {
                 const hex = getHexUnderCursor();
                 if (hex) ui.selectHex(hex);
             }
