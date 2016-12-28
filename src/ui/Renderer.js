@@ -158,6 +158,41 @@ function LandSprites(spec) {
     return landSprites;
 }
 
+function FeedbackSymbols({game, tweens, warfare, log, debug}) {
+    //public
+    let self = Object.freeze({
+        showDefendersOf,
+        add,
+        get group() { return group; }
+    });
+
+    //private
+    let group = game.make.group();
+
+    function showDefendersOf(hex, minMight=0) {
+        warfare.defendersOf(hex, minMight).forEach(defender=> {
+            add(defender, hex, 0);
+        });
+    }
+
+    function add(fromHex, toHex, frame) {
+        const [fx,fy] = convertToWorldCoordinates(fromHex.position.x, fromHex.position.y);
+        const [tx,ty] = convertToWorldCoordinates(toHex.position.x, toHex.position.y);
+        const sprite = game.add.sprite(fx,fy,'shieldSymbol');
+        log.debug(`ADDED SYMBOL ${fx},${fy} -> ${tx},${ty}`);
+        group.add(sprite);
+        sprite.frame = frame;
+        sprite.alpha = 0;
+        sprite.anchor.set(0.5);
+        tweens.add(sprite).to({x:tx, y:ty, alpha: 1}, 200, Phaser.Easing.Quadratic.Out, true).yoyo(200).onComplete.add(()=> {
+            group.remove(sprite);
+            sprite.destroy();
+        });
+    }
+
+    return self;
+}
+
 class RegionBorders {
     constructor({game, regions, gameState}) {
         this.regions = regions;
@@ -275,6 +310,7 @@ export {
     convertToWorldCoordinates,
     drawOnHex,
     drawInnerHex,
+    FeedbackSymbols,
     GrabbedPawn,
     LandSprites, 
     RegionBorders,

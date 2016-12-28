@@ -9,6 +9,7 @@ import NextTurnButton from './NextTurnButton';
 import TweenManager from './TweenManager';
 import { extend } from 'lib/util';
 import Scene from './scene/Scene';
+import SFX from './SFX';
 
 function UIManager(spec) {
     
@@ -18,17 +19,11 @@ function UIManager(spec) {
         selectedHex,
         scene,
         resumeActions, // stored callback for pending AWAIT_PLAYER_INPUT action
-        defaultSpectatorScene = 'FAST_SPECTATING',
-        hoveredRegion,
-        hoveredHex;
-
-
+        defaultSpectatorScene = 'FAST_SPECTATING';
 
     let self = Object.freeze({
-        onHexHovered: new Phaser.Signal(/* hex */),
         onHexSelected: new Phaser.Signal(/* hex */),
         onRegionSelected: new Phaser.Signal(/* region */),
-        onRegionHovered: new Phaser.Signal(/* region */),
         onSelectedRegionChanged: new Phaser.Signal(/* region */),
 
         get uiSpec() { return uiElements; },
@@ -70,6 +65,8 @@ function UIManager(spec) {
         nextTurnButton: spec => new NextTurnButton(spec),
         tweens: spec => new TweenManager(spec),
         grabbedPawn: spec => new Renderer.GrabbedPawn(spec),
+        feedbackSymbols: spec => new Renderer.FeedbackSymbols(spec),
+        sfx: spec=> new SFX(spec),
         ui: () => self
     });
 
@@ -87,6 +84,7 @@ function UIManager(spec) {
         'uiRegionPanel',
         'nextTurnButton',
         'grabbedPawn',
+        'feedbackSymbols'
     ];
     Z_ORDER.forEach(e => game.world.add(uiElements[e].group));
 
@@ -228,6 +226,7 @@ function UIManager(spec) {
 
     function buyPawn(pawnType) {
         actions.schedule('BUY_UNIT', pawnType, selectedRegion);
+        uiElements.sfx.grabPawn();
         processActions();
     }
 

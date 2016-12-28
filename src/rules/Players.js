@@ -66,7 +66,6 @@ function Players(spec) {
                 hexes: region.hexes, 
                 custom: pawn=> pawn.isTroop() && this.canGrabPawn(pawn)
             });
-            log.debug("available units: ", ret);
             return ret;
         }
 
@@ -87,7 +86,7 @@ function Players(spec) {
         onConqueringHex: new Phaser.Signal(/* hex */),
         onBoughtPawn: new Phaser.Signal(/* pawnType, region */),
         get grabbedPawn() { return grabbedPawn; },
-        get grabbedRegion() { return grabbedPawnRegion; },
+        get grabbedPawnRegion() { return grabbedPawnRegion; },
         toDebugString,
         toJSON,
         fromJSON

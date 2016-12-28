@@ -1,19 +1,32 @@
 function AssetManager(spec, data) {
     let { game, log } = spec;
-    let { images, spritesheets } = data;
+    let { images, spritesheets, sounds } = data;
 
     let load = (id) => {
-        var args;
         if (images[id]) {
-            args = [id].concat(images[id]);
-            game.load.image.apply(game.load,args);
+            loadImg(id);
         } else if (spritesheets[id]) {
-            args = [id].concat(spritesheets[id]);
-            game.load.spritesheet.apply(game.load,args);
+            loadSpritesheet(id);
+        } else if (sounds[id]) {
+            loadSound(id);
         } else {
             log.error("Unknown asset requested:",id);
         }
     };
+
+    function loadImg(id) {
+        const args = [id].concat(images[id]);
+        game.load.image.apply(game.load,args);
+    }
+
+    function loadSpritesheet(id) {
+        const args = [id].concat(spritesheets[id]);
+        game.load.spritesheet.apply(game.load,args);
+    }
+
+    function loadSound(id) {
+        game.load.audio(id, sounds[id]);
+    }
 
     return Object.freeze({
         load,
@@ -22,10 +35,13 @@ function AssetManager(spec, data) {
 
     function loadAll() {
         for (const img in images) {
-            load(img);
+            loadImg(img);
         }
         for (const spr in spritesheets) {
-            load(spr);
+            loadSpritesheet(spr);
+        }
+        for (const sfx in sounds) {
+            loadSound(sfx);
         }
     }
 }

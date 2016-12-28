@@ -28,7 +28,7 @@ function TweenManager({game}) {
     }
 
     function stopAll() {
-        runningTweens().forEach(tween=>tween.stop());
+        runningTweens().forEach(tween=>tween.stop(true));
         tweens = [];
     }
 

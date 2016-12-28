@@ -1,6 +1,6 @@
 import { debounce } from 'lib/util';
 
-const OFFSET_FROM_BOTTOM=32;
+const OFFSET_FROM_BOTTOM=36;
 
 const STYLE_COLORS = {
     default:'white',

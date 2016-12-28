@@ -2,10 +2,11 @@ import Scene from './Scene';
 
 function LocalPlayerTurn(spec){
 
-    let { actions, pawnSprites, landSprites, players, pawns, regions, ui, economy } = spec;
+    let { actions,  players, pawns, regions, ui, economy, log,
+          sfx, pawnSprites, landSprites, feedbackSymbols } = spec;
 
     return new Scene(spec, { 
-        name: 'PLAYER_TURN',
+    name: 'PLAYER_TURN',
         uiElements: {
             landSprites:true,
             regionBorders:true,
@@ -18,6 +19,7 @@ function LocalPlayerTurn(spec){
             uiRegionPanel:true,
             nextTurnButton:true,
             grabbedPawn:true,
+            feedbackSymbols:true,
         },
         bindSignals: {
             pawns: {
@@ -57,14 +59,27 @@ function LocalPlayerTurn(spec){
         if (players.grabbedPawn) {
             if (players.activePlayer.canDropPawnAt(hex)) {
                 actions.schedule('DROP_UNIT', hex);
+                sfx.dropPawn();
                 ui.processActions();
             } else if (players.activePlayer.canConquerHex(hex)) {
                 actions.schedule('CONQUER_HEX', hex);
+                sfx.dropPawn();
                 ui.processActions();
+            } else {
+                sfx.deny();
+                if (regions.regionOf(hex) === ui.selectedRegion) {
+                    log.warn(`Tile is occupied!`);
+                } else if (!players.grabbedPawnRegion.hexes.neighbours().contains(hex)) {
+                    log.warn(`Can't reach this tile!`);
+                } else {
+                    feedbackSymbols.showDefendersOf(hex, players.grabbedPawn.might);
+                    log.warn('Stronger unit needed to conquer this tile!');
+                }
             }
         } else {
             if (pawns.pawnAt(hex) && players.activePlayer.canGrabPawn(pawns.pawnAt(hex))) {
                 actions.schedule('GRAB_UNIT', pawns.pawnAt(hex));
+                sfx.grabPawn();
                 ui.processActions();
             } 
             const r = regions.regionOf(hex);

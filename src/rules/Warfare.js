@@ -13,6 +13,7 @@ function Warfare(spec) {
 
     return Object.freeze({
         defenseOf,
+        defendersOf
     });
 
     function defenseOf(hex, condition) {
@@ -23,6 +24,12 @@ function Warfare(spec) {
             .filter(hex2 => regions.regionOf(hex) === regions.regionOf(hex2))
             .reduce((currentMaximum, hex) => Math.max(currentMaximum, baseDefenseOf(hex, condition)),0);
         }
+    }
+
+    function defendersOf(hex, minMight) {
+        return [hex].concat(hex.neighbours())
+            .filter(hex2 => regions.regionOf(hex) === regions.regionOf(hex2) && 
+                            baseDefenseOf(hex2) >= minMight);
     }
 
     // base defense value of a hex not taking into account neighbouring hexes
