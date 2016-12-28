@@ -29,7 +29,7 @@ class Region {
     }
 
     toString() {
-        return `[🏰${this.id} (F${this.faction} ,${this._hexes.length} hexes)]`;
+        return `[♔${this.id} (F${this.faction} ,${this._hexes.length} hexes)]`;
     }
 }
 

@@ -59,6 +59,7 @@ function UIManager(spec) {
         },
         landSprites: spec => new Renderer.LandSprites(spec.useName('landSprites')),
         regionBorders: spec => new Renderer.RegionBorders(spec),
+        conquerableHexesHighlight: spec => new Renderer.ConquerableHexesHighlight(spec),
         selRegionHighlight: spec => new Renderer.SelectedRegionHighlight(spec),
         pawnSprites: spec => new PawnSprites(spec.useName('pawnSprites')),
         hexSelectionProxy: spec => new HexSelectionProxy(spec),
@@ -77,6 +78,7 @@ function UIManager(spec) {
     const Z_ORDER = [
         'landSprites',
         'regionBorders',
+        'conquerableHexesHighlight',
         'selRegionHighlight',
         'pawnSprites',
         'gridOverlays',

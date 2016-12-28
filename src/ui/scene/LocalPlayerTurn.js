@@ -10,6 +10,7 @@ function LocalPlayerTurn(spec){
             landSprites:true,
             regionBorders:true,
             selRegionHighlight:true,
+            conquerableHexesHighlight: true,
             pawnSprites:true,
             gridOverlays:true,
             hexSelectionProxy:true,

@@ -62,7 +62,15 @@ ${ret.join('\n')}`;
     function update() {
         if (active) {
             const hex = getHexUnderCursor();
-            debug.set('pointer at',`${hex? hex.toString():'N/A'} ${game.input.activePointer.x},${game.input.activePointer.y}`);
+            const pawn = hex && pawns.pawnAt(hex);
+            const region = hex && regions.regionOf(hex);
+            const str = [
+                `${game.input.activePointer.x},${game.input.activePointer.y}`,
+                (pawn?'♙'+pawn.id:null),
+                (region?'♔'+region.id:null),
+                (hex?hex.toString():null),
+            ];
+            debug.set('ptr',str.filter(x=>x).join(' '));
         }
     }
 

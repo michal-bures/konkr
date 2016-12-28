@@ -225,7 +225,50 @@ function SelectedRegionHighlight({game,ui}) {
         group.add(sprite);
         graphics.destroy();
     }
+}
 
+
+function ConquerableHexesHighlight({game,ui, players, warfare}) {
+    let group = game.make.group(),
+        sprite = null;
+
+    players.onGrabbedPawn.add(pawn=>redraw(pawn.pawnType));
+    players.onBoughtPawn.add(pawnType=>redraw(pawnType));
+    players.onDroppedPawn.add(()=>redraw());
+
+    return Object.freeze({
+        get group() { return group; },
+        synchronize
+    });
+
+    function synchronize()  {
+        redraw(players.grabbedPawn);
+    }
+
+    function redraw(grabbedPawnType) {
+        let region = ui.selectedRegion;
+        if (sprite) {
+            sprite.destroy();
+            sprite = null;
+        }
+        if (!region || !grabbedPawnType) return;
+        const graphics = game.add.graphics(0,0);
+        graphics.beginFill(0x000000);
+        graphics.lineStyle(2, 0xcc0000, 1);
+        graphics.fillAlpha=1;
+        graphics.endFill();
+        let hexes = region.hexes.neighbours().filter(hex=>warfare.defenseOf(hex) < grabbedPawnType.might);
+        hexes.forEach(hex => {
+            drawHexBorders(graphics, hex, i => 
+                !hex.neighbour(i) || 
+                (!hexes.contains(hex.neighbour(i)) &&
+                !region.hexes.contains(hex.neighbour(i))));
+        });
+        const {x,y} = graphics.getBounds();
+        sprite = game.make.sprite(x,y, graphics.generateTexture());
+        group.add(sprite);
+        graphics.destroy();
+    }
 }
 
 export { 
@@ -236,6 +279,7 @@ export {
     LandSprites, 
     RegionBorders,
     SelectedRegionHighlight,
+    ConquerableHexesHighlight,
     HEX_WIDTH,
     HEX_HEIGHT,
     LINE_HEIGHT,
