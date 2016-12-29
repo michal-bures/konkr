@@ -13,6 +13,7 @@ function NextTurnButton(spec) {
             align: Phaser.BOTTOM_CENTER,
             hOffset: 100,
             vOffset: -10,
+            onClicked: ui.endTurn,
         });
 
     let { undoButton } = new UI(spec,{
@@ -22,20 +23,13 @@ function NextTurnButton(spec) {
             align: Phaser.BOTTOM_CENTER,
             hOffset: -100,
             vOffset: -10,
+            onClicked: ui.undo,
         });
 
     assertDefined(nextTurnButton);
     group = game.make.group();
     group.add(nextTurnButton);
     group.add(undoButton);
-
-    nextTurnButton.onInputUp.add(() => {
-        ui.endTurn();
-    });
-
-    undoButton.onInputUp.add(() => {
-        ui.undo();
-    });
 
     return Object.freeze({
         get group() { return group }

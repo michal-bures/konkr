@@ -20,7 +20,7 @@ function UIManager(spec) {
     let selectedRegion,
         selectedHex,
         scene,
-        resumeActions, // stored callback for pending AWAIT_PLAYER_INPUT action
+        resumeActionsCallback, // stored callback for pending AWAIT_PLAYER_INPUT action
         defaultSpectatorScene = 'FAST_SPECTATING';
 
     let self = Object.freeze({
@@ -41,7 +41,7 @@ function UIManager(spec) {
         render,
         update,
         undo,
-        showModal,
+        showRestartMenu,
         processActions,
         toDebugString
     });
@@ -141,7 +141,7 @@ function UIManager(spec) {
     actions.setHandler('AWAIT_PLAYER_INPUT', (action) => {
         action.data.prevScene = scene.name;
         if (scene!=scenes.PLAYER_TURN) changeScene('PLAYER_TURN');
-        resumeActions = action.resolve;
+        resumeActionsCallback = action.resolve;
     },
     {
         undo(action) {
@@ -170,6 +170,11 @@ function UIManager(spec) {
             bounds.left -= neededPadding/2;
             bounds.right += neededPadding/2;
         }
+        if (bounds.height<game.camera.height) {
+            let neededPadding = game.camera.height - bounds.height;
+            bounds.y -= neededPadding - 64;
+        }
+        log.debug(`Setting bounds to ${bounds}`);
         game.world.setBounds(bounds.left, bounds.top, bounds.width, bounds.height);
     }
 
@@ -187,8 +192,25 @@ function UIManager(spec) {
         });
     }
 
-    function showModal(name) {
-        uiElements.modals.show(name);
+    function showRestartMenu() {
+        uiElements.modals.show('RESTART_GAME', result=> {
+            switch (result) {
+                case 'NEW_ISLAND':
+                    spec.actions.abortAll();
+                    spec.actions.schedule('LOAD_STATE','konkr_autosave_prestart');
+                    if (resumeActionsCallback) processActions();
+                    break;
+                case 'RESTART':
+                    actions.abortAll();
+                    actions.schedule('RESTART_GAME');
+                    if (resumeActionsCallback) processActions();
+                    break;
+                case null: 
+                    return;
+                default: 
+                    throw Error(`No action bound to menu item ${result}`);
+            }
+        });
     }
 
     function undo() {
@@ -231,7 +253,7 @@ function UIManager(spec) {
     }
 
     function endTurn() {
-        if (!resumeActions) {
+        if (!resumeActionsCallback) {
             log.warn(`End turn called out of order`);
             return;
         }
@@ -240,16 +262,16 @@ function UIManager(spec) {
             return;
         }
         changeScene(defaultSpectatorScene).then(()=>{
-            resumeActions();
-            resumeActions = null;
+            resumeActionsCallback();
+            resumeActionsCallback = null;
         });
     }
 
     function processActions() {
-        if (!resumeActions) throw Error(`processActions called out of order`);
+        if (!resumeActionsCallback) throw Error(`processActions called out of order`);
         actions.schedule('AWAIT_PLAYER_INPUT');
-        resumeActions();
-        resumeActions = null;
+        resumeActionsCallback();
+        resumeActionsCallback = null;
     }
 
     function buyPawn(pawnType) {
@@ -273,7 +295,7 @@ function UIManager(spec) {
         }
 
         return `
-${resumeActions?'<b>Waiting for player input...</b>':'Spectator mode'}
+${resumeActionsCallback?'<b>Waiting for player input...</b>':'Spectator mode'}
 
 scene: ${scene.name}
 uiElements: ${elems.join(', ')}`;

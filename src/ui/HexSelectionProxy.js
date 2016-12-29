@@ -1,13 +1,24 @@
 import { HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT, HALF_LINE_HEIGHT, OFFSET_TOP, OFFSET_LEFT, convertToWorldCoordinates } from 'ui/Renderer';
 
+import InputProxy from 'lib/controls/InputProxy';
+
 function HexSelectionProxy(spec) {
     let {game,grid,debug,log,regions,pawns,ui, warfare, players} = spec;
 
     let active = false,
-        image = initImage(),
+        proxy = new InputProxy(game),
         group = game.make.group(null);
 
-    group.add(image);
+    group.add(proxy);
+
+    proxy.events.onInputOver.add(() => active = true);
+    proxy.events.onInputOut.add(() => active = false);
+    proxy.events.onInputDown.add((target, pointer) => {
+        if (!pointer.rightButton.isDown) {
+            const hex = getHexUnderCursor();
+            if (hex) ui.selectHex(hex);
+        }
+    });
 
     //public
     return Object.freeze({
@@ -16,27 +27,6 @@ function HexSelectionProxy(spec) {
         toDebugString,
         get group() { return group; }
     });
-
-    function initImage() {
-        let surface = new Phaser.Image(game,0,0, null);
-        surface.inputEnabled = true;
-        surface.fixedToCamera = true;
-        surface.width = game.width;
-        surface.height = game.height;
-        game.scale.onSizeChange.add(() => {
-            surface.width = game.width;
-            surface.height = game.height;
-        });        
-        surface.events.onInputOver.add(() => active = true);
-        surface.events.onInputOut.add(() => active = false);
-        surface.events.onInputDown.add((target, pointer) => {
-            if (!pointer.rightButton.isDown) {
-                const hex = getHexUnderCursor();
-                if (hex) ui.selectHex(hex);
-            }
-        });
-        return surface;
-    }
 
     function toDebugString() {
         const hex = getHexUnderCursor();

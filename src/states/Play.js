@@ -76,12 +76,7 @@ function Play(game) {
         function shouldBreakBefore(nextAction) {
             if (breakAfterEveryAction || nextAction === breakBeforeAction) return true;
 
-            return false;
             switch (nextAction && nextAction.name) {
-//                case 'STORE_STATE':
-//                    return (nextAction.args[0] === 'konkr_autosave_turn_start');
-                case 'START_PLAYER_TURN_X':
-                    return (nextAction.args[0].id === 1);
                 default:
                     return false;
             }            
@@ -207,7 +202,6 @@ function Play(game) {
             gameSpec.actions.abortAll();
             gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_turn_start');
         });
-
 
         gameUi.debug.addCommand('gameState','storeSnapshot', ()=> {
             if (gameSpec.actions.getCurrent() && gameSpec.actions.getCurrent().name ==='AWAIT_PLAYER_INPUT') {

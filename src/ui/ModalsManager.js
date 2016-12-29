@@ -1,30 +1,37 @@
 import Injector from 'lib/Injector';
 import Menu from './modals/Menu';
+import InputProxy from 'lib/controls/InputProxy';
 
 function ModalsManager(spec) {
     let { game, ui } = spec;
 
-    let group = game.make.group();
+    let group = game.make.group(),
+        inputProxy = new InputProxy(game),
+        currentModal = null,
+        currentModalCallback = null;
 
     let library = new Injector(null, {
         RESTART_GAME: () => new Menu(spec, {
-            title: 'Do you want to start on a new world?',
+            title: 'Start a new game?',
             choices: [
                 {
-                    id: 'restart',
-                    title: 'Try this one again',
-                    description: 'Discard current progress and restart the current map',
-                    handler() { ui.restartGame(); }
+                    id: 'RESTART',
+                    title: 'Restart',
+                    description: 'Discard current progress and start again on this island',
                 },
                 {
-                    id: 'new_map',
-                    title: 'Generate new map',
-                    description: 'Discard current progress and start on a new, randomly generated world',
-                    handler() { ui.generateNewMap(); }
+                    id: 'NEW_ISLAND',
+                    title: 'New island',
+                    description: 'Discard current progress and start on a new island',
                 }
             ],
             canCancel: true,
+            callback: resolveModal
         })
+    });
+
+    inputProxy.events.onInputUp.add(()=> {
+        if (currentModal && currentModal.canCancel) resolveModal(null);
     });
 
     return Object.freeze({
@@ -32,15 +39,27 @@ function ModalsManager(spec) {
         show
     });
 
-
-    function show(key) {
-        const modal = library[key];
-        if (!modal) {
+    function show(key, callback) {
+        if (currentModal) resolveModal();
+        currentModal = library[key];
+        if (!currentModal) {
             throw Error(`Unkonwn modal type: ${key}`);
         }
         group.removeAll();
-        group.add(modal.group);
-        modal.show();
+        group.add(inputProxy);
+        group.add(currentModal.group);
+        if (callback) currentModalCallback = callback;
+        currentModal.show();
+    }
+
+    function resolveModal(result) {
+        currentModal.hide();
+        group.remove(inputProxy);
+        currentModal = null;
+        if (currentModalCallback) {
+            currentModalCallback(result);
+            currentModalCallback = null;
+        }
     }
 
 }

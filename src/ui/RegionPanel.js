@@ -63,10 +63,10 @@ function RegionPanel(spec) {
     assertDefined(mainContainer, treasuryLabel, incomeLabel);
     group = mainContainer;
 
-    debug.sprite(stats);
-    debug.sprite(treasuryLabel);
-    debug.sprite(incomeLabel);
-    debug.sprite(goldIcon);
+//    debug.sprite(stats);
+//    debug.sprite(treasuryLabel);
+//    debug.sprite(incomeLabel);
+//    debug.sprite(goldIcon);
 
     ui.onRegionSelected.add(region => {
         setRegion(region);

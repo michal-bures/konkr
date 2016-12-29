@@ -75,12 +75,13 @@ function Players(spec) {
             return `[${this.name} #${this.id}]`;
         }
     }
+    const nullPlayer = new Player(-1,'No player','dummy');
 
     // public API
     let self = {
         byId(id) { return _players[id]; },
         ownerOf,
-        get activePlayer() { return activePlayer; },
+        get activePlayer() { return activePlayer || nullPlayer; },
         onGrabbedPawn: new Phaser.Signal(/* pawn */),
         onDroppedPawn: new Phaser.Signal(/* pawnType, hex */),
         onConqueringHex: new Phaser.Signal(/* hex */),

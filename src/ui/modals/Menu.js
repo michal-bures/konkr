@@ -8,60 +8,78 @@ function Menu(spec, cfg) {
     
     assertDefined(game);
 
+    let content = [];
+
+    let {callback, canCancel} = cfg;
+
+    let self = Object.freeze({
+        get group() { return group; },
+        get canCancel() { return canCancel; },
+        show,
+        hide
+    });
+
+    if (cfg.title) {
+        content.push({
+            name: 'title',
+            component: 'label',
+            text: cfg.title,
+            align: Phaser.CENTER,
+        });
+    }
+    if (cfg.choices) cfg.choices.forEach((choice,i)=> {
+        content.push({
+            name: 'choice'+i,
+            component: 'largeTextButton',
+            title: choice.title,
+            description: choice.description,
+            align: Phaser.CENTER,
+            onClicked() { callback(choice.id); }
+        });
+    });
+
+    if (cfg.canCancel) {
+        content.push({
+            name: 'cancel',
+            component: 'largeTextButton',
+            title: "Cancel",
+            align: Phaser.CENTER,
+            onClicked() { callback(null); }
+        });
+    }
+
     let controls = new UI(spec,{
         name: 'mainContainer',
         component: 'pane',
         align:Phaser.CENTER,
-        //stretchHorizontally: true,
-        spacing: 5,
+        stretchHorizontally: true,
+        padding: 15,
         contains: [{
             name: 'layout',
             component: 'verticalGroup',
             align: Phaser.CENTER,
             spacing: 5,
-            contains: [
-                {
-                    name: 'option1',
-                    title: 'option 1',
-                    align: Phaser.CENTER,
-                    description: 'option description',
-                    component: 'largeTextButton',
-                },
-                {
-                    name: 'option2',
-                    title: 'option 2',
-                    align: Phaser.CENTER,
-                    description: 'option description',
-                    component: 'largeTextButton',
-                },
-                {
-                    name: 'option3',
-                    title: 'option 3',
-                    align: Phaser.CENTER,
-                    description: 'option description',
-                    component: 'largeTextButton',
-                },
-            ]
+            contains: content
         }]
     });
 
     let { 
         mainContainer,
-        layout,
-        option1
     } = controls;
 
     assertDefined(mainContainer);
 
-    debug.sprite(layout);
-    debug.sprite(mainContainer);
-
     group = mainContainer;
 
-    return Object.freeze({
-        get group() { return group; },
-        show() { mainContainer.show(); }
-    });
+    function show() {
+        mainContainer.show(); 
+    }
+    function hide() {
+        mainContainer.hide(); 
+    }
+
+
+    return self;
 }
 
 export default Menu;

@@ -19,7 +19,7 @@ function nextId() { return ++idCounter; }
 
 //init globals
 
-game = new Phaser.Game(100, 100, Phaser.AUTO, 'konkr_game_container');
+game = new Phaser.Game(100, 100, Phaser.AUTO, 'konkr_game_container', null, false, true);
 
 var spec = new Injector(undefined,{
     log: () => log,
@@ -46,6 +46,7 @@ Boot.prototype= {
 
     create: function() {
         game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
+        game.scale.fullScreenScaleMode = Phaser.ScaleManager.RESIZE;
         game.stage.backgroundColor='#d5dfef';
         game.scale.pageAlignHorizontally = true;
         var txt = game.add.text(game.width/2,game.height/2,"Konkr.io",{fill:"black", font:"24px Bookman Old Style"});

@@ -147,7 +147,7 @@ function PawnSprites ({tweens, game, log, pawns, regions, gameState, grid, playe
     function synchronize() {
         destroyOrphanedSprites();
         pawns.forEach((pawn) => {
-            getOrCreateSprite(pawn.hex, pawn.pawnType);
+            getOrCreateSprite(pawn.hex, pawn.pawnType).refreshDecorations();
         });
     }
 

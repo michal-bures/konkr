@@ -9,7 +9,7 @@ import URL_PAWN from 'assets/pawn.png';
 import URL_FLAG from 'assets/flag.png'; 
 import URL_NEXTTURNBUTTON from 'assets/ui/nextTurnButton.png'; 
 import URL_UNDOBUTTON from 'assets/ui/undoButton.png'; 
-import URL_SHIELD_SYMBOL from 'assets/shield-symbol.png'; 
+import URL_SHIELD_SYMBOL from 'assets/shieldSymbol.png'; 
 import URL_OPTION_BUTTON from 'assets/ui/optionButton.png'; 
 
 
@@ -33,7 +33,7 @@ function GameAssets(spec) {
 		    flag : [ URL_FLAG, 32,48],
 		    nextTurnButton : [ URL_NEXTTURNBUTTON, 67,29],
 		    undoButton : [ URL_UNDOBUTTON, 67,29],
-            shieldSymbol: [ URL_SHIELD_SYMBOL, 11,15 ],
+            shieldSymbol: [ URL_SHIELD_SYMBOL, 11, 15],
             optionButtons : [ URL_OPTION_BUTTON, 33, 33 ]
 		},
         sounds: {

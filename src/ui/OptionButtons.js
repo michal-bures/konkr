@@ -1,15 +1,15 @@
 import UI from 'lib/controls/UI';
 
 function OptionButtons(spec) {
-    let { game, ui } = spec;
+    let { game, ui, sfx } = spec;
 
     let group;
 
     let controls = new UI(spec,{
         name: 'mainContainer',
         component: 'horizontalGroup',
-        align:Phaser.TOP_RIGHT,
-        hOffset: -10,
+        align:Phaser.BOTTOM_CENTER,
+        hOffset: -200,
         vOffset: -10,
         spacing: 5,
         contains: [
@@ -50,7 +50,19 @@ function OptionButtons(spec) {
     });
 
     restart.onInputUp.add(()=> {
-        ui.showModal('RESTART_GAME');
+        ui.showRestartMenu();
+    });
+
+    fullscreen.onInputUp.add(()=> {
+        if (game.scale.isFullScreen)
+        {
+            game.scale.stopFullScreen();
+        }
+        else if (game.scale.compatibility.supportsFullScreen) {
+            game.scale.startFullScreen(false);
+        }
+
+
     });
 
     return Object.freeze({

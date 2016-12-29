@@ -81,7 +81,7 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
                 self.visible = false;
             });
         } else {
-            self.visible = true;
+            self.visible = false;
         }
     }
 
@@ -100,12 +100,12 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
 
     function update() {
         if (self.dirty) {
-            self.dirty = false;
             reflow();
         }
     }
 
     function reflow(clientRect = self.parentGroup.anchorObject || self.parentGroup) {
+        self.dirty = false; 
         log.debug(`-> reflow ${self} in ${clientRect}:`);
         self.reflowChildren();
         log.debug(`<- reflow ${self}`);
@@ -254,7 +254,7 @@ function Pane(spec, def) {
         let target = self.childComponents[0];
         if (!target) return;
         if (def.stretchHorizontally) {
-            bgSprite.x=0;
+            bgSprite.x=(self.fixedToCamera?spec.game.camera.view.x:0);
             bgSprite.width = self.parentGroup.width;
         } else {
             bgSprite.x = target.x - padding;
@@ -275,6 +275,7 @@ function Button(spec, def) {
     self.onInputUp = btn.onInputUp;
     self.onInputDown = btn.onInputDown;
     self.add(btn);
+    if (def.onClicked) self.onInputUp.add(def.onClicked);
 
     self.setFrame =(frame) => {
         btn.frame = frame;
@@ -286,20 +287,25 @@ function Button(spec, def) {
 function LargeTextButton(spec, def) {
     let self = new UIComponent(spec, def);
     let {game} = spec;
-    let {text} = def;
     const graphics = game.make.graphics(0, 0);
     graphics.beginFill(0xFFFFFF);
     //graphics.lineStyle(1, 0x202020, 1);
     graphics.fillAlpha=1;
-    graphics.drawRoundedRect(0,0,400,68,9);
+    graphics.drawRoundedRect(0,0,400,(def.description?68:46),9);
     graphics.endFill();
     const {x,y} = graphics.getBounds();
-    let btn = game.make.sprite(x, y, graphics.generateTexture());
+    let btn = game.make.button(x, y, graphics.generateTexture());
     let title = game.make.text(10,6, def.title || '', { font: "24pt Bookman Old Style", fill: "black"});
-    let desc = game.make.text(10,46, def.description || '', { font: "10pt Bookman Old Style", fill: "black"});
+    if (def.description) {
+        const desc = game.make.text(10,46, def.description || '', { font: "10pt Bookman Old Style", fill: "black"});
+        btn.addChild(desc);
+    }
     btn.addChild(title);
-    btn.addChild(desc);
+    
+    self.onInputUp = btn.onInputUp;
+    self.onInputDown = btn.onInputDown;
     self.add(btn);
+    if (def.onClicked) self.onInputUp.add(def.onClicked);
     return self;
 }
 
