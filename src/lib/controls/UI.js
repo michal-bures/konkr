@@ -10,18 +10,21 @@ function generateComponentId() {
 
 
 const componentConstructors = {
-    pane : (...args) => new Pane(...args),
+    image : (...args) => new Image(...args),
     label : (...args) => new Label(...args),
     button : (...args) => new Button(...args),
+    pane: (...args) => new Pane(...args),
+    largeTextButton: (...args) => new LargeTextButton(...args),
     pawnShop : (...args) => new PawnShop(...args),
-    horizontalGroup : (...args) => new HorizontalGroup(...args)
+    horizontalGroup : (...args) => new HorizontalGroup(...args),
+    verticalGroup : (...args) => new VerticalGroup(...args),
 };
 
-function UIComponent({game, log, debug, tweens, ui}, def, parent) {
+function UIComponent({game, log, debug, tweens, ui}, def) {
     let self = game.add.group(),
         config = def,
         name = def.name || def.component + '#'+ generateComponentId(),
-        parentGroup = parent || game.camera.view,
+        parentGroup = game.camera.view,
         childComponents = [],
         // if anchorObject is specified, it's used as bounding box when positioning this component and laying 
         // out its children (instead of using the actual bounding box of the group itself); that way, even if the group
@@ -38,33 +41,32 @@ function UIComponent({game, log, debug, tweens, ui}, def, parent) {
         // on child components;
         // WARNING: component width/height changes should NOT occur inside reflow to avoid inifinite 
         // loops of parent.reflow->child.resize->parent.reflow->child.resize->...
-        // instead, only resize component based on an independent trigger and trigger onResize
-        reflow, 
+        // instead, only resize component based on an independent trigger and dispatch onResize
+        reflow,
+        reflowSelf, 
+        reflowChildren,
+        update,
         show,
         hide,
         config,
         childComponents,
         childResized,
         parentGroup,
-        reflowChildren: true,
+        hasParent: false,
+        dirty: true, // needs reflow after changes to this component or it's children ?
         onResized: new Phaser.Signal(),
         addComponent,
         toString
     });
-
-    reflow();
-    if (parent) {
-        parent.addComponent(self);
-    } else {
-        self.fixedToCamera = true;
-    }
-
+ 
     function childResized(child) {
-        self.onResized.dispatch();
-        if (!parent) reflow();
+        self.dirty = true;
+        self.onResized.dispatch();        
     }
 
     function addComponent(component) {
+        component.parentGroup = self;
+        component.hasParent = true;
         childComponents.push(component);
         component.onResized.add(()=>self.childResized(component));
         self.add(component);
@@ -96,22 +98,41 @@ function UIComponent({game, log, debug, tweens, ui}, def, parent) {
         }
     }
 
-    function reflow() {
-        let { align, x=0, y=0, hOffset=0, vOffset=0} = def;
+    function update() {
+        if (self.dirty) {
+            self.dirty = false;
+            reflow();
+        }
+    }
 
+    function reflow(clientRect = self.parentGroup.anchorObject || self.parentGroup) {
+        log.debug(`-> reflow ${self} in ${clientRect}:`);
+        self.reflowChildren();
+        log.debug(`<- reflow ${self}`);
+        self.reflowSelf(clientRect);
+    }
+
+    function reflowSelf(clientRect) {
+        let { align=Phaser.CENTER, x, y, hOffset=0, vOffset=0} = def;
         if (hidden) return;
         // position/alignment
-        if (align) {
-            self.alignIn(self.parentGroup.anchorObject || self.parentGroup,align,hOffset,vOffset);
-        }  else {
+        if (x !== undefined || y !== undefined) {
+            x = x || 0;
+            y = y || 0;
             self.x = x;
             self.y = y;
+        } else {
+            self.alignIn(clientRect,align,hOffset,vOffset);
         }
 
-        self.cameraOffset.x = self.x - game.camera.view.x;
-        self.cameraOffset.y = self.y - game.camera.view.y;
+        if (self.fixedToCamera) {
+            self.cameraOffset.x = self.x - game.camera.view.x;
+            self.cameraOffset.y = self.y - game.camera.view.y;
+        }
+    }
 
-        if (self.reflowChildren) self.childComponents.forEach(child=>{
+    function reflowChildren() {
+        self.childComponents.forEach(child=>{
             child.reflow();
         });
     }
@@ -123,16 +144,16 @@ function UIComponent({game, log, debug, tweens, ui}, def, parent) {
     return self;
 }
 
-function Pane(spec, def, parent) {
-    let self = new UIComponent(spec, def, parent);
-    let {bgImage='paneBackground'} = def;
-    self.anchorObject=self.add(spec.game.add.sprite(0, 0, bgImage));
+function Image(spec, def) {
+    let self = new UIComponent(spec, def);
+    let {src='imageBackground'} = def;
+    self.anchorObject=self.add(spec.game.add.image(0, 0, src));
 
     return self;
 }
 
-function Label(spec, def, parent) {
-    let self = new UIComponent(spec, def, parent);
+function Label(spec, def) {
+    let self = new UIComponent(spec, def);
     let {text, style={ font: "12pt Bookman Old Style", fill: "black"}} = def;
     self._text= spec.game.add.text(0, 0, text || '',style);
     self.add(self._text);
@@ -156,8 +177,8 @@ function Label(spec, def, parent) {
     return self;
 }
 
-function PawnShop (spec,def, parent) {
-    let self = new UIComponent(spec, def, parent);
+function PawnShop (spec, def) {
+    let self = new UIComponent(spec, def);
     extend(self, {
         setStock(pawnTypeArray) {
             self.removeAll(true);
@@ -176,55 +197,120 @@ function PawnShop (spec,def, parent) {
     return self;
 }
 
-function HorizontalGroup (spec, def, parent) {
-    let self = new UIComponent(spec, def, parent);
+function HorizontalGroup (spec, def) {
+    let self = new UIComponent(spec, def);
     let spacing = def.spacing || 0;
 
-    function refreshLayout() {
-        let x = 0;
-        self.childComponents.forEach(member => {
-            member.x = x;
-            member.y = member.config.hOffset || 0; // TODO: replace with a nicer impl
-            x+=spacing + member.width;
-        });
-    }
-
-    let addComponentBase = self.addComponent;
-    let childResizedBase = self.childResized;
     extend(self, {
-        reflowChildren:false,
-        addComponent(component) {
-            addComponentBase(component);
-            refreshLayout();
-        },
-        childResized(child) {
-            refreshLayout();
-            childResizedBase(child);
-        },
+        reflowChildren() {
+            let x = 0;
+            self.childComponents.forEach(member => {
+                const clientRect = new Phaser.Rectangle(x,0,member.width,self.height);
+                member.reflow(clientRect);
+                x+=spacing + member.width;
+            });            
+        }
     });
 
     return self;
 }
 
+function VerticalGroup (spec, def) {
+    let self = new UIComponent(spec, def);
+    let spacing = def.spacing || 0;
 
-function Button(spec, def, parent) {
-    let self = new UIComponent(spec, def, parent);
+    extend(self, {
+        reflowChildren() {
+            let y = 0;
+            self.childComponents.forEach(member => {
+                const clientRect = new Phaser.Rectangle(0,y,self.width, member.height);
+                member.reflow(clientRect);
+                y+=spacing + member.height;
+            });            
+        }
+    });
+    return self;
+}
+
+function Pane(spec, def) {
+    let self = new UIComponent(spec, def);
+    let { padding=5 } = def;
+    let reflowBase = self.reflowSelf;
+    self.anchorObject = self.parentGroup;
+
+    let bgSprite = new Phaser.TileSprite(spec.game,0,0,1,1,'paneBackground');
+    self.add(bgSprite);
+
+
+    extend(self, {
+        reflowSelf(clientRect) {
+            refreshChrome();
+            reflowBase(clientRect);
+        },
+    });
+    return self;
+
+    function refreshChrome() {
+        let target = self.childComponents[0];
+        if (!target) return;
+        if (def.stretchHorizontally) {
+            bgSprite.x=0;
+            bgSprite.width = self.parentGroup.width;
+        } else {
+            bgSprite.x = target.x - padding;
+            bgSprite.width = target.width + 2*padding;
+        }
+        bgSprite.y = target.y - padding;
+        bgSprite.height = target.height + 2*padding;
+    }
+}
+
+
+
+function Button(spec, def) {
+    let self = new UIComponent(spec, def);
     let {sprite} = def;
-
     let btn = spec.game.add.button(0, 0, sprite);
+    btn.frame = def.frame || 0;
     self.onInputUp = btn.onInputUp;
     self.onInputDown = btn.onInputDown;
     self.add(btn);
 
+    self.setFrame =(frame) => {
+        btn.frame = frame;
+    };
+
     return self;
 }
+
+function LargeTextButton(spec, def) {
+    let self = new UIComponent(spec, def);
+    let {game} = spec;
+    let {text} = def;
+    const graphics = game.make.graphics(0, 0);
+    graphics.beginFill(0xFFFFFF);
+    //graphics.lineStyle(1, 0x202020, 1);
+    graphics.fillAlpha=1;
+    graphics.drawRoundedRect(0,0,400,68,9);
+    graphics.endFill();
+    const {x,y} = graphics.getBounds();
+    let btn = game.make.sprite(x, y, graphics.generateTexture());
+    let title = game.make.text(10,6, def.title || '', { font: "24pt Bookman Old Style", fill: "black"});
+    let desc = game.make.text(10,46, def.description || '', { font: "10pt Bookman Old Style", fill: "black"});
+    btn.addChild(title);
+    btn.addChild(desc);
+    self.add(btn);
+    return self;
+}
+
 
 function UI (spec, def) {
     let {log, game} = spec;
     
     let components =[];
     let self = {
-        addComponent
+        addComponent,
+        update() { components[0].update(); }
     };
     addComponent(def);
     components[0].reflow();
@@ -233,11 +319,17 @@ function UI (spec, def) {
 
     function addComponent(def, parent) {
         if (self[def.name]) throw new Error(`Duplicate component name '${def.name}'`);
-        let newComp = createComponent(def, parent);
+        let newComp = createComponent(def);
+        if (parent) {
+            parent.addComponent(newComp);
+        } else {
+            newComp.fixedToCamera = true;
+        }
+
         self[def.name] = newComp;
         components.push(newComp);
         if (def.contains) def.contains.forEach(childDef => {
-            addComponent(childDef, self[def.name]);
+            addComponent(childDef, newComp);
         });
     }
 

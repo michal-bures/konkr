@@ -15,6 +15,7 @@ function Debug(spec){
             hexSelectionProxy:true,
             messages:true,
             uiRegionPanel:true,
+            optionButtons:true,
         },
         bindSignals: {
             pawns: {

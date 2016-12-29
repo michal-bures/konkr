@@ -20,6 +20,7 @@ function LocalPlayerTurn(spec){
             nextTurnButton:true,
             grabbedPawn:true,
             feedbackSymbols:true,
+            optionButtons:true,
         },
         bindSignals: {
             pawns: {

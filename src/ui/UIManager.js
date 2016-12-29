@@ -10,6 +10,8 @@ import TweenManager from './TweenManager';
 import { extend, debounce } from 'lib/util';
 import Scene from './scene/Scene';
 import SFX from './SFX';
+import OptionButtons from './OptionButtons';
+import ModalsManager from './ModalsManager';
 
 function UIManager(spec) {
     
@@ -26,22 +28,21 @@ function UIManager(spec) {
         onRegionSelected: new Phaser.Signal(/* region */),
         onSelectedRegionChanged: new Phaser.Signal(/* region */),
         onResize: new Phaser.Signal(),
-
         get uiSpec() { return uiElements; },
+        get scene() { return scene },
+        get selectedRegion() { return selectedRegion; },
+        get selectedHex() { return selectedHex; },
         changeScene,
         changeSceneNow,
-        uiElementGroups: {},
         selectHex,
         selectRegion,
         buyPawn, //(pawnType)
-        get scene() { return scene },
         endTurn,
         render,
         update,
         undo,
+        showModal,
         processActions,
-        get selectedRegion() { return selectedRegion; },
-        get selectedHex() { return selectedHex; },
         toDebugString
     });
 
@@ -67,7 +68,9 @@ function UIManager(spec) {
         tweens: spec => new TweenManager(spec),
         grabbedPawn: spec => new Renderer.GrabbedPawn(spec),
         feedbackSymbols: spec => new Renderer.FeedbackSymbols(spec),
+        optionButtons: spec => new OptionButtons(spec),
         sfx: spec=> new SFX(spec),
+        modals: spec => new ModalsManager(spec),
         ui: () => self
     });
 
@@ -85,9 +88,11 @@ function UIManager(spec) {
         'uiRegionPanel',
         'nextTurnButton',
         'grabbedPawn',
-        'feedbackSymbols'
+        'feedbackSymbols',
+        'optionButtons',
     ];
     Z_ORDER.forEach(e => game.world.add(uiElements[e].group));
+    game.world.add(uiElements.modals.group);
 
     let scenes = {
         'FAST_SPECTATING': new Scene.FastSpectating(uiElements),
@@ -180,6 +185,10 @@ function UIManager(spec) {
                 });
 
         });
+    }
+
+    function showModal(name) {
+        uiElements.modals.show(name);
     }
 
     function undo() {

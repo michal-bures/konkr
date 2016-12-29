@@ -13,10 +13,11 @@ function FastSpectating(spec){
 
     return new Scene(spec, { 
         name: 'FAST_SPECTATING',
-        uiElements: { 'landSprites':true,
-                      'regionBorders':true,
-                      'pawnSprites':true,
-                      'messages':true },
+        uiElements: { landSprites:true,
+                      regionBorders:true,
+                      pawnSprites:true,
+                      messages:true,
+                      optionButtons: true },
         preActionGuards: {
             'END_PLAYER_TURN': flushAnimationQueue,
         },

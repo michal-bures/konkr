@@ -9,8 +9,8 @@ function RegionPanel(spec) {
 
     let controls = new UI(spec,{
         name: 'mainContainer',
-        bgImage: 'regionPanel',
-        component: 'pane',
+        component: 'image',
+        src: 'regionPanel',
         align:Phaser.BOTTOM_CENTER,
         contains: [
             {
@@ -27,19 +27,23 @@ function RegionPanel(spec) {
                 contains: [
                     {
                         name: 'goldIcon',
-                        component: 'pane',
-                        bgImage: 'goldCoins',
+                        component: 'image',
+                        src: 'goldCoins',
+                        align: Phaser.BOTTOM_CENTER,
+                        vOffset: -8,
                     },
                     {
                         name: 'treasuryLabel',
                         style: { font: "20pt Bookman Old Style", fill: "black"},
                         component: 'label',
+                        align: Phaser.BOTTOM_CENTER,
                     },
                     {
                         name: 'incomeLabel',
                         style: { font: "10pt Bookman Old Style", fill: "black"},
                         component: 'label',
-                        hOffset: 10,
+                        align: Phaser.BOTTOM_CENTER,
+                        vOffset: -4,
                     },
 
                 ]
@@ -48,14 +52,21 @@ function RegionPanel(spec) {
     });
 
     let { 
+        stats,
         mainContainer, 
         treasuryLabel,
         incomeLabel,
         pawnShop,
+        goldIcon
     } = controls;
 
     assertDefined(mainContainer, treasuryLabel, incomeLabel);
     group = mainContainer;
+
+    debug.sprite(stats);
+    debug.sprite(treasuryLabel);
+    debug.sprite(incomeLabel);
+    debug.sprite(goldIcon);
 
     ui.onRegionSelected.add(region => {
         setRegion(region);

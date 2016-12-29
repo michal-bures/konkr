@@ -7,6 +7,7 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="744.09448819"
@@ -18,6 +19,18 @@
    sodipodi:docname="regionPanel.svg">
   <defs
      id="defs5327">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4276">
+      <stop
+         style="stop-color:#ffffff;stop-opacity:1;"
+         offset="0"
+         id="stop4278" />
+      <stop
+         style="stop-color:#b3b3b3;stop-opacity:1"
+         offset="1"
+         id="stop4280" />
+    </linearGradient>
     <marker
        inkscape:stockid="StopL"
        orient="auto"
@@ -77,6 +90,72 @@
            id="path2304" />
       </g>
     </marker>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4276"
+       id="linearGradient4282"
+       x1="3"
+       y1="1245.3622"
+       x2="18"
+       y2="1278.3622"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4276"
+       id="linearGradient4294"
+       gradientUnits="userSpaceOnUse"
+       x1="3"
+       y1="1245.3622"
+       x2="18"
+       y2="1278.3622" />
+    <filter
+       inkscape:collect="always"
+       id="filter4913"
+       x="-0.10717703"
+       width="1.2143541"
+       y="-0.11190302"
+       height="1.223806">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.72821562"
+         id="feGaussianBlur4915" />
+    </filter>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4276"
+       id="linearGradient4937"
+       gradientUnits="userSpaceOnUse"
+       x1="3"
+       y1="1245.3622"
+       x2="18"
+       y2="1278.3622" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4276"
+       id="linearGradient4953"
+       gradientUnits="userSpaceOnUse"
+       x1="3"
+       y1="1245.3622"
+       x2="18"
+       y2="1278.3622" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4276"
+       id="linearGradient4975"
+       gradientUnits="userSpaceOnUse"
+       x1="3"
+       y1="1245.3622"
+       x2="18"
+       y2="1278.3622" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4276"
+       id="linearGradient4977"
+       gradientUnits="userSpaceOnUse"
+       x1="3"
+       y1="1245.3622"
+       x2="18"
+       y2="1278.3622" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -85,11 +164,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.49497475"
-     inkscape:cx="-469.40963"
-     inkscape:cy="-143.76625"
+     inkscape:zoom="0.5"
+     inkscape:cx="-293.97344"
+     inkscape:cy="-265.23801"
      inkscape:document-units="px"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer1"
      showgrid="true"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -99,12 +178,13 @@
      inkscape:window-height="1017"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
-     inkscape:window-maximized="1">
+     inkscape:window-maximized="1"
+     inkscape:snap-nodes="false">
     <inkscape:grid
        type="xygrid"
        id="grid5333"
        empspacing="8"
-       visible="true"
+       visible="false"
        enabled="true"
        snapvisiblegridlinesonly="true" />
     <sodipodi:guide
@@ -162,9 +242,9 @@
        sodipodi:rx="4"
        sodipodi:ry="2"
        d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
-       transform="translate(-1252.5065,348.51273)" />
+       transform="translate(-1596.5065,388.51273)" />
     <path
-       transform="translate(-1252.5065,346.51273)"
+       transform="translate(-1596.5065,386.51273)"
        d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
        sodipodi:ry="2"
        sodipodi:rx="4"
@@ -182,9 +262,9 @@
        sodipodi:rx="4"
        sodipodi:ry="2"
        d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
-       transform="translate(-1252.5065,344.51273)" />
+       transform="translate(-1596.5065,384.51273)" />
     <path
-       transform="translate(-1252.5065,342.51273)"
+       transform="translate(-1596.5065,382.51273)"
        d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
        sodipodi:ry="2"
        sodipodi:rx="4"
@@ -202,9 +282,9 @@
        sodipodi:rx="4"
        sodipodi:ry="2"
        d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
-       transform="translate(-1258.6833,350.33595)" />
+       transform="translate(-1602.6833,390.33595)" />
     <path
-       transform="translate(-1258.6833,348.33595)"
+       transform="translate(-1602.6833,388.33595)"
        d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
        sodipodi:ry="2"
        sodipodi:rx="4"
@@ -222,7 +302,131 @@
        sodipodi:rx="4"
        sodipodi:ry="2"
        d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
-       transform="translate(-1258.6833,346.33595)" />
+       transform="translate(-1602.6833,386.33595)" />
+    <use
+       style="display:inline"
+       x="0"
+       y="0"
+       xlink:href="#g4979"
+       id="use4985"
+       transform="translate(66,0)"
+       width="744.09448"
+       height="1052.3622"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <use
+       style="display:inline"
+       x="0"
+       y="0"
+       xlink:href="#g4979"
+       id="use4983"
+       transform="translate(33,0)"
+       width="744.09448"
+       height="1052.3622"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <g
+       style="display:inline"
+       transform="translate(-10.272708,1248.3622)"
+       id="g4225"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <g
+         id="g4227">
+        <path
+           style="fill-rule:evenodd"
+           inkscape:connector-curvature="0"
+           clip-rule="evenodd"
+           d="M 17.657467,5.70835 16.849465,6.9185344 C 18.326559,8.118537 19.272743,9.9483592 19.272743,12 c 0,2.052368 -0.946184,3.88219 -2.423278,5.082193 l 0.808002,1.209457 C 19.523653,16.828374 20.727292,14.557096 20.727292,12 c 0,-2.5563692 -1.202912,-4.8276469 -3.069825,-6.29165 z m -1.621095,2.4276416 -0.816001,1.2218208 c 0.704001,0.6640016 1.149093,1.5985486 1.149093,2.6429146 0,1.044366 -0.445092,1.979641 -1.149093,2.643642 l 0.816001,1.221821 c 1.08873,-0.935275 1.781822,-2.31855 1.781822,-3.86619 0,-1.546912 -0.692365,-2.9301882 -1.781822,-3.8640084 z M 12,3.9999826 c -0.856002,0 -1.114912,0.4974556 -1.114912,0.4974556 0,0 -2.2261862,2.4458235 -3.7592804,3.5250986 C 6.8436252,8.2021736 6.5338063,8.3636285 5.9854415,8.3636285 H 4.7272569 c -0.8029108,0 -1.4545486,0.6516377 -1.4545486,1.4545486 v 4.3636459 c 0,0.802911 0.6516378,1.454549 1.4545486,1.454549 h 1.2581846 c 0.5483648,0 0.8581837,0.161454 1.1396388,0.341091 1.5330943,1.079275 3.7592807,3.525826 3.7592807,3.525826 0,0 0.259637,0.496728 1.115639,0.496728 0.802911,0 1.454549,-0.65091 1.454549,-1.454548 V 5.4545312 C 13.454549,4.6508931 12.802911,3.9999826 12,3.9999826 z"
+           id="path4229" />
+      </g>
+    </g>
+    <path
+       style="display:inline;fill:#000000"
+       d="m 32.345282,1268.0861 c -1.45275,-0.4769 -2.097825,-0.8524 -3.161223,-1.8408 -0.867456,-0.8062 -1.95802,-2.3033 -1.79197,-2.4599 0.264992,-0.2501 3.263541,-1.4723 3.351295,-1.3661 0.06102,0.074 0.325774,0.4229 0.588363,0.7757 0.677402,0.9099 2.18283,1.5997 3.491029,1.5997 3.802332,0 5.867268,-4.4953 3.353833,-7.3012 -1.631106,-1.821 -4.307526,-2.0592 -6.275615,-0.5586 -0.346081,0.2638 -0.330049,0.2964 0.609386,1.2357 0.670854,0.6707 0.887442,0.9896 0.710862,1.0466 -0.399463,0.129 -7.157999,1.1508 -7.218462,1.0913 -0.06592,-0.065 1.06079,-7.071 1.180545,-7.4224 l 0.803868,0.8444 0.96011,0.9318 0.637639,-0.5501 c 1.479609,-1.2767 3.382925,-1.8544 5.714567,-1.7346 1.41766,0.073 1.827414,0.1707 2.992719,0.7146 6.281676,2.9314 6.275702,11.6283 -0.01,14.5617 -1.236949,0.5773 -1.5232,0.6401 -3.159839,0.694 -1.395999,0.046 -2.018911,-0.013 -2.777104,-0.2618 z"
+       id="path4361"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="csccssssscccccccssscc"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <g
+       style="display:inline"
+       id="g4979"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <path
+         transform="translate(-39.5,0.5)"
+         sodipodi:type="arc"
+         style="color:#000000;fill:url(#linearGradient4977);fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         id="path4927"
+         sodipodi:cx="8"
+         sodipodi:cy="1260.3622"
+         sodipodi:rx="16"
+         sodipodi:ry="16"
+         d="m 24,1260.3622 c 0,8.8365 -7.163444,16 -16,16 -8.836556,0 -16,-7.1635 -16,-16 0,-8.8366 7.163444,-16 16,-16 8.836556,0 16,7.1634 16,16 z" />
+      <path
+         d="m 24,1260.3622 c 0,8.8365 -7.163444,16 -16,16 -8.836556,0 -16,-7.1635 -16,-16 0,-8.8366 7.163444,-16 16,-16 8.836556,0 16,7.1634 16,16 z"
+         sodipodi:ry="16"
+         sodipodi:rx="16"
+         sodipodi:cy="1260.3622"
+         sodipodi:cx="8"
+         id="path4929"
+         style="color:#000000;fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.12736166;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:new"
+         sodipodi:type="arc"
+         transform="matrix(0.87499994,0,0,0.87499994,-38.5,158.04535)" />
+    </g>
+    <g
+       style="display:inline"
+       id="g4931"
+       transform="translate(-41.5,1248.8622)"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <g
+         id="g4933">
+        <path
+           id="path4935"
+           d="m 12,3.9999826 c -0.856002,0 -1.114912,0.4974556 -1.114912,0.4974556 0,0 -2.2261862,2.4458235 -3.7592804,3.5250986 C 6.8436252,8.2021736 6.5338063,8.3636285 5.9854415,8.3636285 l -1.2581846,0 c -0.8029108,0 -1.4545486,0.6516377 -1.4545486,1.4545486 l 0,4.3636459 c 0,0.802911 0.6516378,1.454549 1.4545486,1.454549 l 1.2581846,0 c 0.5483648,0 0.8581837,0.161454 1.1396388,0.341091 1.5330943,1.079275 3.7592807,3.525826 3.7592807,3.525826 0,0 0.259637,0.496728 1.115639,0.496728 0.802911,0 1.454549,-0.65091 1.454549,-1.454548 l 0,-13.0909378 C 13.454549,4.6508931 12.802911,3.9999826 12,3.9999826 z"
+           clip-rule="evenodd"
+           inkscape:connector-curvature="0"
+           style="fill-rule:evenodd"
+           sodipodi:nodetypes="sccssssssccssss" />
+      </g>
+    </g>
+    <path
+       style="display:inline;font-size:medium;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-indent:0;text-align:start;text-decoration:none;line-height:normal;letter-spacing:normal;word-spacing:normal;text-transform:none;direction:ltr;block-progression:tb;writing-mode:lr-tb;text-anchor:start;baseline-shift:baseline;color:#000000;fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:1px;marker:none;visibility:visible;overflow:visible;enable-background:accumulate;font-family:Sans;-inkscape-font-specification:Sans"
+       d="m -23.84375,1252.5 -16,14 1.34375,1.3622 16,-14 z"
+       id="path4939"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="ccccc"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <use
+       style="display:inline"
+       x="0"
+       y="0"
+       xlink:href="#use4985"
+       id="use4987"
+       transform="translate(33,0)"
+       width="744.09448"
+       height="1052.3622"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <path
+       style="display:inline;color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:1.02093399000000010;marker:none;visibility:visible;overflow:visible;enable-background:new"
+       d="m 60,1252.3622 0,5 2,0 0,-3 3,0 0,-2 -5,0 z m 10.999995,0 0,2 3.000005,0 0,3 2,0 0,-5 -5.000005,0 z m -10.999995,11 0,5 5,0 0,-2 -3,0 0,-3 -2,0 z m 14,0 0,3 -3.000005,0 0,2 5.000005,0 0,-5 -2,0 z"
+       id="rect4957"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
   </g>
   <g
      inkscape:groupmode="layer"
@@ -425,10 +629,46 @@
        id="rect4462"
        width="24"
        height="24"
-       x="88"
-       y="1140.3622"
+       x="-256"
+       y="1180.3622"
        inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\goldCoins.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#0000ff;fill-opacity:1;stroke:none;font-family:Sans"
+       x="32.857143"
+       y="915.21936"
+       id="text4099"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4101"
+         x="32.857143"
+         y="915.21936"
+         style="font-size:24px;fill:#0000ff">regionPanel</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#0000ff;fill-opacity:1;stroke:none;display:inline;font-family:Sans"
+       x="-259.14285"
+       y="1155.2194"
+       id="text4099-9"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4101-7"
+         x="-259.14285"
+         y="1155.2194"
+         style="font-size:24px;fill:#0000ff">goldCoins</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text4989"
+       y="1227.2194"
+       x="-51.142853"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#0000ff;fill-opacity:1;stroke:none;display:inline;font-family:Sans"
+       xml:space="preserve"><tspan
+         style="font-size:24px;fill:#0000ff"
+         y="1227.2194"
+         x="-51.142853"
+         id="tspan4991"
+         sodipodi:role="line">optionButton</tspan></text>
   </g>
 </svg>

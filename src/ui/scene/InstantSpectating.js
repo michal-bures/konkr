@@ -6,10 +6,11 @@ function InstantSpectating(spec){
 
     return new Scene(spec, { 
         name: 'INSTANT_SPECTATING',
-        uiElements: { 'landSprites':true,
-                      'regionBorders':true,
-                      'pawnSprites':true,
-                      'messages':true },
+        uiElements: { landSprites:true,
+                      regionBorders:true,
+                      pawnSprites:true,
+                      messages:true,
+                      optionButtons: true },
         bindSignals: {
             pawns: {
                 onCreated,
