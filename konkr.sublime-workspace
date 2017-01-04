@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"treasu",
+				"treasuryLabel〔variable〕"
+			],
+			[
+				"refolw",
+				"reflowChildren"
+			],
+			[
 				"sprite",
 				"spritesheet"
 			],
@@ -208,169 +216,10 @@
 	"buffers":
 	[
 		{
-			"file": "src/states/Play.js",
+			"file": "src/ui/modals/Menu.js",
 			"settings":
 			{
-				"buffer_size": 10104,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"contents": "Searching 53 files for \"x:\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\controls\\UI.js:\n  111:         log.debug(`x: ${self.left}, y: ${self.top}`);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\hexgrid\\HexGrid.js:\n   26:             log.error('Invalid coordinates specification for creating a GridPoint ',{x:x,y:y,r:r,c:c,index:index,rowSize:rowSize});\n  110:             var p = new GridPoint({index: i, rowSize: this.width});\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\hexgrid\\HexValuation.js:\n   43:             const entry = {hex: hex, val:value};\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\hexgrid\\HexValuation.spec.js:\n   22:         expect(vals.pop()).toEqual({hex: hex(5), val: 5});\n   23:         expect(vals.pop()).toEqual({hex: hex(4), val: 4});\n   24:         expect(vals.pop()).toEqual({hex: hex(3), val: 3});\n   25:         expect(vals.pop()).toEqual({hex: hex(2), val: 2});\n   38:         expect(vals.pop()).toEqual({hex: hex(1), val: 1});\n   39:         expect(vals.pop()).toEqual({hex: hex(2), val: 2});\n   40:         expect(vals.pop()).toEqual({hex: hex(3), val: 3});\n   52:         expect(vals.pop()).toEqual({hex: hex(1), val: 10});\n   53:         expect(vals.pop()).toEqual({hex: hex(3), val: 3});\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\entities\\Pawn.js:\n   11:             hex: hex && hex.id,\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Players.js:\n   86:         onConqueringHex: new Phaser.Signal(/* hex */),\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\PawnSprites.js:\n  109:                     const tween = tweens.add(this).to( { x: x, y: Math.floor(y+PAWN_OFFSET_TOP/2) }, BASE_TWEEN_DURATION, Phaser.Easing.Sinusoidal.InOut, true);  \n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n  187:         tweens.add(sprite).to({x:tx, y:ty, alpha: 1}, 200, Phaser.Easing.Quadratic.Out, true).yoyo(200).onComplete.add(()=> {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\FastSpectating.js:\n   50:         if (pawnType.isTroop()) boughtFrom.push({hex:economy.capitalOf(region), pawnType:pawnType});\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\UIManager.js:\n   69:         sfx: spec=> new SFX(spec),\n\n20 matches across 10 files\n\n\nSearching 53 files for \"onRegionTreasury\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Economy.js:\n   20:         onRegionTreasuryChanged: new Phaser.Signal(/* region, newValue, oldValue */),\n  220:         self.onRegionTreasuryChanged.dispatch(region, value, oldValue);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\RegionPanel.js:\n   65:     economy.onRegionTreasuryChanged.add(refreshIfMatchingCurrentRegion);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\LocalPlayerTurn.js:\n   33:                 onRegionTreasuryChanged                \n   93:     function onRegionTreasuryChanged(region) {\n\n5 matches across 3 files\n\n\nSearching 53 files for \"refreshDecorations\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\PawnSprites.js:\n   81:         refreshDecorations() {\n  199:             getOrCreateSprite(pawn.hex, pawn.pawnType).refreshDecorations();\n  203:                 getOrCreateSprite(economy.capitalOf(region), pawns.TOWN).refreshDecorations();\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\LocalPlayerTurn.js:\n   94:         if (economy.capitalOf(region)) pawnSprites.getOrCreate(economy.capitalOf(region), pawns.TOWN).refreshDecorations();\n\n4 matches across 2 files\n\n\nSearching 53 files for \"showDefendedBy\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n  165:         showDefendedBy,\n  179:     function showDefendedBy(hex, might=99) {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\LocalPlayerTurn.js:\n   63:                 feedbackSymbols.showDefendedBy(hex, players.grabbedPawn.might);\n\n3 matches across 2 files\n\n\nSearching 53 files for \"showDefendedBy\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n  165:         showDefendedBy,\n  184:     function showDefendedBy(hex, might=99) {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\LocalPlayerTurn.js:\n   63:                 feedbackSymbols.showDefendedBy(hex, players.grabbedPawn.might);\n\n3 matches across 2 files\n\n\nSearching 53 files for \"showDefendedBy\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n  165:         showDefendedBy,\n  184:     function showDefendedBy(hex, might=99) {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\LocalPlayerTurn.js:\n   63:                 if (!players.grabbedPawn.isTroop()) feedbackSymbols.showDefendedBy(hex, players.grabbedPawn.might);\n\n3 matches across 2 files\n\n\nSearching 53 files for \"onResize\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\controls\\UI.js:\n   41:         // instead, only resize component based on an independent trigger and trigger onResize\n   50:         onResized: new Phaser.Signal(),\n   63:         self.onResized.dispatch();\n   69:         component.onResized.add(()=>self.childResized(component));\n  153:             self.onResized.dispatch();\n  173:             self.onResized.dispatch();\n\n6 matches in 1 file\n\n\nSearching 53 files for \"calculateWorldBounds\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n   20: function calculateWorldBounds(grid) {\n  338:     calculateWorldBounds,\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\UIManager.js:\n  158:         let bounds = Renderer.calculateWorldBounds();\n\n3 matches across 2 files\n\n\nSearching 53 files for \"calculateWorldBounds\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n   20: function calculateWorldBounds(grid) {\n  338:     calculateWorldBounds,\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\UIManager.js:\n  158:         let bounds = Renderer.calculateWorldBounds(grid);\n\n3 matches across 2 files\n\n\nSearching 53 files for \"na\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ai\\AI.js:\n   28:         player.regions.forEach(region => economy.capitalOf(region) && actions.schedule('AI_MANAGE_REGION', player, region));\n   36:     actions.setHandler(\"AI_MANAGE_REGION\", (action, player, region) => {\n   82:         log.debug(`Gonna try to capture ${nextTarget} (defense ${defense})...`);\n  113:         if (!pawns.pawnAt(hex)) return action.resolve();\n  115:         let freeHex = hex.floodFind(hex=>!pawns.pawnAt(hex), hex=>regions.regionOf(hex) === region);\n  118:         action.schedule('GRAB_UNIT', pawns.pawnAt(hex));\n  156:                     return !pawns.pawnAt(hex) || pawns.pawnAt(hex).isTroop();\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ai\\Economist.js:\n    9:         canAffordPurchase,\n   10:         canAffordUpkeep,\n   14:         if (canAffordPurchase(pawnType.price) && canAffordUpkeep(pawnType.upkeep)) {\n   25:         if (canAffordUpkeep(upkeepDelta)) {\n   33:     function canAffordPurchase(amount) {\n   37:     function canAffordUpkeep(amount) {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\index.js:\n   47:         game.scale.scaleMode = Phaser.ScaleManager.RESIZE;\n   63:         this.game.scale.fullScreenScaleMode = Phaser.ScaleManager.SHOW_ALL;\n  112:         this.dictionaryReady = false;\n  115:         //Load level dictionary\n  116:         //Dictionary.get().onReady.addOnce(function(){self.dictionaryReady=true;});\n  117:         this.hndLoadingProgress = Dictionary.get().onLoadingProgress.add(function(done,total) { \n  129:         var txt = game.add.text(game.width/2,game.height/2,\"Načítám...\",{fill:\"white\"});\n  152:         this.finalScore = score;\n  160:         if (this.finalScore) {\n  161:             this.lblLoadingPhase = game.add.text(game.world.width/2,game.world.height/2+40,\"Ušel jsi \"+ this.finalScore +\" kroků\",{fill:\"white\", font:\"16px Arial\"});\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\ActionsProvider.js:\n    5: function ActionsProvider(spec, providerName, config) {\n   19:         getNamedProxy,\n   95:     function undoUntil(actionName) {\n   96:         if (!actionQueue.slice(0,actionPointer-1).some(action=>action.name===actionName)) {\n  102:         while (actionQueue[actionPointer].name !== actionName) {\n  117:     function ScheduledAction (name, ...args) {\n  130:             get name() { return name; },\n  135:             canBeUndone() { return !!handlers[name] && handlers[name].undo; },\n  136:             canAbort() { return !!handlers[name] && handlers[name].abort; },\n  139:         if (args.length != actionDefs[name].length) {\n  140:             throw Error(`${self} called with ${args.length} arguments (expected ${actionDefs[name].length})`);\n  146:                 const expectedType = actionDefs[name][index];\n  155:         function schedule(actionName, ...args) {\n  156:             let a = actions.schedule(actionName, ...args);\n  157:             a.issuer = name;\n  162:             let a = actions.schedule(name, ...args);\n  163:             a.issuer = name;\n  170:             if (!handlers[name]) throw Error(`Missign handler for action ${name}`);\n  172:             handlers[name].handle(self,...args);\n  176:             handlers[name].undo(self,...args);\n  182:         // mark the action resolved and enable the planner to move on to the next action on the \n  202:                 name,\n  206:                     return typeDefs[actionDefs[name][index]].toJSON(arg);\n  212:             return `[${name}(${args})${self.issuer?` issued by ${self.issuer}`:''}${self.canBeUndone()?\"(↶)\":\"\"}]`;\n  218:         const actionDef = actionDefs[data.name];\n  220:         let a = ScheduledAction.apply(null,[data.name].concat(args));\n  225:     function getNamedProxy(name) {\n  230:             setHandler: (actionName, handler, config={}) => {\n  231:                 config.description = `${name}${config.description?': '+config.description:''}`;\n  232:                 setHandler(actionName, handler, config);\n  234:             toString: () => '[Actions proxy: '+ name +']'\n  312:     function setHandler(actionName, handle, config={}) {\n  313:         if (handlers[actionName] === undefined) throw Error(`Invalid action name '${actionName}'`);\n  314:         if (handlers[actionName]) throw Error(`Action '${actionName}' is already handled by '${handlers[actionName].description}' - cannot assign to '${config.description}'`);\n  315:         handlers[actionName] = { \n  324:         return `[ActionsProvider ${providerName}]`;\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\AssetManager.js:\n    1: function AssetManager(spec, data) {\n   49: export default AssetManager;\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\controls\\UI.js:\n   23:         name = def.name || def.component + '#'+ generateComponentId(),\n   34:         get name() { return name; },\n   50:         onResized: new Phaser.Signal(),\n  120:         return `[UIComponent ${name}]`;\n  166:                 sprite.inputEnabled = true;\n  235:         if (self[def.name]) throw new Error(`Duplicate component name '${def.name}'`);\n  237:         self[def.name] = newComp;\n  240:             addComponent(childDef, self[def.name]);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\hexgrid\\HexGrid.js:\n    7: // A coordinates in the hexagonal grid.\n    8: // automatically converts between three coordinate systems\n    9: // - ordinal: (index, rowrowSize) position of hex in a 1D array organized by rows\n   10: // - axial: (r,c) coordinates in hex map (r = row, c = column (column axis on hex grid goes down and sligthly left))\n   11: // - spatial: (x,y) coordinates on screen\n   13:     // index = index in single-dimensional row-major array of hexes\n   26:             log.error('Invalid coordinates specification for creating a GridPoint ',{x:x,y:y,r:r,c:c,index:index,rowSize:rowSize});\n   40:     // Axial coordinates in hexagonal grid\n   50:     // row in hexagonal grid\n   55:     // \"column\" (line going down and left) in the hexagonal grid\n   60:     // horizontal coordinate for display\n   65:     // vertical coordinate for display\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\Injector.js:\n   27:     self.register = function (name, factoryFunction) {\n   28:         if (!isFunction(factoryFunction)) throw Error(`Invalid factoryMethod for property '${name}' passed to injector`);\n   30:         if (Object.isSealed(self)) throw Error(`Attempt to add property '${name}' to an injector that is already sealed`);\n   31:         if (_constructors[name]) throw Error(`Injector already has a '${name} propety registered'`);\n   32:         _constructors[name] = factoryFunction;\n   33:         Object.defineProperty(self,name,{\n   36:                 let loaderId = _id+'/'+name;\n   37:                 if (!_resolved[name]) {\n   41:                     _resolved[name]=factoryFunction(self);\n   44:                 return _resolved[name];\n   50:     self.resolve = function(name) {\n   51:         return self[name];\n   60:         const sleeping = Object.keys(_constructors).filter(name => !_resolved[name]);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\TaskTracker.js:\n    6:     constructor(name='anonymous') {\n    7:         this.name=name;\n   40:         return `[TaskTracker ${this.name} (${(this.waitingFor.length?this.waitingFor.length+' waiting':'done')}))]`;\n   44:         if (!this.waitingFor.length) return `${this.name} is resolved`;\n   45:         return `${this.name} is waiting for ${this.waitingFor.map(promise => `[${promise.description}]`).join(\", \")}`;\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\util.js:\n   89:     return (navigator.userAgent.toLowerCase().indexOf('firefox') !== -1 );\n  152:         return Dictionary.get()._impl.search(sequence,20);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Actions.js:\n   18:         'STORE_STATE': ['plain'], // ( localStorageItemName )\n   33:         'AI_MANAGE_REGION': [\"player\", \"region\"],\n   65:         // Handled by UIManager\n   96:             toJSON(pawnType) { return pawnType.name; },\n   97:             fromJSON(name) { return spec.pawns[name]; },\n   98:             validate(val) { return !!spec.pawns[val.name]; }\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Economy.js:\n   18:         onRegionGainedCapital: new Phaser.Signal(/* region, hex */),\n   19:         onRegionLostCapital: new Phaser.Signal(/* region */),\n   20:         onRegionTreasuryChanged: new Phaser.Signal(/* region, newValue, oldValue */),\n   21:         onRegionBankrupt: new Phaser.Signal(/* region */),\n   99:         let availableHexes = region.hexes.filter(hex=>!pawns.pawnAt(hex));\n  101:         if (availableHexes.length === 0) availableHexes = region.hexes.filter(hex=>!pawns.pawnAt(hex).isTroop());            \n  107:         if (pawns.pawnAt(capitalHex)) action.schedule(\"DESTROY_PAWN\", pawns.pawnAt(capitalHex));\n  122:         if (pawns.pawnAt(oldCapital) && pawns.pawnAt(oldCapital).pawnType===pawns.TOWN) action.schedule(\"DESTROY_PAWN\", pawns.pawnAt(oldCapital));\n  191:             sum += upkeepOfPawn(pawns.pawnAt(hex));\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\entities\\Pawn.js:\n   10:             type: pawnType.name,\n   29:         return `[${pawnType.name} ♙${id} at ${hex}]`;\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\GameState.js:\n   18:         onReset: new Phaser.Signal(),\n   27:         useName: spec => (moduleName) => {\n   29:                 actions: () => spec.actions && spec.actions.getNamedProxy(moduleName),\n   30:                 debug: () => spec.debug && spec.debug.getNamedProxy(moduleName),\n   31:                 log: () => spec.log && spec.log.getLogger(moduleName)\n   37:         pawns: spec => new Pawns(spec.useName('pawns')),\n   38:         regions: spec => new Regions(spec.useName('regions')),\n   39:         economy: spec => new Economy(spec.useName('economy')),\n   40:         actions: spec => new Actions(spec.useName('actions')),\n   41:         warfare: spec => new Warfare(spec.useName('warfare')),\n   42:         landGen: spec => new LandGenerator(spec.useName('landGen')),\n   43:         players: spec => new Players(spec.useName('players')),\n   44:         ai: spec => new AI(spec.useName('ai')),\n   55:         STATEFUL_MODULES.forEach(moduleName=> {\n   56:             log.debug(\"Saving \"+moduleName);\n   57:             obj[moduleName] = gameStateSpec[moduleName].toJSON();\n   63:         STATEFUL_MODULES.forEach(moduleName=> {\n   64:             log.debug(`Loading ${moduleName} state from`, jsonData[moduleName]);\n   65:             gameStateSpec[moduleName].fromJSON(jsonData[moduleName]);\n   70:     actions.setHandler('STORE_STATE', (action, name) => {\n   71:         storeState(name);\n   75:     function storeState(name) {\n   77:         localStorage.setItem(name, JSON.stringify(toJSON()));\n   78:         log.info(\"Game saved: \"+name);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Pawns.js:\n   79:         pawnAt,\n   87:         onCreated: new Phaser.Signal(/* pawn */),\n   88:         onDestroyed: new Phaser.Signal(/* pawn */),\n   89:         onMoved: new Phaser.Signal(/* pawn, hex */)\n   93:         pawns[pawnType.name] = pawnType;\n  117:         if (pawnAt(hex)) return action.reject(\"Cannot replace existing pawn\"); //TODO: Implement\n  122:         let pawn = pawnAt(hex);\n  157:     function pawnAt(hex) {\n  164:             const t = pawn.pawnType.name;\n  180:         if (pawnAt(toHex)) {\n  181:             throw new Error(`Tried to move ${pawn} from ${pawn.hex} to ${toHex}, but an existing pawn ${pawns.pawnAt(toHex)} is in the way.`);\n  201:         if (!pawnType1.merge || !pawnType1.merge[pawnType2.name]) return null;\n  202:         return pawns[pawnType1.merge[pawnType2.name]];\n  220:                 const pawn = pawnAt(hex);\n  233:         if (pawnAt(hex)) {\n  234:             throw Error(`Tried to place ${pawnType} at ${hex}, but it's already occupied by ${pawnAt(hex)}`);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Players.js:\n   16:         constructor(id, name, type) {\n   18:             this.name = name;\n   35:         canDropPawnAt(hex) {\n   38:             if (pawns.pawnAt(hex)) {\n   39:                 return (pawns.getMergeResult(pawns.pawnAt(hex),grabbedPawn));\n   75:             return `[${this.name} #${this.id}]`;\n   84:         onGrabbedPawn: new Phaser.Signal(/* pawn */),\n   85:         onDroppedPawn: new Phaser.Signal(/* pawnType, hex */),\n   86:         onConqueringHex: new Phaser.Signal(/* hex */),\n   87:         onBoughtPawn: new Phaser.Signal(/* pawnType, region */),\n  101:                 name: player.name,\n  105:             grabbedPawn: grabbedPawn && grabbedPawn.name,\n  113:         src.players.forEach(({type,name,id})=> _players[id]=new createPlayer(type, name, id));\n  120:     function createPlayer(type, name='(unnamed)', id=ids.next('player')) {\n  124:                 p = new Player(id,name,type);\n  128:                 p = new Player(id,name,type);\n  132:                 p = new Player(id,name,type);\n  177:         if (pawns.pawnAt(hex)) {\n  181:                 action.schedule('DESTROY_PAWN', pawns.pawnAt(hex));\n  211:         if (regions.regionOf(hex) != grabbedPawnRegion) throw Error(`Tried to drop pawn into a different region then it originates from.`);\n  214:         if (pawns.pawnAt(hex)) {\n  215:             let newType = pawns.getMergeResult(pawns.pawnAt(hex), grabbedPawn);\n  216:             if (!newType) throw Error(`Cannot drop pawn on ${hex} - already occupied by ${pawns.pawnAt(hex)}, merge impossible.`);\n  217:             actions.schedule('DESTROY_PAWN', pawns.pawnAt(hex));\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Regions.js:\n   22:         onCreated: new Phaser.Signal(/* region */),\n   23:         onHexesChangedOwner: new Phaser.Signal(/* hexGroup */),\n   24:         onChanged: new Phaser.Signal(/* region */),\n   25:         onDestroyed: new Phaser.Signal(/* region */),\n   26:         onMerged: new Phaser.Signal(/* srcRegion, rcvRegion */),\n  170:     // for internal use from HEXES_CHANGED_OWNER only!! Does NOT update hexRegion\n  204:     // for internal use only!!\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Warfare.js:\n   37:         const pawn = pawns.pawnAt(hex);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\states\\Play.js:\n    2: import UIManager from 'ui/UIManager';\n   21:         debugTabName=null,\n   43:         gameUi = (new UIManager(gameSpec)).uiSpec;\n   47:         var originalFactory = spec.log.methodFactory;\n   48:         spec.log.methodFactory = function (methodName, logLevel, loggerName) {\n   49:             var rawMethod = originalFactory(methodName, logLevel, loggerName);\n   52:                 rawMethod.apply(undefined,[(loggerName||'') + \">\"].concat(...args));\n   53:                 if (methodName!=='debug' && methodName!=='trace') gameUi.messages.push(`${args.join(' ')}`, methodName);\n   80:             switch (nextAction && nextAction.name) {\n   91:             switch (prevAction && prevAction.name) {\n   99:                 log.info('❚❚ Halted after ' + prevAction.name);\n  102:                 if (!breakAfterEveryAction) log.info('❚❚ Halted before ' + nextAction.name);\n  105:                 if (prevAction && (prevAction.name==='END_PLAYER_TURN')) {\n  119:         function setCommandHotkey(keyName,commandName) {\n  120:             let key = Phaser.Keyboard[keyName];\n  121:             if (!key) throw Error(`${keyName} is not a valid Phaser Key name`);\n  123:                 gameUi.debug.executeCommand(commandName);\n  134:         setCommandHotkey('F8','gameState.storeSnapshot');\n  135:         setCommandHotkey('F10','gameState.loadSnapshot');\n  152:                 sceneInterruptedByDebug = gameUi.ui.scene.name;\n  172:                 log.info(\"⏯ \"+ (gameSpec.actions.getCurrent() && gameSpec.actions.getCurrent().name));\n  183:                 log.info(\"⏯ \"+ (gameSpec.actions.getCurrent() && gameSpec.actions.getCurrent().name));\n  191:             gameUi.messages.push('↶ '+gameSpec.actions.getLast().name);\n  212:         gameUi.debug.addCommand('gameState','storeSnapshot', ()=> {\n  213:             if (gameSpec.actions.getCurrent() && gameSpec.actions.getCurrent().name ==='AWAIT_PLAYER_INPUT') {\n  216:             gameState.storeState(\"konkr_devsnapshot\");\n  224:         gameUi.debug.addCommand('gameState','loadSnapshot', ()=> {\n  225:             gameState.loadState(\"konkr_devsnapshot\");\n  253:     function refreshDebugTab(name = debugTabName) {\n  256:         if (debugTabName!==name) {\n  258:             gameUi.debug.generateDebugCommandsHTML(debugSelectButtons,name);\n  261:         debugTabName=name;\n  262:         document.getElementById(\"debugModeSelect\").value = debugTabName;\n  263:         const newContent = `<pre>${gameUi[name].toDebugString()}</pre>`;\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\assets\\GameAssets.js:\n    1: import AssetManager from 'lib/AssetManager';\n   22: \treturn new AssetManager(spec, {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\DebugInfo.js:\n   28:                 name: title,\n   38:                 name: title,\n   55:     executeCommand(name) {\n   56:         if (!this.commandMap[name]) throw Error('No such command: '+ name);\n   57:         this.commandMap[name]();\n   60:     getNamedProxy(name) {\n   65:             addCommand(...args) { self.addCommand(name, ...args); },\n   66:             valuation(title, valuation) { self.valuation(name+'.'+title, valuation); }\n   76:           newButton.className = 'debugCommandButton';\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\GridOverlays.js:\n    2: import { drawInnerHex, convertToWorldCoordinates } from 'ui/Renderer';\n   10:         enabled = false;\n   26:         assertDefined(overlayDefinition, overlayDefinition.name);\n   28:         overlays.push(overlayDefinition.name,newOverlay);\n   29:         if (!currentOverlay || currentOverlay.name === newOverlay.name) {\n   37:         overlays.forEach((name,overlay)=> {\n   38:             ret.push(`${overlay === currentOverlay?(group.children.length?'(👁)':'( )'): '   '}  ${name} `);\n   48:             show(currentOverlay.name);\n   53:         if (!currentOverlay) return show(overlays[0].name);\n   54:         let i = (overlays.indexOfKey(currentOverlay.name)+1) % overlays.length;\n   55:         show(overlays.at(i).name);\n   58:     function show(name) {\n   59:         enabled = true;\n   60:         const overlay = overlays.get(name);\n   61:         if (!overlay) throw Error(\"No such overlay: \"+name);\n   65:         log.info(\"Overlay: \" + name);\n   76:         enabled = false;\n   81:         if (dirty && enabled) refresh();\n   85:         constructor({name, valuation, color, min, max}) {\n   86:             assertDefined(name, valuation);\n   89:             this.name = name;\n  107:                 const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\HexSelectionProxy.js:\n    1: import { HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT, HALF_LINE_HEIGHT, OFFSET_TOP, OFFSET_LEFT, convertToWorldCoordinates } from 'ui/Renderer';\n   22:         surface.inputEnabled = true;\n   49:         const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);\n   57: Pawn: ${pawns.pawnAt(hex)}\n   65:             const pawn = hex && pawns.pawnAt(hex);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\NextTurnButton.js:\n   10:             name: 'nextTurnButton',\n   19:             name: 'undoButton',\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\PawnSprites.js:\n    4: import { convertToWorldCoordinates } from './Renderer';\n   29:                 const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);\n   48:             this.frame=(pawnType?pawnType.ordinal:0);\n   94:                     if (players.activePlayer.canGrabPawn(pawns.pawnAt(this.hex))) {\n  108:             const [x,y] = convertToWorldCoordinates(targetHex.position.x, targetHex.position.y);\n  175:         if (oldSprite && (oldSprite.frame === toPawnType.ordinal)) return Promise.resolve();\n  190:             if (idleHighlighting && players.activePlayer.canGrabPawn(pawns.pawnAt(hex))) sprite.startJumping();\n  211:             if (!grid.getHexById(key) || !pawns.pawnAt(grid.getHexById(key))) {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\RegionPanel.js:\n   11:         name: 'mainContainer',\n   17:                 name: 'pawnShop',\n   23:                 name: 'stats',\n   29:                         name: 'goldIcon',\n   34:                         name: 'treasuryLabel',\n   39:                         name: 'incomeLabel',\n  102:             //regionNameLabel.text = `#${region.id}`;\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n   16: function convertToWorldCoordinates(x,y) {\n   30:     const [baseX,baseY] = convertToWorldCoordinates(hex.position.x, hex.position.y);\n   48:     const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);\n  136:             const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);\n  156:                 const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);\n  198:         const [fx,fy] = convertToWorldCoordinates(fromHex.position.x, fromHex.position.y);\n  199:         const [tx,ty] = convertToWorldCoordinates(toHex.position.x, toHex.position.y);\n  339:     convertToWorldCoordinates,\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\Debug.js:\n    8:         name: 'DEBUG',\n   19:         bindSignals: {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\FastSpectating.js:\n   15:         name: 'FAST_SPECTATING',\n   23:         bindSignals: {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\InstantSpectating.js:\n    8:         name: 'INSTANT_SPECTATING',\n   13:         bindSignals: {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\LocalPlayerTurn.js:\n    9:     name: 'PLAYER_TURN',\n   24:         bindSignals: {\n   60:             if (players.activePlayer.canDropPawnAt(hex)) {\n   81:             if (pawns.pawnAt(hex) && players.activePlayer.canGrabPawn(pawns.pawnAt(hex))) {\n   82:                 actions.schedule('GRAB_UNIT', pawns.pawnAt(hex));\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\Scene.js:\n    4:         name,\n    8:         bindSignals=[],\n   13:     let signalBindings = [];\n   23:         get name() { return name; },\n   24:         toString() { return `[Scene ${name}]`;},\n   29:         Object.keys(bindSignals).forEach(moduleName=> {\n   30:             Object.keys(bindSignals[moduleName]).forEach(signalName=>{\n   31:                 signalBindings.push(spec[moduleName][signalName]\n   32:                     .add(bindSignals[moduleName][signalName]));\n   39:         purgeSignalBindings();\n   43:     function purgeSignalBindings() {\n   44:         signalBindings.forEach(binding=>binding.detach());\n   45:         signalBindings=[];\n   49:         purgeSignalBindings();\n   56: [${name}]\n   57: bound to ${signalBindings.length} signals`;\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\TweenManager.js:\n    1: function TweenManager({game}) {\n   43: export default TweenManager;\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\UIManager.js:\n    9: import TweenManager from './TweenManager';\n   14: function UIManager(spec) {\n   25:         onHexSelected: new Phaser.Signal(/* hex */),\n   26:         onRegionSelected: new Phaser.Signal(/* region */),\n   27:         onSelectedRegionChanged: new Phaser.Signal(/* region */),\n   28:         onResize: new Phaser.Signal(),\n   49:         useName: spec => (moduleName) => {\n   51:                 actions: () => spec.actions && spec.actions.getNamedProxy(moduleName),\n   52:                 debug: () => spec.debug && spec.debug.getNamedProxy(moduleName),\n   53:                 log: () => spec.log && spec.log.getLogger(moduleName)\n   56:         landSprites: spec => new Renderer.LandSprites(spec.useName('landSprites')),\n   60:         pawnSprites: spec => new PawnSprites(spec.useName('pawnSprites')),\n   67:         tweens: spec => new TweenManager(spec),\n  127:         if (prevAction && scene.postActionGuards[prevAction.name]) {\n  128:             promises.push(scene.postActionGuards[prevAction.name]);\n  130:         if (nextAction && scene.preActionGuards[nextAction.name]) {\n  131:             promises.push(scene.preActionGuards[nextAction.name](resolve));\n  140:         action.data.prevScene = scene.name;\n  174:     function changeScene(nextSceneName) {\n  181:                     _setupNextScene(nextSceneName);\n  193:     function changeSceneNow(nextSceneName) {\n  196:         _setupNextScene(nextSceneName);\n  199:     function _setupNextScene(nextSceneName) {\n  200:         if (!scenes[nextSceneName]) throw Error(`Invalid scene name ${nextSceneName}`);\n  201:         scene = scenes[nextSceneName];\n  269: scene: ${scene.name}\n  276: export default UIManager;\n\n416 matches across 34 files\n\n\nSearching 53 files for \"Načítám\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\index.js:\n  129:         var txt = game.add.text(game.width/2,game.height/2,\"Načítám...\",{fill:\"white\"});\n\n1 match in 1 file\n",
-			"settings":
-			{
-				"buffer_size": 30197,
-				"line_ending": "Windows",
-				"name": "Find Results",
-				"scratch": true
-			}
-		},
-		{
-			"file": "src/ui/scene/LocalPlayerTurn.js",
-			"settings":
-			{
-				"buffer_size": 3324,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/ui/Scrolling.js",
-			"settings":
-			{
-				"buffer_size": 615,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/index.js",
-			"settings":
-			{
-				"buffer_size": 5175,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/ui/PawnSprites.js",
-			"settings":
-			{
-				"buffer_size": 7839,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/ui/NextTurnButton.js",
-			"settings":
-			{
-				"buffer_size": 1023,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/rules/Players.js",
-			"settings":
-			{
-				"buffer_size": 10787,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/rules/entities/Region.js",
-			"settings":
-			{
-				"buffer_size": 803,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/ui/Renderer.js",
-			"settings":
-			{
-				"buffer_size": 10617,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/rules/LandGenerator.js",
-			"settings":
-			{
-				"buffer_size": 1538,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/ui/HexSelectionProxy.js",
-			"settings":
-			{
-				"buffer_size": 4894,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/rules/Pawns.js",
-			"settings":
-			{
-				"buffer_size": 6503,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/ui/scene/Scene.js",
-			"settings":
-			{
-				"buffer_size": 1697,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/ui/assets/GameAssets.js",
-			"settings":
-			{
-				"buffer_size": 1240,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/rules/GameState.js",
-			"settings":
-			{
-				"buffer_size": 5747,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/lib/AssetManager.js",
-			"settings":
-			{
-				"buffer_size": 1124,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/ui/RegionPanel.js",
-			"settings":
-			{
-				"buffer_size": 3471,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/rules/Regions.js",
-			"settings":
-			{
-				"buffer_size": 7910,
+				"buffer_size": 1850,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -379,7 +228,61 @@
 			"file": "src/ui/UIManager.js",
 			"settings":
 			{
-				"buffer_size": 8363,
+				"buffer_size": 9700,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/rules/Players.js",
+			"settings":
+			{
+				"buffer_size": 10860,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ui/PawnSprites.js",
+			"settings":
+			{
+				"buffer_size": 7860,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ui/HexSelectionProxy.js",
+			"settings":
+			{
+				"buffer_size": 4530,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ui/ModalsManager.js",
+			"settings":
+			{
+				"buffer_size": 1882,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ui/OptionButtons.js",
+			"settings":
+			{
+				"buffer_size": 1589,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/states/Play.js",
+			"settings":
+			{
+				"buffer_size": 9854,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -393,10 +296,71 @@
 			}
 		},
 		{
-			"file": "static/styles/main.css",
+			"file": "src/index.js",
 			"settings":
 			{
-				"buffer_size": 602,
+				"buffer_size": 5440,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/lib/Injector.js",
+			"settings":
+			{
+				"buffer_size": 2506,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/lib/AssetManager.js",
+			"settings":
+			{
+				"buffer_size": 1124,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ui/assets/GameAssets.js",
+			"settings":
+			{
+				"buffer_size": 1360,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "Searching 57 files for \"shieldSymbol\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\assets\\GameAssets.js:\n   36:             shieldSymbol: [ URL_SHIELD_SYMBOL, 11, 15],\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n  200:         const sprite = game.add.sprite(fx,fy,'shieldSymbol');\n\n2 matches across 2 files\n\n\nSearching 57 files for \"FeedbackSym\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n  167: function FeedbackSymbols({game, tweens, warfare, log, debug, regions}) {\n  342:     FeedbackSymbols,\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\UIManager.js:\n   70:         feedbackSymbols: spec => new Renderer.FeedbackSymbols(spec),\n\n3 matches across 2 files\n\n\nSearching 57 files for \"FeedbackSym\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n  167: function FeedbackSymbols({game, tweens, warfare, log, debug, regions}) {\n  342:     FeedbackSymbols,\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\UIManager.js:\n   70:         feedbackSymbols: spec => new Renderer.FeedbackSymbols(spec),\n\n3 matches across 2 files\n\n\nSearching 57 files for \"background\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\index.js:\n   55:         game.stage.backgroundColor='#d5dfef';\n\n1 match in 1 file\n",
+			"settings":
+			{
+				"buffer_size": 1234,
+				"line_ending": "Windows",
+				"name": "Find Results",
+				"scratch": true
+			}
+		},
+		{
+			"file": "src/ui/Renderer.js",
+			"settings":
+			{
+				"buffer_size": 10617,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/rules/Actions.js",
+			"settings":
+			{
+				"buffer_size": 4279,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ui/NextTurnButton.js",
+			"settings":
+			{
+				"buffer_size": 953,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -412,12 +376,31 @@
 			}
 		},
 		{
+			"file": "src/ui/RegionPanel.js",
+			"settings":
+			{
+				"buffer_size": 3819,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
 			"file": "src/lib/controls/UI.js",
 			"settings":
 			{
-				"buffer_size": 7522,
+				"buffer_size": 10568,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/lib/controls/InputProxy.js",
+			"settings":
+			{
+				"buffer_size": 470,
+				"encoding": "UTF-8",
+				"line_ending": "Windows",
+				"name": "function InputProxy() {"
 			}
 		},
 		{
@@ -425,6 +408,15 @@
 			"settings":
 			{
 				"buffer_size": 7783,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ui/scene/LocalPlayerTurn.js",
+			"settings":
+			{
+				"buffer_size": 3356,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -635,51 +627,55 @@
 	},
 	"expanded_folders":
 	[
-		"/C/Users/Embair/dev/www/konkr/src",
 		"/C/Users/Embair/dev/www/konkr/src/lib",
+		"/C/Users/Embair/dev/www/konkr/src/lib/controls",
 		"/C/Users/Embair/dev/www/konkr/src/rules",
-		"/C/Users/Embair/dev/www/konkr/src/ui",
-		"/C/Users/Embair/dev/www/konkr/src/ui/assets",
-		"/C/Users/Embair/dev/www/konkr/static"
+		"/C/Users/Embair/dev/www/konkr/src/ui"
 	],
 	"file_history":
 	[
+		"/C/Users/Embair/dev/www/konkr/src/states/Play.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/scene/LocalPlayerTurn.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/Scrolling.js",
+		"/C/Users/Embair/dev/www/konkr/src/index.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/PawnSprites.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/NextTurnButton.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/OptionButtons.js",
+		"/C/Users/Embair/dev/www/konkr/src/rules/entities/Region.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/Renderer.js",
+		"/C/Users/Embair/dev/www/konkr/src/rules/LandGenerator.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/HexSelectionProxy.js",
-		"/C/Users/Embair/dev/www/konkr/src/lib/controls/UI.js",
+		"/C/Users/Embair/dev/www/konkr/src/rules/Pawns.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/scene/Scene.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/assets/GameAssets.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/GameState.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/AssetManager.js",
-		"/C/Users/Embair/dev/www/konkr/src/ui/UIManager.js",
-		"/C/Users/Embair/dev/www/konkr/src/ui/scene/LocalPlayerTurn.js",
-		"/C/Users/Embair/dev/www/konkr/src/ui/Messages.js",
-		"/C/Users/Embair/dev/www/konkr/src/rules/Players.js",
-		"/C/Users/Embair/dev/www/konkr/src/ui/assets/GameAssets.js",
-		"/C/Users/Embair/dev/www/konkr/src/ui/TweenManager.js",
-		"/C/Users/Embair/dev/www/konkr/src/ui/PawnSprites.js",
-		"/C/Users/Embair/dev/www/konkr/src/rules/Warfare.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/RegionPanel.js",
+		"/C/Users/Embair/dev/www/konkr/src/rules/Regions.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/ModalsManager.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/UIManager.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/scene/FastSpectating.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/scene/InstantSpectating.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/scene/Debug.js",
+		"/C/Users/Embair/dev/www/konkr/static/index.html",
+		"/C/Users/Embair/dev/www/konkr/static/styles/main.css",
+		"/C/Users/Embair/dev/www/konkr/src/rules/Players.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/Menu.js",
+		"/C/Users/Embair/dev/www/konkr/src/lib/controls/UI.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/Messages.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/TweenManager.js",
+		"/C/Users/Embair/dev/www/konkr/src/rules/Warfare.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/Economy.js",
-		"/C/Users/Embair/dev/www/konkr/src/index.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/ActionsProvider.js",
-		"/C/Users/Embair/dev/www/konkr/src/ui/scene/Scene.js",
 		"/C/Users/Embair/dev/www/konkr/src/ai/AI.js",
-		"/C/Users/Embair/dev/www/konkr/src/ui/Renderer.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/Actions.js",
-		"/C/Users/Embair/dev/www/konkr/src/states/Play.js",
-		"/C/Users/Embair/dev/www/konkr/src/ui/NextTurnButton.js",
 		"/C/Users/Embair/dev/www/konkr/webpack.config.js",
 		"/C/Users/Embair/dev/www/konkr/webpack.production.config.js",
 		"/C/Users/Embair/dev/www/konkr/konkr.sublime-project",
 		"/C/Users/Embair/dev/www/konkr/package.json",
 		"/C/Users/Embair/dev/www/konkr/src/lib/util.js",
-		"/C/Users/Embair/dev/www/konkr/src/rules/Regions.js",
-		"/C/Users/Embair/dev/www/konkr/src/rules/LandGenerator.js",
-		"/C/Users/Embair/dev/www/konkr/src/rules/Pawns.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/entities/Pawn.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/GridOverlays.js",
-		"/C/Users/Embair/dev/www/konkr/static/index.html",
-		"/C/Users/Embair/dev/www/konkr/src/ui/scene/InstantSpectating.js",
-		"/C/Users/Embair/dev/www/konkr/src/ui/scene/FastSpectating.js",
-		"/C/Users/Embair/dev/www/konkr/src/ui/scene/Debug.js",
 		"/C/Users/Embair/dev/www/konkr/src/ai/Economist.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/scene/PlayerTurn.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid/HexGroup.js",
@@ -691,7 +687,6 @@
 		"/C/Users/Embair/dev/www/konkr/src/ai/Marshal.spec.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/UniqueHeap.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid/HexValuation.js",
-		"/C/Users/Embair/dev/www/konkr/src/rules/entities/Region.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid/Hexagon.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/RandomGenerator.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid/HexGrid.js",
@@ -707,7 +702,6 @@
 		"/C/Users/Embair/dev/www/konkr/.jshintrc",
 		"/C/Users/Embair/dev/www/konkr/src/ui/DebugInfo.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/Injector.js",
-		"/C/Users/Embair/dev/www/konkr/static/styles/main.css",
 		"/C/Users/Embair/dev/www/konkr/src/rules/dto/Pawn.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/decorators/IterableOn.js",
 		"/C/Users/Embair/dev/www/konkr/dist/bundle.js",
@@ -737,7 +731,6 @@
 		"/C/Program Files/Git/mingw64/share/doc/git-doc/git-config.html",
 		"/C/Program Files/Git/mingw64/share/doc/git-doc/git-clone.html",
 		"/C/Users/Embair/dev/www/konkr/src/lib/HexGrid.js",
-		"/C/Users/Embair/dev/www/konkr/src/ui/Scrolling.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/WorldGenerator.js",
 		"/C/Users/Embair/dev/www/angrywords/js/lib/Tokens.js",
 		"/C/Users/Embair/dev/www/angrywords/index.html",
@@ -768,10 +761,7 @@
 		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/FilterEditor.js",
 		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/Stats.js",
 		"/C/Users/Embair/dev/www/practice/twitterapp/src/model/Filter.js",
-		"/C/Users/Embair/dev/www/practice/twitterapp/src/model/Tweet.js",
-		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/__snapshots__/App.test.js.snap",
-		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/App.js",
-		"/C/Users/Embair/dev/www/practice/twitterapp/server/server.js"
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/model/Tweet.js"
 	],
 	"find":
 	{
@@ -806,9 +796,64 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": false,
+		"case_sensitive": true,
 		"find_history":
 		[
+			"background",
+			"FeedbackSym",
+			"shieldSymbol",
+			"reflow",
+			"sgiw/",
+			"guards",
+			"resumeActionsCallback",
+			"resumeActions",
+			"processActions",
+			"activePlayer",
+			"initImage",
+			"mainContainer",
+			"hidden",
+			"childResized",
+			"cameraOffset",
+			"alignIn",
+			"clientRect",
+			"parentGroup",
+			"clientRect",
+			"reflow(",
+			"self.anchorObject",
+			"(spec, def, parent)",
+			"reflowChildren",
+			"anchor",
+			"addComponent",
+			"VerticalGrou",
+			"reflowChildren",
+			"reflow",
+			"setText",
+			" reflow(",
+			"reflow(",
+			"reflow()",
+			"clientRect",
+			"reflow",
+			"hidden",
+			"reflowChildren",
+			"addComponent",
+			"UIComponent",
+			"padding",
+			"childResized",
+			"childResizedBase",
+			"refreshLayout",
+			"Label",
+			".text",
+			"graphics",
+			"Graphics",
+			"show",
+			"ModalsManager",
+			"modalDialog",
+			"ModalDialog",
+			"uiElementGroups",
+			"changeSceneNow",
+			"bgImage",
+			"pane",
+			"Pane",
 			"Z_ORDER",
 			"resumeActions =",
 			"resumeActions",
@@ -881,62 +926,7 @@
 			"UPDATE_PLAYER_ECO",
 			"undo",
 			"END_PLAYER_TURN",
-			"onRegionTreasuryChanged",
-			"ADJUST_REGION_TREASURY",
-			"ADJUS_REGION",
-			"BUY_UNIT",
-			"BUY",
-			"refreshDecorations",
-			"onBought",
-			"undo",
-			"AWAIT_PLAY",
-			"onBoughtPawn",
-			"this.pawnType",
-			"getOrCreate",
-			"getOrCreateSprite",
-			"PawnSprite",
-			"debugger",
-			"getAvailableUnits",
-			"actionHighlighting",
-			"setActionHighlighting",
-			"highlightIdle",
-			"highlightAvailableActions",
-			"purgeSignalBindings",
-			"movedUnits",
-			".wa",
-			".warn",
-			"onDestroyed",
-			"Merged",
-			"Merged(",
-			"selectedRegion",
-			"synchronize",
-			" synchronize",
-			"synchronize",
-			"changeScene",
-			"reflow",
-			"height",
-			"reflow",
-			"tweens.add",
-			"UIComponent",
-			"tweens.",
-			"UPDATE ECO",
-			"UPDATE_PLAYER_ECONOMY",
-			"UPDATE_REGION_ECONOMY",
-			"COLLECT_REGION_INCOME",
-			"netIncomeOf",
-			"collect_REGION",
-			"PlayerTurn",
-			"getRegions",
-			"START_PLAYER_TURN",
-			"synchronize",
-			"UPDATE_REGION_ECO",
-			"AI_MANAGE_REGION",
-			"controls",
-			"player",
-			"ownerOf",
-			"byId(",
-			"createPla",
-			"createPlayer"
+			"onRegionTreasuryChanged"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -944,6 +934,14 @@
 		"regex": false,
 		"replace_history":
 		[
+			"resumeActionsCallback",
+			"target",
+			"(spec, def)",
+			"modals",
+			"ModalsManager",
+			"src",
+			"image",
+			"Image",
 			"♔",
 			"idleHighlighting",
 			"setHighlightIdle",
@@ -1063,15 +1061,7 @@
 			"members",
 			"_rowSize",
 			"rowSize",
-			"",
-			"GroundTileSprite",
-			"_hexesPerRow",
-			"let",
-			"\"",
-			"Filter",
-			"state.merge({",
-			"state.merge ({",
-			"statsModalVisible"
+			""
 		],
 		"reverse": false,
 		"show_context": false,
@@ -1082,24 +1072,24 @@
 	"groups":
 	[
 		{
-			"selected": 11,
+			"selected": 10,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "src/states/Play.js",
+					"file": "src/ui/modals/Menu.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10104,
+						"buffer_size": 1850,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7786,
-								7786
+								103,
+								103
 							]
 						],
 						"settings":
@@ -1111,2095 +1101,59 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2856.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 21,
 					"type": "text"
 				},
 				{
 					"buffer": 1,
+					"file": "src/ui/UIManager.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 30197,
+						"buffer_size": 9700,
 						"regions":
 						{
-							"match":
-							{
-								"flags": 112,
-								"regions":
-								[
-									[
-										109,
-										111
-									],
-									[
-										295,
-										297
-									],
-									[
-										315,
-										317
-									],
-									[
-										388,
-										390
-									],
-									[
-										517,
-										519
-									],
-									[
-										651,
-										653
-									],
-									[
-										717,
-										719
-									],
-									[
-										783,
-										785
-									],
-									[
-										849,
-										851
-									],
-									[
-										915,
-										917
-									],
-									[
-										981,
-										983
-									],
-									[
-										1047,
-										1049
-									],
-									[
-										1113,
-										1115
-									],
-									[
-										1180,
-										1182
-									],
-									[
-										1281,
-										1283
-									],
-									[
-										1381,
-										1383
-									],
-									[
-										1532,
-										1534
-									],
-									[
-										1727,
-										1729
-									],
-									[
-										1943,
-										1945
-									],
-									[
-										2062,
-										2064
-									],
-									[
-										2227,
-										2243
-									],
-									[
-										2325,
-										2341
-									],
-									[
-										2457,
-										2473
-									],
-									[
-										2605,
-										2621
-									],
-									[
-										2665,
-										2681
-									],
-									[
-										2840,
-										2858
-									],
-									[
-										2925,
-										2943
-									],
-									[
-										3027,
-										3045
-									],
-									[
-										3222,
-										3240
-									],
-									[
-										3378,
-										3392
-									],
-									[
-										3414,
-										3428
-									],
-									[
-										3549,
-										3563
-									],
-									[
-										3731,
-										3745
-									],
-									[
-										3767,
-										3781
-									],
-									[
-										3902,
-										3916
-									],
-									[
-										4084,
-										4098
-									],
-									[
-										4120,
-										4134
-									],
-									[
-										4291,
-										4305
-									],
-									[
-										4549,
-										4557
-									],
-									[
-										4573,
-										4581
-									],
-									[
-										4625,
-										4633
-									],
-									[
-										4672,
-										4680
-									],
-									[
-										4745,
-										4753
-									],
-									[
-										4791,
-										4799
-									],
-									[
-										4949,
-										4969
-									],
-									[
-										4989,
-										5009
-									],
-									[
-										5100,
-										5120
-									],
-									[
-										5265,
-										5285
-									],
-									[
-										5305,
-										5325
-									],
-									[
-										5416,
-										5436
-									],
-									[
-										5645,
-										5647
-									],
-									[
-										5713,
-										5715
-									],
-									[
-										5786,
-										5788
-									],
-									[
-										5874,
-										5876
-									],
-									[
-										5967,
-										5969
-									],
-									[
-										6070,
-										6072
-									],
-									[
-										6125,
-										6127
-									],
-									[
-										6146,
-										6148
-									],
-									[
-										6235,
-										6237
-									],
-									[
-										6269,
-										6271
-									],
-									[
-										6305,
-										6307
-									],
-									[
-										6342,
-										6344
-									],
-									[
-										6397,
-										6399
-									],
-									[
-										6449,
-										6451
-									],
-									[
-										6497,
-										6499
-									],
-									[
-										6618,
-										6620
-									],
-									[
-										6699,
-										6701
-									],
-									[
-										6741,
-										6743
-									],
-									[
-										6794,
-										6796
-									],
-									[
-										6822,
-										6824
-									],
-									[
-										6871,
-										6873
-									],
-									[
-										6937,
-										6939
-									],
-									[
-										7061,
-										7063
-									],
-									[
-										7112,
-										7114
-									],
-									[
-										7156,
-										7158
-									],
-									[
-										7286,
-										7288
-									],
-									[
-										7446,
-										7448
-									],
-									[
-										7480,
-										7482
-									],
-									[
-										7528,
-										7530
-									],
-									[
-										7613,
-										7615
-									],
-									[
-										7626,
-										7628
-									],
-									[
-										7684,
-										7686
-									],
-									[
-										7699,
-										7701
-									],
-									[
-										7744,
-										7746
-									],
-									[
-										7784,
-										7786
-									],
-									[
-										7800,
-										7802
-									],
-									[
-										7862,
-										7864
-									],
-									[
-										7880,
-										7882
-									],
-									[
-										7916,
-										7918
-									],
-									[
-										7945,
-										7947
-									],
-									[
-										7963,
-										7965
-									],
-									[
-										8024,
-										8026
-									],
-									[
-										8140,
-										8142
-									],
-									[
-										8213,
-										8215
-									],
-									[
-										8266,
-										8268
-									],
-									[
-										8333,
-										8335
-									],
-									[
-										8379,
-										8381
-									],
-									[
-										8429,
-										8431
-									],
-									[
-										8475,
-										8477
-									],
-									[
-										8514,
-										8516
-									],
-									[
-										8563,
-										8565
-									],
-									[
-										8600,
-										8602
-									],
-									[
-										8656,
-										8658
-									],
-									[
-										8730,
-										8732
-									],
-									[
-										8809,
-										8811
-									],
-									[
-										8869,
-										8871
-									],
-									[
-										8926,
-										8928
-									],
-									[
-										9068,
-										9070
-									],
-									[
-										9131,
-										9133
-									],
-									[
-										9175,
-										9177
-									],
-									[
-										9186,
-										9188
-									],
-									[
-										9232,
-										9234
-									],
-									[
-										9310,
-										9312
-									],
-									[
-										9406,
-										9408
-									],
-									[
-										9485,
-										9487
-									],
-									[
-										9532,
-										9534
-									],
-									[
-										9593,
-										9595
-									],
-									[
-										9642,
-										9644
-									],
-									[
-										9656,
-										9658
-									],
-									[
-										9700,
-										9702
-									],
-									[
-										9736,
-										9738
-									],
-									[
-										9783,
-										9785
-									],
-									[
-										9879,
-										9881
-									],
-									[
-										9940,
-										9942
-									],
-									[
-										10028,
-										10030
-									],
-									[
-										10077,
-										10079
-									],
-									[
-										10154,
-										10156
-									],
-									[
-										10165,
-										10167
-									],
-									[
-										10236,
-										10238
-									],
-									[
-										10252,
-										10254
-									],
-									[
-										10301,
-										10303
-									],
-									[
-										10346,
-										10348
-									],
-									[
-										10391,
-										10393
-									],
-									[
-										10434,
-										10436
-									],
-									[
-										10478,
-										10480
-									],
-									[
-										10490,
-										10492
-									],
-									[
-										10524,
-										10526
-									],
-									[
-										10592,
-										10594
-									],
-									[
-										10677,
-										10679
-									],
-									[
-										10696,
-										10698
-									],
-									[
-										10759,
-										10761
-									],
-									[
-										10788,
-										10790
-									],
-									[
-										10892,
-										10894
-									],
-									[
-										11018,
-										11020
-									],
-									[
-										11080,
-										11082
-									],
-									[
-										11153,
-										11155
-									],
-									[
-										11274,
-										11276
-									],
-									[
-										11289,
-										11291
-									],
-									[
-										11325,
-										11327
-									],
-									[
-										11397,
-										11399
-									],
-									[
-										11437,
-										11439
-									],
-									[
-										11483,
-										11485
-									],
-									[
-										11589,
-										11591
-									],
-									[
-										11714,
-										11716
-									],
-									[
-										11825,
-										11827
-									],
-									[
-										11906,
-										11908
-									],
-									[
-										11952,
-										11954
-									],
-									[
-										12010,
-										12012
-									],
-									[
-										12077,
-										12079
-									],
-									[
-										12130,
-										12132
-									],
-									[
-										12174,
-										12176
-									],
-									[
-										12220,
-										12222
-									],
-									[
-										12289,
-										12291
-									],
-									[
-										12331,
-										12333
-									],
-									[
-										12366,
-										12368
-									],
-									[
-										12439,
-										12441
-									],
-									[
-										12458,
-										12460
-									],
-									[
-										12544,
-										12546
-									],
-									[
-										12584,
-										12586
-									],
-									[
-										12589,
-										12591
-									],
-									[
-										12638,
-										12640
-									],
-									[
-										12778,
-										12780
-									],
-									[
-										12828,
-										12830
-									],
-									[
-										12991,
-										12993
-									],
-									[
-										13082,
-										13084
-									],
-									[
-										13235,
-										13237
-									],
-									[
-										13263,
-										13265
-									],
-									[
-										13332,
-										13334
-									],
-									[
-										13392,
-										13394
-									],
-									[
-										13429,
-										13431
-									],
-									[
-										13455,
-										13457
-									],
-									[
-										13524,
-										13526
-									],
-									[
-										13638,
-										13640
-									],
-									[
-										13712,
-										13714
-									],
-									[
-										13785,
-										13787
-									],
-									[
-										13871,
-										13873
-									],
-									[
-										13961,
-										13963
-									],
-									[
-										14072,
-										14074
-									],
-									[
-										14133,
-										14135
-									],
-									[
-										14191,
-										14193
-									],
-									[
-										14237,
-										14239
-									],
-									[
-										14265,
-										14267
-									],
-									[
-										14345,
-										14347
-									],
-									[
-										14411,
-										14413
-									],
-									[
-										14515,
-										14517
-									],
-									[
-										14556,
-										14558
-									],
-									[
-										14675,
-										14677
-									],
-									[
-										14700,
-										14702
-									],
-									[
-										14721,
-										14723
-									],
-									[
-										14802,
-										14804
-									],
-									[
-										14819,
-										14821
-									],
-									[
-										14890,
-										14892
-									],
-									[
-										14907,
-										14909
-									],
-									[
-										14985,
-										14987
-									],
-									[
-										15039,
-										15041
-									],
-									[
-										15107,
-										15109
-									],
-									[
-										15177,
-										15179
-									],
-									[
-										15247,
-										15249
-									],
-									[
-										15317,
-										15319
-									],
-									[
-										15393,
-										15395
-									],
-									[
-										15463,
-										15465
-									],
-									[
-										15523,
-										15525
-									],
-									[
-										15582,
-										15584
-									],
-									[
-										15636,
-										15638
-									],
-									[
-										15672,
-										15674
-									],
-									[
-										15700,
-										15702
-									],
-									[
-										15762,
-										15764
-									],
-									[
-										15817,
-										15819
-									],
-									[
-										15851,
-										15853
-									],
-									[
-										15898,
-										15900
-									],
-									[
-										15928,
-										15930
-									],
-									[
-										15990,
-										15992
-									],
-									[
-										16027,
-										16029
-									],
-									[
-										16065,
-										16067
-									],
-									[
-										16109,
-										16111
-									],
-									[
-										16181,
-										16183
-									],
-									[
-										16257,
-										16259
-									],
-									[
-										16302,
-										16304
-									],
-									[
-										16361,
-										16363
-									],
-									[
-										16416,
-										16418
-									],
-									[
-										16467,
-										16469
-									],
-									[
-										16507,
-										16509
-									],
-									[
-										16618,
-										16620
-									],
-									[
-										16651,
-										16653
-									],
-									[
-										16705,
-										16707
-									],
-									[
-										16733,
-										16735
-									],
-									[
-										16867,
-										16869
-									],
-									[
-										16963,
-										16965
-									],
-									[
-										17037,
-										17039
-									],
-									[
-										17084,
-										17086
-									],
-									[
-										17116,
-										17118
-									],
-									[
-										17232,
-										17234
-									],
-									[
-										17329,
-										17331
-									],
-									[
-										17367,
-										17369
-									],
-									[
-										17374,
-										17376
-									],
-									[
-										17405,
-										17407
-									],
-									[
-										17448,
-										17450
-									],
-									[
-										17521,
-										17523
-									],
-									[
-										17580,
-										17582
-									],
-									[
-										17645,
-										17647
-									],
-									[
-										17706,
-										17708
-									],
-									[
-										17778,
-										17780
-									],
-									[
-										17837,
-										17839
-									],
-									[
-										17889,
-										17891
-									],
-									[
-										17902,
-										17904
-									],
-									[
-										17967,
-										17969
-									],
-									[
-										18015,
-										18017
-									],
-									[
-										18063,
-										18065
-									],
-									[
-										18114,
-										18116
-									],
-									[
-										18123,
-										18125
-									],
-									[
-										18198,
-										18200
-									],
-									[
-										18251,
-										18253
-									],
-									[
-										18304,
-										18306
-									],
-									[
-										18344,
-										18346
-									],
-									[
-										18420,
-										18422
-									],
-									[
-										18563,
-										18565
-									],
-									[
-										18606,
-										18608
-									],
-									[
-										18681,
-										18683
-									],
-									[
-										18811,
-										18813
-									],
-									[
-										18904,
-										18906
-									],
-									[
-										19008,
-										19010
-									],
-									[
-										19077,
-										19079
-									],
-									[
-										19138,
-										19140
-									],
-									[
-										19199,
-										19201
-									],
-									[
-										19257,
-										19259
-									],
-									[
-										19313,
-										19315
-									],
-									[
-										19402,
-										19404
-									],
-									[
-										19507,
-										19509
-									],
-									[
-										19586,
-										19588
-									],
-									[
-										19605,
-										19607
-									],
-									[
-										19636,
-										19638
-									],
-									[
-										19680,
-										19682
-									],
-									[
-										19729,
-										19731
-									],
-									[
-										19822,
-										19824
-									],
-									[
-										19844,
-										19846
-									],
-									[
-										19892,
-										19894
-									],
-									[
-										19909,
-										19911
-									],
-									[
-										19931,
-										19933
-									],
-									[
-										19995,
-										19997
-									],
-									[
-										20063,
-										20065
-									],
-									[
-										20087,
-										20089
-									],
-									[
-										20151,
-										20153
-									],
-									[
-										20210,
-										20212
-									],
-									[
-										20270,
-										20272
-									],
-									[
-										20342,
-										20344
-									],
-									[
-										20442,
-										20444
-									],
-									[
-										20502,
-										20504
-									],
-									[
-										20575,
-										20577
-									],
-									[
-										20587,
-										20589
-									],
-									[
-										20643,
-										20645
-									],
-									[
-										20697,
-										20699
-									],
-									[
-										20729,
-										20731
-									],
-									[
-										20795,
-										20797
-									],
-									[
-										20856,
-										20858
-									],
-									[
-										20921,
-										20923
-									],
-									[
-										20997,
-										20999
-									],
-									[
-										21105,
-										21107
-									],
-									[
-										21215,
-										21217
-									],
-									[
-										21295,
-										21297
-									],
-									[
-										21360,
-										21362
-									],
-									[
-										21463,
-										21465
-									],
-									[
-										21546,
-										21548
-									],
-									[
-										21614,
-										21616
-									],
-									[
-										21681,
-										21683
-									],
-									[
-										21728,
-										21730
-									],
-									[
-										21743,
-										21745
-									],
-									[
-										21778,
-										21780
-									],
-									[
-										21785,
-										21787
-									],
-									[
-										21870,
-										21872
-									],
-									[
-										21900,
-										21902
-									],
-									[
-										21905,
-										21907
-									],
-									[
-										21985,
-										21987
-									],
-									[
-										22040,
-										22042
-									],
-									[
-										22152,
-										22154
-									],
-									[
-										22175,
-										22177
-									],
-									[
-										22209,
-										22211
-									],
-									[
-										22298,
-										22300
-									],
-									[
-										22334,
-										22336
-									],
-									[
-										22373,
-										22375
-									],
-									[
-										22417,
-										22419
-									],
-									[
-										22457,
-										22459
-									],
-									[
-										22495,
-										22497
-									],
-									[
-										22518,
-										22520
-									],
-									[
-										22529,
-										22531
-									],
-									[
-										22594,
-										22596
-									],
-									[
-										22677,
-										22679
-									],
-									[
-										22739,
-										22741
-									],
-									[
-										22873,
-										22875
-									],
-									[
-										22917,
-										22919
-									],
-									[
-										22999,
-										23001
-									],
-									[
-										23053,
-										23055
-									],
-									[
-										23124,
-										23126
-									],
-									[
-										23144,
-										23146
-									],
-									[
-										23185,
-										23187
-									],
-									[
-										23308,
-										23310
-									],
-									[
-										23357,
-										23359
-									],
-									[
-										23424,
-										23426
-									],
-									[
-										23490,
-										23492
-									],
-									[
-										23553,
-										23555
-									],
-									[
-										23585,
-										23587
-									],
-									[
-										23609,
-										23611
-									],
-									[
-										23668,
-										23670
-									],
-									[
-										23736,
-										23738
-									],
-									[
-										23781,
-										23783
-									],
-									[
-										23804,
-										23806
-									],
-									[
-										23849,
-										23851
-									],
-									[
-										23896,
-										23898
-									],
-									[
-										23966,
-										23968
-									],
-									[
-										24008,
-										24010
-									],
-									[
-										24015,
-										24017
-									],
-									[
-										24078,
-										24080
-									],
-									[
-										24292,
-										24294
-									],
-									[
-										24349,
-										24351
-									],
-									[
-										24413,
-										24415
-									],
-									[
-										24476,
-										24478
-									],
-									[
-										24534,
-										24536
-									],
-									[
-										24620,
-										24622
-									],
-									[
-										24663,
-										24665
-									],
-									[
-										24773,
-										24775
-									],
-									[
-										24857,
-										24859
-									],
-									[
-										24949,
-										24951
-									],
-									[
-										25030,
-										25032
-									],
-									[
-										25101,
-										25103
-									],
-									[
-										25220,
-										25222
-									],
-									[
-										25337,
-										25339
-									],
-									[
-										25429,
-										25431
-									],
-									[
-										25527,
-										25529
-									],
-									[
-										25573,
-										25575
-									],
-									[
-										25614,
-										25616
-									],
-									[
-										25660,
-										25662
-									],
-									[
-										25709,
-										25711
-									],
-									[
-										25763,
-										25765
-									],
-									[
-										25811,
-										25813
-									],
-									[
-										25932,
-										25934
-									],
-									[
-										25998,
-										26000
-									],
-									[
-										26082,
-										26084
-									],
-									[
-										26174,
-										26176
-									],
-									[
-										26270,
-										26272
-									],
-									[
-										26360,
-										26362
-									],
-									[
-										26458,
-										26460
-									],
-									[
-										26532,
-										26534
-									],
-									[
-										26608,
-										26610
-									],
-									[
-										26645,
-										26647
-									],
-									[
-										26731,
-										26733
-									],
-									[
-										26778,
-										26780
-									],
-									[
-										26867,
-										26869
-									],
-									[
-										26917,
-										26919
-									],
-									[
-										27000,
-										27002
-									],
-									[
-										27043,
-										27045
-									],
-									[
-										27105,
-										27107
-									],
-									[
-										27149,
-										27151
-									],
-									[
-										27203,
-										27205
-									],
-									[
-										27278,
-										27280
-									],
-									[
-										27358,
-										27360
-									],
-									[
-										27386,
-										27388
-									],
-									[
-										27413,
-										27415
-									],
-									[
-										27450,
-										27452
-									],
-									[
-										27466,
-										27468
-									],
-									[
-										27520,
-										27522
-									],
-									[
-										27565,
-										27567
-									],
-									[
-										27585,
-										27587
-									],
-									[
-										27632,
-										27634
-									],
-									[
-										27643,
-										27645
-									],
-									[
-										27661,
-										27663
-									],
-									[
-										27664,
-										27666
-									],
-									[
-										27698,
-										27700
-									],
-									[
-										27726,
-										27728
-									],
-									[
-										27735,
-										27737
-									],
-									[
-										27738,
-										27740
-									],
-									[
-										27783,
-										27785
-									],
-									[
-										27794,
-										27796
-									],
-									[
-										27803,
-										27805
-									],
-									[
-										27806,
-										27808
-									],
-									[
-										27838,
-										27840
-									],
-									[
-										27881,
-										27883
-									],
-									[
-										27915,
-										27917
-									],
-									[
-										27981,
-										27983
-									],
-									[
-										28020,
-										28022
-									],
-									[
-										28045,
-										28047
-									],
-									[
-										28073,
-										28075
-									],
-									[
-										28096,
-										28098
-									],
-									[
-										28181,
-										28183
-									],
-									[
-										28226,
-										28228
-									],
-									[
-										28306,
-										28308
-									],
-									[
-										28327,
-										28329
-									],
-									[
-										28355,
-										28357
-									],
-									[
-										28413,
-										28415
-									],
-									[
-										28476,
-										28478
-									],
-									[
-										28549,
-										28551
-									],
-									[
-										28607,
-										28609
-									],
-									[
-										28632,
-										28634
-									],
-									[
-										28653,
-										28655
-									],
-									[
-										28734,
-										28736
-									],
-									[
-										28751,
-										28753
-									],
-									[
-										28822,
-										28824
-									],
-									[
-										28839,
-										28841
-									],
-									[
-										28917,
-										28919
-									],
-									[
-										28992,
-										28994
-									],
-									[
-										29074,
-										29076
-									],
-									[
-										29138,
-										29140
-									],
-									[
-										29218,
-										29220
-									],
-									[
-										29294,
-										29296
-									],
-									[
-										29368,
-										29370
-									],
-									[
-										29443,
-										29445
-									],
-									[
-										29505,
-										29507
-									],
-									[
-										29552,
-										29554
-									],
-									[
-										29612,
-										29614
-									],
-									[
-										29663,
-										29665
-									],
-									[
-										29711,
-										29713
-									],
-									[
-										29763,
-										29765
-									],
-									[
-										29807,
-										29809
-									],
-									[
-										29841,
-										29843
-									],
-									[
-										29857,
-										29859
-									],
-									[
-										29905,
-										29907
-									],
-									[
-										29934,
-										29936
-									],
-									[
-										29966,
-										29968
-									],
-									[
-										30149,
-										30156
-									]
-								],
-								"scope": ""
-							}
 						},
 						"selection":
 						[
 							[
-								30151,
-								30151
+								8118,
+								8118
 							]
 						],
 						"settings":
 						{
-							"detect_indentation": false,
-							"line_numbers": false,
-							"output_tag": 11,
-							"result_base_dir": "",
-							"result_file_regex": "^([^ \t].*):$",
-							"result_line_regex": "^ +([0-9]+):",
-							"scroll_past_end": true,
-							"syntax": "Packages/Default/Find Results.hidden-tmLanguage",
-							"translate_tabs_to_spaces": false
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 8232.0,
+						"translation.y": 3276.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 13,
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "src/ui/scene/LocalPlayerTurn.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3324,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1448,
-								1448
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"history_list_is_closing": true,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 46.0,
-						"translation.y": 580.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 17,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "src/ui/Scrolling.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 615,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								124,
-								124
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 24,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "src/index.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5175,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1030,
-								1030
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 369.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "src/ui/PawnSprites.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 7839,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								254,
-								254
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"history_list_is_closing": true,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 18,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "src/ui/NextTurnButton.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1023,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								137,
-								137
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 14,
-					"type": "text"
-				},
-				{
-					"buffer": 7,
 					"file": "src/rules/Players.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10787,
+						"buffer_size": 10860,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3960,
-								3960
+								3744,
+								3744
 							]
 						],
 						"settings":
@@ -3210,65 +1164,94 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1428.0,
+						"translation.y": 1227.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 23,
+					"stack_index": 19,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
-					"file": "src/rules/entities/Region.js",
+					"buffer": 3,
+					"file": "src/ui/PawnSprites.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 803,
+						"buffer_size": 7860,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								255,
-								255
+								1933,
+								1933
 							]
 						],
 						"settings":
 						{
 							"auto_complete": false,
-							"history_list_is_closing": true,
 							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 933.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 30,
+					"stack_index": 9,
 					"type": "text"
 				},
 				{
-					"buffer": 9,
-					"file": "src/ui/Renderer.js",
+					"buffer": 4,
+					"file": "src/ui/HexSelectionProxy.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10617,
+						"buffer_size": 4530,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1030,
-								1030
+								2100,
+								2100
 							]
 						],
 						"settings":
 						{
 							"auto_complete": false,
-							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 443.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "src/ui/ModalsManager.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1882,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								181,
+								181
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
 							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
@@ -3277,24 +1260,24 @@
 						"translation.y": 84.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 13,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
-					"buffer": 10,
-					"file": "src/rules/LandGenerator.js",
+					"buffer": 6,
+					"file": "src/ui/OptionButtons.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1538,
+						"buffer_size": 1589,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								561,
-								561
+								987,
+								987
 							]
 						],
 						"settings":
@@ -3305,289 +1288,46 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 252.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 11,
 					"type": "text"
 				},
 				{
-					"buffer": 11,
-					"file": "src/ui/HexSelectionProxy.js",
+					"buffer": 7,
+					"file": "src/states/Play.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4894,
+						"buffer_size": 9854,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1304,
-								1304
+								1367,
+								1367
 							]
 						],
 						"settings":
 						{
 							"auto_complete": false,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 168.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 12,
-					"file": "src/rules/Pawns.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6503,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								189,
-								189
-							]
-						],
-						"settings":
-						{
+							"history_list_is_closing": true,
 							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": -0.0,
-						"translation.y": 0.0,
+						"translation.y": 252.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 19,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
-					"buffer": 13,
-					"file": "src/ui/scene/Scene.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1697,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								33,
-								33
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 20,
-					"type": "text"
-				},
-				{
-					"buffer": 14,
-					"file": "src/ui/assets/GameAssets.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1240,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								772,
-								772
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"history_list_is_closing": true,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 9,
-					"type": "text"
-				},
-				{
-					"buffer": 15,
-					"file": "src/rules/GameState.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5747,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 8,
-					"type": "text"
-				},
-				{
-					"buffer": 16,
-					"file": "src/lib/AssetManager.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1124,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								257,
-								257
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 28,
-					"type": "text"
-				},
-				{
-					"buffer": 17,
-					"file": "src/ui/RegionPanel.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3471,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1472,
-								1472
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 387.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 15,
-					"type": "text"
-				},
-				{
-					"buffer": 18,
-					"file": "src/rules/Regions.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 7910,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								291,
-								291
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 7,
-					"type": "text"
-				},
-				{
-					"buffer": 19,
-					"file": "src/ui/UIManager.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 8363,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3046,
-								3046
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"history_list_is_closing": true,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 981.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 20,
+					"buffer": 8,
 					"file": "static/index.html",
 					"semi_transient": false,
 					"settings":
@@ -3605,7 +1345,6 @@
 						],
 						"settings":
 						{
-							"history_list_is_closing": true,
 							"syntax": "Packages/HTML/HTML.sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
@@ -3614,30 +1353,93 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 21,
-					"file": "static/styles/main.css",
+					"buffer": 9,
+					"file": "src/index.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 602,
+						"buffer_size": 5440,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								71,
-								71
+								696,
+								696
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/CSS/CSS.sublime-syntax",
-							"tab_size": 2,
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 300.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "src/lib/Injector.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2506,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1362,
+								1362
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 168.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "src/lib/AssetManager.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1124,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
@@ -3646,15 +1448,215 @@
 					},
 					"stack_index": 10,
 					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "src/ui/assets/GameAssets.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1360,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								158,
+								158
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1234,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										134,
+										146
+									],
+									[
+										282,
+										294
+									],
+									[
+										447,
+										458
+									],
+									[
+										522,
+										533
+									],
+									[
+										644,
+										655
+									],
+									[
+										816,
+										827
+									],
+									[
+										891,
+										902
+									],
+									[
+										1013,
+										1024
+									],
+									[
+										1188,
+										1198
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								1207,
+								1207
+							]
+						],
+						"settings":
+						{
+							"detect_indentation": false,
+							"line_numbers": false,
+							"output_tag": 4,
+							"result_base_dir": "",
+							"result_file_regex": "^([^ \t].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 476.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "src/ui/Renderer.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10617,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								9531,
+								9531
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 4150.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"file": "src/rules/Actions.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4279,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1186,
+								1186
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 168.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 17,
+					"type": "text"
+				},
+				{
+					"buffer": 16,
+					"file": "src/ui/NextTurnButton.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 953,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								108,
+								108
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 18,
+					"type": "text"
 				}
 			]
 		},
 		{
-			"selected": 3,
+			"selected": 4,
 			"sheets":
 			[
 				{
-					"buffer": 22,
+					"buffer": 17,
 					"file": "src/ui/SFX.js",
 					"semi_transient": false,
 					"settings":
@@ -3680,54 +1682,55 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 27,
+					"stack_index": 28,
 					"type": "text"
 				},
 				{
-					"buffer": 17,
+					"buffer": 18,
 					"file": "src/ui/RegionPanel.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3471,
+						"buffer_size": 3819,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3342,
-								3350
+								744,
+								744
 							]
 						],
 						"settings":
 						{
+							"history_list_is_closing": true,
 							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1107.0,
+						"translation.y": 84.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 26,
+					"stack_index": 24,
 					"type": "text"
 				},
 				{
-					"buffer": 23,
+					"buffer": 19,
 					"file": "src/lib/controls/UI.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7522,
+						"buffer_size": 10568,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6658,
-								6658
+								2602,
+								2602
 							]
 						],
 						"settings":
@@ -3739,27 +1742,89 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2940.0,
+						"translation.y": 723.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 12,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
-					"file": "src/index.js",
+					"buffer": 20,
+					"file": "src/lib/controls/InputProxy.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5175,
+						"buffer_size": 470,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								517,
-								517
+								266,
+								266
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"auto_name": "function InputProxy() {",
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 16,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "src/states/Play.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 9854,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								8112,
+								8171
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3065.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "src/ui/ModalsManager.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1882,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								893,
+								893
 							]
 						],
 						"settings":
@@ -3773,24 +1838,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
-					"buffer": 19,
-					"file": "src/ui/UIManager.js",
+					"buffer": 9,
+					"file": "src/index.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8363,
+						"buffer_size": 5440,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6885,
-								6885
+								469,
+								469
 							]
 						],
 						"settings":
@@ -3802,27 +1867,59 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2689.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 25,
 					"type": "text"
 				},
 				{
-					"buffer": 7,
-					"file": "src/rules/Players.js",
+					"buffer": 1,
+					"file": "src/ui/UIManager.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10787,
+						"buffer_size": 9700,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5556,
-								5556
+								379,
+								379
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 43.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 22,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/rules/Players.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10860,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7061,
+								7061
 							]
 						],
 						"settings":
@@ -3833,14 +1930,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2016.0,
+						"translation.y": 2520.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 22,
+					"stack_index": 20,
 					"type": "text"
 				},
 				{
-					"buffer": 24,
+					"buffer": 21,
 					"file": "src/rules/Economy.js",
 					"semi_transient": false,
 					"settings":
@@ -3867,24 +1964,24 @@
 						"translation.y": 345.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 21,
+					"stack_index": 27,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
+					"buffer": 22,
 					"file": "src/ui/scene/LocalPlayerTurn.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3324,
+						"buffer_size": 3356,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2328,
-								2384
+								2360,
+								2416
 							]
 						],
 						"settings":
@@ -3896,27 +1993,27 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 841.0,
+						"translation.y": 461.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 26,
 					"type": "text"
 				},
 				{
-					"buffer": 14,
+					"buffer": 12,
 					"file": "src/ui/assets/GameAssets.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1240,
+						"buffer_size": 1360,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1194,
-								1194
+								840,
+								854
 							]
 						],
 						"settings":
@@ -3926,10 +2023,10 @@
 							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 84.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 29,
+					"stack_index": 23,
 					"type": "text"
 				}
 			]
@@ -3963,7 +2060,7 @@
 		"cols":
 		[
 			0.0,
-			0.589790897909,
+			0.533210332103,
 			1.0
 		],
 		"rows":
@@ -3995,16 +2092,16 @@
 		"selected_items":
 		[
 			[
-				"hexse",
+				"inject",
+				"src\\lib\\Injector.js"
+			],
+			[
+				"index",
+				"static\\index.html"
+			],
+			[
+				"hexsel",
 				"src\\ui\\HexSelectionProxy.js"
-			],
-			[
-				"uimana",
-				"src\\ui\\UIManager.js"
-			],
-			[
-				"play.s",
-				"src\\states\\Play.js"
 			],
 			[
 				"play",
@@ -4015,8 +2112,124 @@
 				"src\\index.js"
 			],
 			[
+				"gam",
+				"src\\ui\\assets\\GameAssets.js"
+			],
+			[
+				"pawnsprite",
+				"src\\ui\\PawnSprites.js"
+			],
+			[
+				"gamea",
+				"src\\ui\\assets\\GameAssets.js"
+			],
+			[
+				"assetman",
+				"src\\lib\\AssetManager.js"
+			],
+			[
+				"index.j",
+				"src\\index.js"
+			],
+			[
+				"play.",
+				"src\\states\\Play.js"
+			],
+			[
+				"optionbu",
+				"src\\ui\\OptionButtons.js"
+			],
+			[
 				"uiman",
 				"src\\ui\\UIManager.js"
+			],
+			[
+				"index.",
+				"src\\index.js"
+			],
+			[
+				"ui",
+				"src\\lib\\controls\\UI.js"
+			],
+			[
+				"actions",
+				"src\\rules\\Actions.js"
+			],
+			[
+				"ui.js",
+				"src\\lib\\controls\\UI.js"
+			],
+			[
+				"nextturn",
+				"src\\ui\\NextTurnButton.js"
+			],
+			[
+				"players",
+				"src\\rules\\Players.js"
+			],
+			[
+				"pawnsprites",
+				"src\\ui\\PawnSprites.js"
+			],
+			[
+				"option",
+				"src\\ui\\OptionButtons.js"
+			],
+			[
+				"hexsele",
+				"src\\ui\\HexSelectionProxy.js"
+			],
+			[
+				"modals",
+				"src\\ui\\ModalsManager.js"
+			],
+			[
+				"modalsmana",
+				"src\\ui\\ModalsManager.js"
+			],
+			[
+				"menu",
+				"src\\ui\\modals\\Menu.js"
+			],
+			[
+				"regionpanel",
+				"src\\ui\\RegionPanel.js"
+			],
+			[
+				"button",
+				"src\\ui\\OptionButtons.js"
+			],
+			[
+				"renderer",
+				"src\\ui\\Renderer.js"
+			],
+			[
+				"modalsman",
+				"src\\ui\\ModalsManager.js"
+			],
+			[
+				"uimana",
+				"src\\ui\\UIManager.js"
+			],
+			[
+				"ui.",
+				"src\\lib\\controls\\UI.js"
+			],
+			[
+				"gameass",
+				"src\\ui\\assets\\GameAssets.js"
+			],
+			[
+				"regionpan",
+				"src\\ui\\RegionPanel.js"
+			],
+			[
+				"hexse",
+				"src\\ui\\HexSelectionProxy.js"
+			],
+			[
+				"play.s",
+				"src\\states\\Play.js"
 			],
 			[
 				"hexselectio",
@@ -4025,10 +2238,6 @@
 			[
 				"land",
 				"src\\rules\\LandGenerator.js"
-			],
-			[
-				"index",
-				"static\\index.html"
 			],
 			[
 				"uim",
@@ -4083,14 +2292,6 @@
 				"src\\ui\\Renderer.js"
 			],
 			[
-				"ui.js",
-				"src\\lib\\controls\\UI.js"
-			],
-			[
-				"renderer",
-				"src\\ui\\Renderer.js"
-			],
-			[
 				"redner",
 				"src\\ui\\Renderer.js"
 			],
@@ -4127,10 +2328,6 @@
 				"src\\ui\\scene\\LocalPlayerTurn.js"
 			],
 			[
-				"players",
-				"src\\rules\\Players.js"
-			],
-			[
 				"region",
 				"src\\ui\\RegionPanel.js"
 			],
@@ -4147,14 +2344,6 @@
 				"src\\ui\\Scrolling.js"
 			],
 			[
-				"ui.",
-				"src\\lib\\controls\\UI.js"
-			],
-			[
-				"gameass",
-				"src\\ui\\assets\\GameAssets.js"
-			],
-			[
 				"asset",
 				"src\\lib\\AssetManager.js"
 			],
@@ -4163,16 +2352,8 @@
 				"src\\ui\\assets\\GameAssets.js"
 			],
 			[
-				"index.j",
-				"src\\index.js"
-			],
-			[
 				"localpl",
 				"src\\ui\\scene\\LocalPlayerTurn.js"
-			],
-			[
-				"assetman",
-				"src\\lib\\AssetManager.js"
 			],
 			[
 				"messages",
@@ -4207,10 +2388,6 @@
 				"src\\rules\\Warfare.js"
 			],
 			[
-				"hexsel",
-				"src\\ui\\HexSelectionProxy.js"
-			],
-			[
 				"pawnsprit",
 				"src\\ui\\PawnSprites.js"
 			],
@@ -4219,20 +2396,12 @@
 				"src\\rules\\Economy.js"
 			],
 			[
-				"hexsele",
-				"src\\ui\\HexSelectionProxy.js"
-			],
-			[
 				"assets",
 				"src\\ui\\assets\\GameAssets.js"
 			],
 			[
 				"util",
 				"src\\lib\\util.js"
-			],
-			[
-				"ui",
-				"src\\lib\\controls\\UI.js"
 			],
 			[
 				"hexs",
@@ -4255,15 +2424,7 @@
 				"src\\ui\\NextTurnButton.js"
 			],
 			[
-				"nextturn",
-				"src\\ui\\NextTurnButton.js"
-			],
-			[
 				"action",
-				"src\\lib\\ActionsProvider.js"
-			],
-			[
-				"actions",
 				"src\\lib\\ActionsProvider.js"
 			],
 			[
@@ -4272,14 +2433,6 @@
 			],
 			[
 				"pawnspr",
-				"src\\ui\\PawnSprites.js"
-			],
-			[
-				"regionpanel",
-				"src\\ui\\RegionPanel.js"
-			],
-			[
-				"pawnsprites",
 				"src\\ui\\PawnSprites.js"
 			],
 			[
@@ -4379,10 +2532,6 @@
 				"src\\lib\\controls\\UI.js"
 			],
 			[
-				"regionpan",
-				"src\\ui\\RegionPanel.js"
-			],
-			[
 				"landgener",
 				"src\\rules\\LandGenerator.js"
 			],
@@ -4453,58 +2602,6 @@
 			[
 				"hex",
 				"src\\lib\\hexgrid\\Hexagon.js"
-			],
-			[
-				"hexgroup",
-				"src\\lib\\hexgrid\\HexGroup.js"
-			],
-			[
-				"gamestae",
-				"src\\rules\\GameState.js"
-			],
-			[
-				"gaemstate",
-				"src\\rules\\GameState.js"
-			],
-			[
-				"ids",
-				"src\\lib\\IdGenerator.js"
-			],
-			[
-				"gameste",
-				"src\\rules\\GameState.js"
-			],
-			[
-				"ecn",
-				"src\\rules\\Economy.js"
-			],
-			[
-				"playesr",
-				"src\\rules\\Players.js"
-			],
-			[
-				"hexva",
-				"src\\lib\\hexgrid\\HexValuation.js"
-			],
-			[
-				"a",
-				"src\\ai\\AI.js"
-			],
-			[
-				"eco",
-				"src\\rules\\Economy.js"
-			],
-			[
-				"hexgri",
-				"src\\lib\\hexgrid\\HexGroup.js"
-			],
-			[
-				"hexagon",
-				"src\\lib\\hexgrid\\Hexagon.js"
-			],
-			[
-				"hexgr",
-				"src\\lib\\hexgrid\\HexGroup.js"
 			]
 		],
 		"width": 0.0

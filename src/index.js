@@ -26,12 +26,17 @@ var spec = new Injector(undefined,{
     game: () => game,
     assets: spec => new GameAssets(spec),
     debug: spec => new DebugInfo(spec),
+    inDebugMode: () => !!document.getElementById("debug")
 });
 
-
 //default loglevel
-log.setDefaultLevel(log.levels.DEBUG);
-log.setLevel(log.levels.DEBUG);
+if (spec.inDebugMode) {
+    log.setDefaultLevel(log.levels.DEBUG);
+    log.setLevel(log.levels.DEBUG);
+} else {
+    log.setDefaultLevel(log.levels.INFO);
+    log.setLevel(log.levels.INFO);
+}
 
 //========================================================
 // GAME STATE: Init

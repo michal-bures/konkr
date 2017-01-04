@@ -93,69 +93,55 @@
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient4276"
-       id="linearGradient4282"
-       x1="3"
-       y1="1245.3622"
-       x2="18"
-       y2="1278.3622"
-       gradientUnits="userSpaceOnUse" />
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient4276"
-       id="linearGradient4294"
-       gradientUnits="userSpaceOnUse"
-       x1="3"
-       y1="1245.3622"
-       x2="18"
-       y2="1278.3622" />
-    <filter
-       inkscape:collect="always"
-       id="filter4913"
-       x="-0.10717703"
-       width="1.2143541"
-       y="-0.11190302"
-       height="1.223806">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="0.72821562"
-         id="feGaussianBlur4915" />
-    </filter>
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient4276"
-       id="linearGradient4937"
-       gradientUnits="userSpaceOnUse"
-       x1="3"
-       y1="1245.3622"
-       x2="18"
-       y2="1278.3622" />
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient4276"
-       id="linearGradient4953"
-       gradientUnits="userSpaceOnUse"
-       x1="3"
-       y1="1245.3622"
-       x2="18"
-       y2="1278.3622" />
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient4276"
-       id="linearGradient4975"
-       gradientUnits="userSpaceOnUse"
-       x1="3"
-       y1="1245.3622"
-       x2="18"
-       y2="1278.3622" />
-    <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient4276"
        id="linearGradient4977"
        gradientUnits="userSpaceOnUse"
        x1="3"
        y1="1245.3622"
        x2="18"
        y2="1278.3622" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5746"
+       id="linearGradient5774"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1,-0.99998948)"
+       x1="180"
+       y1="179.36217"
+       x2="186"
+       y2="185.36217" />
+    <linearGradient
+       id="linearGradient5746">
+      <stop
+         id="stop5748"
+         offset="0"
+         style="stop-color:#5a5eff;stop-opacity:1;" />
+      <stop
+         id="stop5750"
+         offset="1"
+         style="stop-color:#9a9cff;stop-opacity:1;" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4607"
+       id="linearGradient5758"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1,-0.99998948)"
+       x1="207.5"
+       y1="179.86218"
+       x2="215.5"
+       y2="187.86218" />
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4607">
+      <stop
+         style="stop-color:#ff5a5a;stop-opacity:1"
+         offset="0"
+         id="stop4609" />
+      <stop
+         style="stop-color:#ff9a9a;stop-opacity:1"
+         offset="1"
+         id="stop4611" />
+    </linearGradient>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -164,11 +150,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.5"
-     inkscape:cx="-293.97344"
-     inkscape:cy="-265.23801"
+     inkscape:zoom="16"
+     inkscape:cx="-50.090314"
+     inkscape:cy="-293.12879"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer2"
      showgrid="true"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -184,7 +170,7 @@
        type="xygrid"
        id="grid5333"
        empspacing="8"
-       visible="false"
+       visible="true"
        enabled="true"
        snapvisiblegridlinesonly="true" />
     <sodipodi:guide
@@ -427,12 +413,52 @@
        inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
+    <g
+       style="opacity:0.98000004;display:inline"
+       inkscape:export-ydpi="90"
+       inkscape:export-xdpi="90"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\shield-symbol.png"
+       transform="translate(-246,1164)"
+       id="g5752">
+      <path
+         style="color:#000000;fill:url(#linearGradient5758);fill-opacity:1;fill-rule:nonzero;stroke:#ff0000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+         d="m 204.5,174.86218 10,0 0,10 -1,2 -4,2 -4,-1.99999 -1,-2.00001 z"
+         id="path5754"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccccc" />
+      <path
+         sodipodi:nodetypes="cccccccc"
+         inkscape:connector-curvature="0"
+         id="path5756"
+         d="m 205.5,175.86218 8,0 0,8.57143 -0.8,1.71429 -3.2,1.71428 -3.2,-1.71427 -0.8,-1.7143 z"
+         style="opacity:0.5;color:#000000;fill:none;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+    </g>
+    <g
+       style="opacity:0.98000004;display:inline"
+       inkscape:export-ydpi="90"
+       inkscape:export-xdpi="90"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\shield-symbol.png"
+       transform="translate(-207,1165)"
+       id="g5768">
+      <path
+         sodipodi:nodetypes="cccccccc"
+         inkscape:connector-curvature="0"
+         id="path5770"
+         d="m 176.5,173.86218 10,0 0,10 -1,2 -4,2 -4,-1.99999 -1,-2.00001 z"
+         style="color:#000000;fill:url(#linearGradient5774);fill-opacity:1;fill-rule:nonzero;stroke:#000080;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+      <path
+         style="opacity:0.5;color:#000000;fill:none;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+         d="m 177.5,174.86218 8,0 0,8.57143 -0.8,1.71429 -3.2,1.71428 -3.2,-1.71427 -0.8,-1.7143 z"
+         id="path5772"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccccc" />
+    </g>
   </g>
   <g
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Zones"
-     style="display:none">
+     style="display:inline">
     <rect
        style="opacity:0.1;color:#000000;fill:#00ff00;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        id="rect3043"
@@ -670,5 +696,17 @@
          x="-51.142853"
          id="tspan4991"
          sodipodi:role="line">optionButton</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#0000ff;fill-opacity:1;stroke:none;display:inline;font-family:Sans"
+       x="-51.142853"
+       y="1327.2194"
+       id="text6379"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan6381"
+         x="-51.142853"
+         y="1327.2194"
+         style="font-size:24px;fill:#0000ff">shieldSymbol</tspan></text>
   </g>
 </svg>
