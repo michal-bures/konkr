@@ -25,7 +25,7 @@ function Scrolling(spec) {
               const ddy = dragStartPoint.y - game.input.activePointer.position.y;
               dx += ddx;
               dy += ddy;
-              if (dragging || ((dx + dy) > DRAG_DEADZONE)) {
+              if (dragging || (Math.abs(dx)+Math.abs(dy) > DRAG_DEADZONE)) {
                   dragging = true;
                   game.camera.x += ddx;     
                   game.camera.y += ddy; 
@@ -38,7 +38,6 @@ function Scrolling(spec) {
             dx = 0;
             dy = 0;
         }
-        debug.set('dragging', self.isActive);
     }
 
     return self;
