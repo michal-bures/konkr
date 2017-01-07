@@ -58,8 +58,9 @@ PawnType.initEnum({
         price: 15,
         defense: 2
     },
-    GRAVE: {
-        upkeep: 1
+    BANDIT: {
+        upkeep: 1,
+        pest: true,
     },
 
     UNREST: {
@@ -149,7 +150,7 @@ function Pawns(spec) {
             .filter(pawn => pawn.pawnType.isTroop())
             .map(pawn => {
                 action.schedule("DESTROY_PAWN", pawn);
-                action.schedule("CREATE_PAWN", PawnType.GRAVE, pawn.hex);
+                action.schedule("CREATE_PAWN", PawnType.BANDIT, pawn.hex);
             });
         action.resolve();
     }, { undo() {} });
@@ -198,6 +199,8 @@ function Pawns(spec) {
     }
 
     function getMergeResult(pawnType1, pawnType2) {
+        if (pawnType2.pest) return pawnType1;
+        if (pawnType1.pest) return pawnType2;
         if (!pawnType1.merge || !pawnType1.merge[pawnType2.name]) return null;
         return pawns[pawnType1.merge[pawnType2.name]];
     }

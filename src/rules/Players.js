@@ -196,10 +196,10 @@ function Players(spec) {
         const region = regions.regionOf(pawn.hex);
         if (!activePlayer.controls(region)) throw Error(`Tried to grab ${pawn}, which does not belong to ${activePlayer}`);
 
-        self.onGrabbedPawn.dispatch(pawn);
         action.data.previousGrabbed = grabbedPawn;
         addUnitToGrabbed(pawn.pawnType);
         grabbedPawnRegion = region;
+        self.onGrabbedPawn.dispatch(pawn);
         action.schedule('DESTROY_PAWN',pawn);
         action.resolve();
     },{ 
@@ -220,9 +220,9 @@ function Players(spec) {
         }
         action.schedule('CREATE_PAWN',grabbedPawn, hex);
 
-        self.onDroppedPawn.dispatch(grabbedPawn,hex);
         grabbedPawn = null;
         grabbedPawnRegion = null;
+        self.onDroppedPawn.dispatch(grabbedPawn,hex);
         action.resolve();
     }, { undo(action) {
         grabbedPawn = action.data.grabbedPawn;

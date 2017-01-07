@@ -2,7 +2,7 @@ import UI from 'lib/controls/UI';
 import { assertDefined } from 'lib/util';
 
 function RegionPanel(spec) {
-    let { log, debug, game, economy, ui, regions, players } = spec;
+    let { log, debug, game, economy, ui, regions, players, pawns } = spec;
 
     let group = null,
         currentRegion = null;
@@ -74,14 +74,20 @@ function RegionPanel(spec) {
 
     regions.onChanged.add(refreshIfMatchingCurrentRegion);
     economy.onRegionTreasuryChanged.add(refreshIfMatchingCurrentRegion);
-    players.onDroppedPawn.add((pawnType, hex)=>{
+    /*players.onDroppedPawn.add((pawnType, hex)=>{
         if (regions.regionOf(hex) === currentRegion) synchronize();
-    });
-    players.onGrabbedPawn.add(()=> {
+    });*/
+    /*players.onGrabbedPawn.add(()=> {
        if (players.grabbedPawnRegion === currentRegion) synchronize();
-    });
+    });*/
     players.onBoughtPawn.add((pawnType, region)=> {
         refreshIfMatchingCurrentRegion(region);
+    });
+    pawns.onCreated.add(pawn=> {
+        refreshIfMatchingCurrentRegion(regions.regionOf(pawn.hex));
+    });
+    pawns.onDestroyed.add(pawn=> {
+        refreshIfMatchingCurrentRegion(regions.regionOf(pawn.hex));
     });
 
     return Object.freeze({
