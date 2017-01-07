@@ -1,7 +1,7 @@
 import { assertDefined, debounce, extend } from 'lib/util';
 
 const SHOWHIDE_DURATION = 200;
-
+const INPUTEVENT_DEBOUNCE_INTERVAL = 100;
 
 let lastComponentId = 0;
 function generateComponentId() {
@@ -275,7 +275,7 @@ function Button(spec, def) {
     self.onInputUp = btn.onInputUp;
     self.onInputDown = btn.onInputDown;
     self.add(btn);
-    if (def.onClicked) self.onInputUp.add(def.onClicked);
+    if (def.onClicked) self.onInputUp.add(debounce(def.onClicked,INPUTEVENT_DEBOUNCE_INTERVAL,true));
 
     self.setFrame =(frame) => {
         btn.frame = frame;

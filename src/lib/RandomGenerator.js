@@ -1,20 +1,22 @@
 function RandomGenerator() {    
-    let seed = 1;
-    randomize();
+    let seed, initialSeed;
+    reset();
 
     return Object.freeze({
-        randomize,
+        reset,
         oneOf,
         property,
         integer,
         number,
         hex,
-        toJSON() { return seed; },
-        fromJSON(data) { seed = data; }
+        get seed() { return initialSeed; },
+        toJSON() { return {seed,initialSeed}; },
+        fromJSON(data) { seed = data.seed; initialSeed = data.initialSeed }
     });
 
-    function randomize() {
-        seed = Math.floor(Math.random()*100000);
+    function reset(newSeed=Math.floor(Math.random()*100000)) {
+        seed = newSeed;
+        initialSeed = seed;
     }
 
     function number() {

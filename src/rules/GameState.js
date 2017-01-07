@@ -20,6 +20,7 @@ function GameState(spec) {
         toDebugString,
         storeState,
         loadState,
+        startNewGame,
         toJSON
     });
     
@@ -44,11 +45,14 @@ function GameState(spec) {
         ai: spec => new AI(spec.useName('ai')),
         gameState: () => self
     });
-    let {actions, players, regions} = gameStateSpec;
+    let {actions, players, regions, random} = gameStateSpec;
 
     // order is important - modules that rely on objects from other modules must go last
     // for example pawns will want instances of hexes, so they need grid to be loaded
     const STATEFUL_MODULES = ['grid','pawns','regions','economy','players','ai','ids','random','actions'];
+
+    let initialState = toJSON();
+    log.info("INIT", initialState);
 
     function toJSON() {
         let obj = {};
@@ -91,6 +95,11 @@ function GameState(spec) {
         log.info('Game loaded:',jsonOrKey);        
     }
 
+    function startNewGame(options) {
+        loadState(initialState);
+        actions.schedule('START_NEW_GAME', options);
+    }
+
     actions.setHandler('LOAD_STATE', (action, jsonOrKey) => {
         loadState(jsonOrKey);
         // do not resolve() this action because at this point actions module
@@ -102,11 +111,12 @@ function GameState(spec) {
         action.resolve();
     });
 
-    actions.setHandler('START_NEW_GAME',  (action, {worldWidth, worldHeight, numFactions, playerFaction=1}) => {
-        action.schedule('STORE_STATE','konkr_autosave_prestart');
+    actions.setHandler('START_NEW_GAME',  (action, {worldWidth, worldHeight, numFactions, playerFaction=1, seed}) => {
+        random.reset(seed);
+        log.info("Starting new game (seed="+random.seed+")");
         action.schedule('RESET_HEXGRID', worldWidth, worldHeight);
         action.schedule('GENERATE_LANDMASS');
-        action.schedule('RANDOMIZE_REGIONS', numFactions);
+        action.schedule('RANDOMIZE_REGIONS', "balancedStart", {numFactions});
         action.schedule('SETUP_PLAYERS', numFactions, playerFaction);
         action.schedule('SET_INITIAL_TREASURY');
         action.schedule('STORE_STATE','konkr_autosave_gamestart');

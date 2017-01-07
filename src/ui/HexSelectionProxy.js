@@ -1,24 +1,31 @@
 import { HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT, HALF_LINE_HEIGHT, OFFSET_TOP, OFFSET_LEFT, convertToWorldCoordinates } from 'ui/Renderer';
 
 import InputProxy from 'lib/controls/InputProxy';
+import { debounce } from 'lib/util';
+
+const INPUTEVENT_DEBOUNCE_INTERVAL = 100;
 
 function HexSelectionProxy(spec) {
     let {game,grid,debug,log,regions,pawns,ui, warfare, players, scrolling} = spec;
 
     let active = false,
         proxy = new InputProxy(game),
-        group = game.make.group(null);
+        group = game.make.group(null),
+        rightButtonPressed = false;
 
     group.add(proxy);
 
     proxy.events.onInputOver.add(() => active = true);
     proxy.events.onInputOut.add(() => active = false);
-    proxy.events.onInputUp.add((target, pointer) => {
-        if (!pointer.rightButton.isDown && !scrolling.isActive) {
+    proxy.events.onInputDown.add((target, pointer) => {
+        rightButtonPressed = pointer.rightButton.isDown;
+    });
+    proxy.events.onInputUp.add(debounce(() => {
+        if (!rightButtonPressed && !scrolling.isActive) {
             const hex = getHexUnderCursor();
             if (hex) ui.selectHex(hex);
         }
-    });
+    }, INPUTEVENT_DEBOUNCE_INTERVAL, true));
 
     //public
     return Object.freeze({

@@ -28,8 +28,9 @@ function ActionsProvider(spec, providerName, config) {
     let actionQueue = [], // queue of future and past actions
         actionPointer = 0, // current position in the queue
         actionRunning = false, // whether the action currently pointed to by actionPointer is already running
-        guards = [];  // async function that have to return promise after each action and before 
+        guards = [],  // async function that have to return promise after each action and before 
                       //next action on the stack is started
+        pendingGuardPromises = [];
 
     function toJSON() {
         // note: cannot store undo history, because some actions in it could refer to objects that will
@@ -41,6 +42,12 @@ function ActionsProvider(spec, providerName, config) {
     }
 
     function fromJSON(src) {
+        if (actionRunning) {
+            //cancel current action
+            actionQueue[actionPointer].abort();
+        }
+
+        pendingGuardPromises = [];
         actionQueue = src.queue.map(json=>ScheduledAction.fromJSON(json));
         actionPointer = src.at;
         actionRunning = false;
@@ -105,11 +112,20 @@ function ActionsProvider(spec, providerName, config) {
         executeNext();
     }
 
-    function attachGuard(guardFunc, title) {
-        guards.push(guardFunc);
+
+    function Guard(title, guardFunc) {
+        return Object.freeze({
+            get title() { return title; },
+            run(...args) { return guardFunc(...args); }
+        });
+    }
+
+    function attachGuard(title, guardFunc) {
+        const g = new Guard(title,guardFunc);
+        guards.push(g);
         return {
             detach() {
-                guards.splice(guards.indexOf(guardFunc),1);
+                guards.splice(guards.indexOf(g),1);
             }
         };
     }
@@ -119,6 +135,7 @@ function ActionsProvider(spec, providerName, config) {
             resolution = null;
 
         const self = Object.seal({
+            abort,
             schedule,
             reschedule,
             start,
@@ -182,9 +199,10 @@ function ActionsProvider(spec, providerName, config) {
         // mark the action resolved and enable the planner to move on to the next action on the 
         // stack
         function resolve() {
+            processing = false;
+            if (resolution === 'aborted') return;
             if (resolution) throw Error(`Duplicate call of ${self}.resolve()`);
             resolution = 'resolved';
-            processing = false;
             actionResolved(self);
         }
 
@@ -206,6 +224,12 @@ function ActionsProvider(spec, providerName, config) {
                     return typeDefs[actionDefs[name][index]].toJSON(arg);
                 })
             };
+        }
+
+        // abort the action (discards any future resolved() callbacks)
+        function abort() {
+            resolution = 'aborted';
+            processing = false;
         }
 
         function toString() {
@@ -261,10 +285,22 @@ function ActionsProvider(spec, providerName, config) {
 
     function executeNext(lastAction) {
         if (actionRunning) throw Error(`executeNext() called while another action is still active`);
-        guards.reduce((previousPromise, guard) => previousPromise.then(() => {
-            log.trace("Waiting on guard...");
-            return guard(lastAction, actionQueue[actionPointer]);
-        }), Promise.resolve()).then(() => {
+
+        if (actionPointer === actionQueue.length) return;
+
+        guards.forEach(guard => {
+            let p = guard.run(lastAction,actionQueue[actionPointer]);
+            const record = {title:guard.title, promise: p};
+            pendingGuardPromises.push(record);
+            p.then(()=>{
+                let i = pendingGuardPromises.indexOf(record);
+                if (i<0) return;
+                pendingGuardPromises.splice(i,1);
+                if (!pendingGuardPromises.length) doExecuteNext();
+            });
+        });
+
+        function doExecuteNext() {
             if (actionPointer>MAX_HISTORY_SIZE+2) {
                 actionQueue.shift();
                 --actionPointer;
@@ -273,7 +309,7 @@ function ActionsProvider(spec, providerName, config) {
             if (actionPointer === actionQueue.length) return;
             actionRunning = true;
             actionQueue[actionPointer].start();
-        });
+        }
     }
 
     function actionResolved(action) {
@@ -328,6 +364,13 @@ function ActionsProvider(spec, providerName, config) {
 
         let ptr = Math.max(0, actionPointer-5);
         let treeAnnotation="";
+
+        if (pendingGuardPromises.length) {
+            treeAnnotation+=`<b>Paused on ${pendingGuardPromises.length} guards:</b>
+${pendingGuardPromises.map(({title})=>` * ${title}`).join('\n')}\n
+`;  
+
+        } 
         if (ptr!==0) {
             treeAnnotation=`  ✓ <i>(${ptr} more undoable actions)</i>\n`;
         }

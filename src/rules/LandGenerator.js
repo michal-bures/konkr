@@ -1,7 +1,7 @@
 import noisejs from 'noisejs';
 
 
-function LandGenerator({actions, grid, log}) {
+function LandGenerator({actions, grid, log, random}) {
     actions.setHandler('GENERATE_LANDMASS', action=> {
         worldGenPerlin();
         action.resolve();
@@ -25,7 +25,7 @@ function LandGenerator({actions, grid, log}) {
 
 
         do {
-            seed = Math.floor(Math.random()*65535);
+            seed = random.integer(0,65535);
             noise = new noisejs.Noise(seed);
             grid.fillWith(generatorFunc);
             comps = grid.components();
@@ -40,7 +40,7 @@ function LandGenerator({actions, grid, log}) {
             }
         });
 
-        log.info("Map generated (seed="+seed+")");
+        log.info("Map generated (map seed="+seed+")");
 
     }
 }

@@ -53,9 +53,9 @@ function Economy(spec) {
     });
 
     actions.setHandler('SET_INITIAL_TREASURY', action => {
-        regions.forEach(region=>{
-            actions.schedule('SET_REGION_TREASURY', region,netIncomeOf(region)*5);
-            action.schedule('UPDATE_REGION_ECONOMY',region);
+        regions.filter(regionQualifiesForCapital).forEach(region=>{
+            action.schedule('CREATE_REGION_CAPITAL',region);
+            for(let i=0;i<2;++i) action.schedule('UPDATE_REGION_ECONOMY', region);
         });
         action.resolve();
     });    

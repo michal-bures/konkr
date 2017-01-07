@@ -10,6 +10,7 @@ const DEFAULT_GAME_SETTTINGS = {
     worldHeight: 20,
     numFactions: 6,   
     playerFaction: 1,
+    seed: undefined,
 };
 
 function Play(game) { 
@@ -89,7 +90,7 @@ function Play(game) {
             }
         }
 
-        gameSpec.actions.attachGuard((prevAction, nextAction) => new Promise(resolve => {
+        gameSpec.actions.attachGuard('debug breakpoint',(prevAction, nextAction) => new Promise(resolve => {
             if (shouldBreakAfter(prevAction)) {
                 log.info('❚❚ Halted after ' + prevAction.name);
                 debugBreakCallback = resolve;
@@ -126,6 +127,8 @@ function Play(game) {
         setCommandHotkey('SPACEBAR','actions.play');
         setCommandHotkey('F1','gridOverlays.toggle');
         setCommandHotkey('F2','ui.toggleDebugScene');
+        setCommandHotkey('F6','gameState.restart');
+        setCommandHotkey('Q','gameState.newMap');
         setCommandHotkey('F8','gameState.storeSnapshot');
         setCommandHotkey('F10','gameState.loadSnapshot');
         setCommandHotkey('O','gridOverlays.next');
@@ -191,16 +194,18 @@ function Play(game) {
         gameUi.debug.addCommand('gameState','restart', ()=> {
             gameSpec.actions.abortAll();
             gameSpec.actions.schedule('RESTART_GAME');
+            gameUi.ui.processActions();
         });
 
         gameUi.debug.addCommand('gameState','newMap', ()=> {
             gameSpec.actions.abortAll();
-            gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_prestart');
+            gameState.startNewGame(DEFAULT_GAME_SETTTINGS);
         });
 
         gameUi.debug.addCommand('gameState','restartTurn', ()=> {
             gameSpec.actions.abortAll();
             gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_turn_start');
+            gameUi.ui.processActions();
         });
 
         gameUi.debug.addCommand('gameState','storeSnapshot', ()=> {
@@ -221,6 +226,7 @@ function Play(game) {
                 debugBreakCallback();
                 debugBreakCallback = null;
             }
+            gameUi.ui.processActions();
         });
 
         setupDebugDiv();

@@ -42,7 +42,7 @@ function Actions(spec) {
 
         // Handled by Regions
         'CHANGE_HEXES_REGION': ["hexGroup", "region"], // (hexes, region)
-        'RANDOMIZE_REGIONS': ["plain"], // (numFactons)
+        'RANDOMIZE_REGIONS': ["plain","plain"], // (strategy, options)
         'MERGE_REGIONS': ["region","region"],
         'REMOVE_REGION': ["region"],
 

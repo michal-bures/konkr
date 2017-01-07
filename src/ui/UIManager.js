@@ -114,7 +114,7 @@ function UIManager(spec) {
 
 
     regions.onDestroyed.add(region=> {
-        if (!selectedRegion) return;
+    if (!selectedRegion) return;
         if (region === selectedRegion) {
             selectRegion(null);
         }
@@ -123,7 +123,7 @@ function UIManager(spec) {
     //default scene
     changeSceneNow(defaultSpectatorScene);
 
-    actions.attachGuard((prevAction, nextAction)=> new Promise(resolve => {
+    actions.attachGuard('wait for scene transition',(prevAction, nextAction)=> new Promise(resolve => {
 
         let promises = [];
         if (prevAction && scene.postActionGuards[prevAction.name]) {
@@ -165,6 +165,7 @@ function UIManager(spec) {
 
     function updateWorldBounds() {
         let bounds = Renderer.calculateWorldBounds(grid);
+        bounds.height+=200;
         if (bounds.width<game.camera.width) {
             let neededPadding = game.camera.width - bounds.width;
             bounds.left -= neededPadding/2;
@@ -268,7 +269,10 @@ function UIManager(spec) {
     }
 
     function processActions() {
-        if (!resumeActionsCallback) throw Error(`processActions called out of order`);
+        if (!resumeActionsCallback) {
+            log.warn(`processActions called out of order`);
+            return;
+        }
         actions.schedule('AWAIT_PLAYER_INPUT');
         resumeActionsCallback();
         resumeActionsCallback = null;

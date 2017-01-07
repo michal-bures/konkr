@@ -4,6 +4,7 @@ import IterableOn from 'lib/decorators/IterableOn';
 import HexGroup from 'lib/hexgrid/HexGroup';
 import Region from 'rules/entities/Region';
 import UniqueHeap from 'lib/UniqueHeap';
+import RegionRandomizer from 'rules/RegionRandomizer';
 
 const MAX_NUMBER_OF_FACTIONS = 6;
 
@@ -12,7 +13,8 @@ function Regions (spec) {
 
     //private
     const _regions = [], //must be const in order not to break IterableOn
-        hexRegion = [];
+        hexRegion = [],
+        regionRandomizer = new RegionRandomizer(spec);
 
     //public
     let regions = {
@@ -107,12 +109,11 @@ function Regions (spec) {
         action.resolve();
     }, { undo() {} });
 
-    actions.setHandler('RANDOMIZE_REGIONS', (action, numFactions=99) => {
-        numFactions = Math.min(numFactions, MAX_NUMBER_OF_FACTIONS);
-        let hexFaction=[];
-        grid.forEach((hex)=>{
+    actions.setHandler('RANDOMIZE_REGIONS', (action, algorithm, options) => {
+        const hexFaction=regionRandomizer.run(algorithm, options);
+/*        grid.forEach((hex)=>{
             hexFaction[hex.id] = random.integer(1,numFactions);
-        });
+        });*/
         _regions.length = 0;
         grid.components((hex, prevHex) => hexFaction[hex.id] === hexFaction[prevHex.id])
             .forEach((group) => createRegion(group, hexFaction[group.pivot.id]));
