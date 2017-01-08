@@ -11,8 +11,16 @@ import LandGenerator from 'rules/LandGenerator';
 import RandomGenerator from 'lib/RandomGenerator';
 import AI from 'ai/AI';
 
+
+const DEFAULT_GAME_SETTINGS = {
+    worldWidth: 25,
+    worldHeight: 15,
+    numFactions: 6,   
+    playerFaction: 1,
+    seed: undefined,
+};
+
 function GameState(spec) {
-    //let {log} = spec;
 
     const self = Object.freeze({
         get spec() { return gameStateSpec; },
@@ -52,14 +60,16 @@ function GameState(spec) {
         ai: spec => new AI(spec.useName('ai')),
         gameState: () => self
     });
-    let {actions, players, regions, random} = gameStateSpec;
+    let {actions, players, regions, random, grid, economy} = gameStateSpec;
     let {log} = gameStateSpec.useName('gameState');
 
     // order is important - modules that rely on objects from other modules must go last
     // for example pawns will want instances of hexes, so they need grid to be loaded
     const STATEFUL_MODULES = ['grid','pawns','regions','economy','players','ai','ids','random','actions'];
 
-    let initialState = toJSON();
+    let initialState = toJSON(),
+        gameOver = false;
+
 
     function toJSON() {
         let obj = {};
@@ -71,6 +81,7 @@ function GameState(spec) {
     }
 
     function fromJSON(jsonData) {
+        gameOver = false;
         STATEFUL_MODULES.forEach(moduleName=> {
             log.debug(`Loading ${moduleName} state from`, jsonData[moduleName]);
             gameStateSpec[moduleName].fromJSON(jsonData[moduleName]);
@@ -86,7 +97,7 @@ function GameState(spec) {
     function storeState(name) {
         log.debug("Saving current game state...");
         localStorage.setItem(name, JSON.stringify(toJSON()));
-        log.info("Game saved: "+name);
+        log.debug("Game saved: "+name);
     }
 
     function loadState(jsonOrKey) {
@@ -102,7 +113,7 @@ function GameState(spec) {
         log.info('Game loaded:',jsonOrKey);        
     }
 
-    function startNewGame(options) {
+    function startNewGame(options=DEFAULT_GAME_SETTINGS) {
         loadState(initialState);
         actions.schedule('START_NEW_GAME', options);
     }
@@ -163,7 +174,27 @@ function GameState(spec) {
     },{ undo() {} });
 
     actions.setHandler('CHECK_VICTORY_CONDITIONS', (action)=>{
-        // Winning?? No such thing
+        if (gameOver) {
+            action.schedule('START_NEW_TURN');
+            return action.resolve();
+        } 
+
+        let totalHexes = grid.allHexes().length;
+        let bestPlayerRegion = players.bestRegionOf(players.localPlayer);
+
+        if (!bestPlayerRegion || bestPlayerRegion.hexes.length === 1) {
+            gameOver = true;
+            action.schedule('DEFEAT');
+        } else {
+            let percentage = Math.floor((bestPlayerRegion.hexes.length / totalHexes) * 100);
+            log.info(`Your largest kingdom controls ${percentage}% land on this island (66% needed for victory).`);
+
+            if (percentage >= 66) {
+                gameOver = true;
+                action.schedule('VICTORY');
+            }
+        }
+
         action.schedule('START_NEW_TURN');
         action.resolve();
     },{ undo() {} });

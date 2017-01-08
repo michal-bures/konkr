@@ -82,7 +82,10 @@ function Players(spec) {
     let self = {
         byId(id) { return _players[id]; },
         ownerOf,
+        getRegionsControlledBy,
+        bestRegionOf,
         get activePlayer() { return activePlayer || nullPlayer; },
+        get localPlayer() { return _players[1]; },
         onGrabbedPawn: new Phaser.Signal(/* pawn */),
         onDroppedPawn: new Phaser.Signal(/* pawnType, hex */),
         onConqueringHex: new Phaser.Signal(/* hex */),
@@ -308,6 +311,11 @@ ${_players.filter(x=>x).map(p=>` * ${p} (controls ${getRegionsControlledBy(p).le
 
     function ownerOf(region) {
         return factionOwners[region.faction];
+    }
+
+    function bestRegionOf(player) {
+        return getRegionsControlledBy(player)
+            .reduce((best,next)=>!best || (next.hexes.length > best.hexes.length) ? next : best, null);
     }
 
     return Object.freeze(self);

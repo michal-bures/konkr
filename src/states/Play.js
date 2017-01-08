@@ -2,14 +2,6 @@
 import UIManager from 'ui/UIManager';
 import GameState from 'rules/GameState';
 
-const DEFAULT_GAME_SETTTINGS = {
-    worldWidth: 25,
-    worldHeight: 15,
-    numFactions: 6,   
-    playerFaction: 1,
-    seed: undefined,
-};
-
 function Play(game) { 
 
     let log = console;
@@ -191,7 +183,6 @@ function Play(game) {
             gameUi.messages.push('↶ '+gameSpec.actions.getLast().name);
             breakAfterEveryAction = true;
             gameSpec.actions.undoLastAction();
-            gameUi.ui.reloadScene();
         });
 
         gameUi.debug.addCommand('gameState','restart', ()=> {
@@ -202,7 +193,7 @@ function Play(game) {
 
         gameUi.debug.addCommand('gameState','newMap', ()=> {
             gameSpec.actions.abortAll();
-            gameState.startNewGame(DEFAULT_GAME_SETTTINGS);
+            gameState.startNewGame();
         });
 
         gameUi.debug.addCommand('gameState','restartTurn', ()=> {
@@ -239,7 +230,7 @@ function Play(game) {
         //END OF DEBUG TOOLS SETUP
 
         gameSpec.actions.checkHandlers();
-        gameSpec.actions.schedule('START_NEW_GAME',DEFAULT_GAME_SETTTINGS);
+        gameState.startNewGame();
 
         log.info("Level initialization complete.");
     }

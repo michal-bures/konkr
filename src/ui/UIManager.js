@@ -43,6 +43,8 @@ function UIManager(spec) {
         update,
         undo,
         showRestartMenu,
+        showVictoryScreen,
+        showDefeatScreen,
         processActions,
         toDebugString
     });
@@ -149,13 +151,30 @@ function UIManager(spec) {
     actions.setHandler('AWAIT_PLAYER_INPUT', (action) => {
         action.data.prevScene = scene.name;
         if (scene!=scenes.PLAYER_TURN) changeScene('PLAYER_TURN');
+        if (!selectedRegion) selectRegion(players.bestRegionOf(players.localPlayer));
         resumeActionsCallback = action.resolve;
     },
     {
         undo(action) {
-            changeScene(action.data.prevScene);
+            changeSceneNow(action.data.prevScene);
         }
     });
+
+    actions.setHandler('VICTORY', (action) => {
+        showVictoryScreen();
+        action.resolve();
+    },
+    {
+        undo() {}
+    });    
+
+    actions.setHandler('DEFEAT', (action) => {
+        showDefeatScreen();
+        action.resolve();
+    },
+    {
+        undo() {}
+    });    
 
     gameState.onReset.add(()=> {
         resumeActionsCallback = null; // discard callback for previous AWAIT_PLAYER_TURN if present
@@ -206,26 +225,37 @@ function UIManager(spec) {
         changeSceneNow(scene.name);
     }
 
-    function showRestartMenu() {
-        uiElements.modals.show('RESTART_GAME', result=> {
-            switch (result) {
-                case 'NEW_ISLAND':
-                    spec.actions.abortAll();
-                    spec.actions.schedule('LOAD_STATE','konkr_autosave_prestart');
-                    if (resumeActionsCallback) processActions();
-                    break;
-                case 'RESTART':
-                    actions.abortAll();
-                    actions.schedule('RESTART_GAME');
-                    if (resumeActionsCallback) processActions();
-                    break;
-                case null: 
-                    return;
-                default: 
-                    throw Error(`No action bound to menu item ${result}`);
-            }
-        });
+
+    function menuActionCallback(result) {
+        switch (result) {
+            case 'NEW_ISLAND':
+                spec.actions.abortAll();
+                spec.gameState.startNewGame();                    
+                break;
+            case 'RESTART':
+                actions.abortAll();
+                actions.schedule('RESTART_GAME');
+                if (resumeActionsCallback) processActions();
+                break;
+            case 'KEEP_PLAYING':
+            case null: 
+                return;
+            default: 
+                throw Error(`No action bound to menu item ${result}`);
+        }
     }
+
+    function showRestartMenu() {
+        uiElements.modals.show('RESTART_GAME', menuActionCallback);
+    }
+
+    function showVictoryScreen() {
+        uiElements.modals.show('VICTORY_SCREEN', menuActionCallback);
+    }    
+
+    function showDefeatScreen() {
+        uiElements.modals.show('DEFEAT_SCREEN', menuActionCallback);
+    }        
 
     function undo() {
         actions.undoUntil('AWAIT_PLAYER_INPUT');
@@ -239,6 +269,7 @@ function UIManager(spec) {
     }
 
     function _setupNextScene(nextSceneName) {
+        log.debug(`entering scene ${nextSceneName}`);
         if (!scenes[nextSceneName]) throw Error(`Invalid scene name ${nextSceneName}`);
         scene = scenes[nextSceneName];
         Z_ORDER.forEach(

@@ -67,6 +67,8 @@ function Actions(spec) {
 
         // Handled by UIManager
         'AWAIT_PLAYER_INPUT': [],
+        'VICTORY': [],
+        'DEFEAT': [],
     },
 
     "types": {

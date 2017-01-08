@@ -27,6 +27,45 @@ function ModalsManager(spec) {
             ],
             canCancel: true,
             callback: resolveModal
+        }),
+        VICTORY_SCREEN: () => new Menu(spec, {
+            title: 'Congratulations! Your rivals have surrendered before your might!',
+            choices: [
+                {
+                    id: 'NEW_ISLAND',
+                    title: 'Start a new game',
+                    description: 'Onwards to the next challenge!',
+                },
+                {
+                    id: 'KEEP_PLAYING',
+                    title: 'Keep playing',
+                    description: 'Surrender?! Oh hell no!',
+                }
+            ],
+            canCancel: false,
+            callback: resolveModal
+        }),
+        DEFEAT_SCREEN: () => new Menu(spec, {
+            title: 'You have been defeated. Such is life.',
+            choices: [
+                {
+                    id: 'RESTART',
+                    title: 'Restart',
+                    description: 'Start again on this island. You can do this!',
+                },            
+                {
+                    id: 'NEW_ISLAND',
+                    title: 'New island',
+                    description: 'Try playing on another island.',
+                },
+                {
+                    id: 'KEEP_PLAYING',
+                    title: 'Keep watching',
+                    description: 'Watch your opponents fight each other',
+                }
+            ],
+            canCancel: false,
+            callback: resolveModal
         })
     });
 
