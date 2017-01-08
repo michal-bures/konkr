@@ -6,9 +6,9 @@ import UI from 'lib/controls/UI';
 
 
 const DEFAULT_GAME_SETTTINGS = {
-    worldWidth: 10,
-    worldHeight: 10,
-    numFactions: 2,   
+    worldWidth: 20,
+    worldHeight: 20,
+    numFactions: 6,   
     playerFaction: 1,
     seed: undefined,
 };

@@ -102,7 +102,7 @@ function PawnSprites ({tweens, game, log, pawns, ui, regions, gameState, grid, p
 
         reposition(targetHex,animate=true) {
             log.debug(`Sprite reposition: ${this} ${this.hex}->${targetHex}`);
-            if (this.hex && spriteAtHex[this.hex.id] === this.hex) delete spriteAtHex[this.hex.id];
+            if (this.hex && spriteAtHex[this.hex.id] === this) delete spriteAtHex[this.hex.id];
             this.hex = null;
             const wasJumping = !!this.jumpTween;
             if (wasJumping) this.stopJumping();
