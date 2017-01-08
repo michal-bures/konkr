@@ -10,6 +10,48 @@ function Adhoc(valuationFunc) {
     }
 }
 
+function Composite(valuation1, valuation2) {
+    return Object.freeze({
+        get,
+        pop,
+        peek
+    });
+
+    function get(hex, ...args) {
+        const v1 = valuation1.get(hex, ...args);
+        const v2 = valuation2.get(hex, ...args);
+        return Math.max(v1,v2);
+    }
+
+    function pop() {
+        let v1 = valuation1.peek(),
+            v2 = valuation2.peek();
+
+        if (!v2) return valuation1.pop();
+        if (!v1) return valuation2.pop();
+
+        if (v1.val > v2.val) {
+            return valuation1.pop();
+        } else {
+            return valuation2.pop();
+        }
+    }
+
+    function peek() {
+        let v1 = valuation1.peek(),
+            v2 = valuation2.peek();
+
+        if (!v2) return valuation1.peek();
+        if (!v1) return valuation2.peek();
+
+        if (v1.val > v2.val) {
+            return valuation1.peek();
+        } else {
+            return valuation2.peek();
+        }
+    }
+}
+
 function Manual(defaultValue, heapFunction = (a,b)=> b.val - a.val) {
     let data = {},
         heap = new Heap(heapFunction);
@@ -64,4 +106,4 @@ function Manual(defaultValue, heapFunction = (a,b)=> b.val - a.val) {
 }
 
 
-export default { Manual, Adhoc };
+export default { Manual, Adhoc, Composite };

@@ -2,12 +2,9 @@
 import UIManager from 'ui/UIManager';
 import GameState from 'rules/GameState';
 
-import UI from 'lib/controls/UI';
-
-
 const DEFAULT_GAME_SETTTINGS = {
-    worldWidth: 20,
-    worldHeight: 20,
+    worldWidth: 25,
+    worldHeight: 15,
     numFactions: 6,   
     playerFaction: 1,
     seed: undefined,

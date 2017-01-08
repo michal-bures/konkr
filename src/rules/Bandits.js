@@ -5,6 +5,7 @@ function Bandits(spec) {
     let {actions, pawns, log, random} = spec;
 
     let self = Object.freeze({
+        willMultiply
     });
 
 
@@ -17,8 +18,7 @@ function Bandits(spec) {
         //Find clusters
         let respawnHexes = new HexGroup();
         bandits.forEach(bandit=> {
-            let otherBandits = (bandit.hex.neighbours().filter(hex=>pawns.pawnAt(hex) && pawns.pawnAt(hex).pawnType===pawns.BANDIT)).length;
-            if (otherBandits >= 2) {
+            if (willMultiply(bandit)) {
                 respawnHexes.add(bandit.hex);
             }
         });
@@ -73,6 +73,11 @@ function Bandits(spec) {
         }        
 
     }, { undo() {}});
+
+    function willMultiply(bandit) {
+        let adjacentBandits = (bandit.hex.neighbours().filter(hex=>pawns.pawnAt(hex) && pawns.pawnAt(hex).pawnType===pawns.BANDIT)).length;
+        return (adjacentBandits >= 2);
+    }
 
     return self;
 }

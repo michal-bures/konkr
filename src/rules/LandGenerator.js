@@ -14,7 +14,7 @@ function LandGenerator({actions, grid, log, random}) {
     }
 
     function worldGenPerlin() {
-        const MIN_SIZE = 20;
+        const MIN_SIZE = grid.width * grid.height * 0.4;
         const SMOOTHNESS = 10;
         const WATER_LEVEL = 0.5;
 

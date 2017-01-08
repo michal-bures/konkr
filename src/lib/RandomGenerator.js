@@ -25,7 +25,7 @@ function RandomGenerator() {
     }
 
     function oneOf(array) {
-        return array[integer(0,array.length)];
+        return array[integer(0,array.length-1)];
     }
 
     function hex(hexGroup) {
