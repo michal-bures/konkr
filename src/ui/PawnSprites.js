@@ -102,7 +102,7 @@ function PawnSprites ({tweens, game, log, pawns, ui, regions, gameState, grid, p
 
         reposition(targetHex,animate=true) {
             log.debug(`Sprite reposition: ${this} ${this.hex}->${targetHex}`);
-            if (this.hex) delete spriteAtHex[this.hex.id];
+            if (this.hex && spriteAtHex[this.hex.id] === this.hex) delete spriteAtHex[this.hex.id];
             this.hex = null;
             const wasJumping = !!this.jumpTween;
             if (wasJumping) this.stopJumping();
@@ -156,6 +156,7 @@ function PawnSprites ({tweens, game, log, pawns, ui, regions, gameState, grid, p
     }
 
     function synchronize() {
+        log.debug("Synchronizing with game state");
         destroyOrphanedSprites();
         pawns.forEach((pawn) => {
             getOrCreateSprite(pawn.hex, pawn.pawnType).refreshDecorations();
@@ -167,6 +168,7 @@ function PawnSprites ({tweens, game, log, pawns, ui, regions, gameState, grid, p
     }
 
     function destroySprite(hex) {
+        log.debug(`destroying sprite at ${hex}`);
         if (!spriteAtHex[hex.id]) return false;
         spriteAtHex[hex.id].destroy();
         delete spriteAtHex[hex.id];

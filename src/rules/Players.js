@@ -226,9 +226,12 @@ function Players(spec) {
         action.data.grabbedPawn = grabbedPawn;
         action.data.grabbedPawnRegion = grabbedPawnRegion;
         if (pawns.pawnAt(hex)) {
-            let newType = pawns.getMergeResult(pawns.pawnAt(hex), grabbedPawn);
+            let pawnOnTheHex = pawns.pawnAt(hex);
+            let newType = pawns.getMergeResult(pawnOnTheHex, grabbedPawn);
             if (!newType) throw Error(`Cannot drop pawn on ${hex} - already occupied by ${pawns.pawnAt(hex)}, merge impossible.`);
-            actions.schedule('DESTROY_PAWN', pawns.pawnAt(hex));
+            actions.schedule('DESTROY_PAWN', pawnOnTheHex);
+
+            if (pawnOnTheHex.pawnType.pest) movedUnits[hex.id] = true;
             grabbedPawn = newType;
         }
         action.schedule('CREATE_PAWN',grabbedPawn, hex);
@@ -238,9 +241,10 @@ function Players(spec) {
         grabbedPawnRegion = null;
         self.onDroppedPawn.dispatch(p,hex);
         action.resolve();
-    }, { undo(action) {
+    }, { undo(action, hex) {
         grabbedPawn = action.data.grabbedPawn;
         grabbedPawnRegion = action.data.grabbedPawnRegion;
+        movedUnits[hex] = false;
     }});
 
     actions.setHandler('BUY_UNIT', (action, unitType, region)=> {

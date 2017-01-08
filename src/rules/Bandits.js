@@ -15,22 +15,17 @@ function Bandits(spec) {
         if (!bandits.size) return action.resolve();
 
         //Find clusters
-        //TODO
+        let respawnHexes = new HexGroup();
+        bandits.forEach(bandit=> {
+            let otherBandits = (bandit.hex.neighbours().filter(hex=>pawns.pawnAt(hex) && pawns.pawnAt(hex).pawnType===pawns.BANDIT)).length;
+            if (otherBandits >= 2) {
+                respawnHexes.add(bandit.hex);
+            }
+        });
 
         //Move pawns
         let vacatedHexes = new HexGroup();
         let claimedHexes = new HexGroup();
-
-        function canMoveBanditIntoThisHex(hex) {
-            if (claimedHexes.contains(hex)) return false;
-            if (vacatedHexes.contains(hex)) return true;
-            return !pawns.pawnAt(hex);
-        }
-
-        function canPotentiallyFreeUpHex(hex) {
-            return (pawns.pawnAt(hex).pawnType == pawns.BANDIT && bandits.has(pawns.pawnAt(hex)));
-        }        
-
 
         while (bandits.size) {
             let pivot = bandits[Symbol.iterator]().next().value;
@@ -60,9 +55,23 @@ function Bandits(spec) {
         }
 
         //Respawn clusters
-
+        respawnHexes.forEach(hex=> {
+            if (vacatedHexes.contains(hex)) action.schedule("CREATE_PAWN", pawns.BANDIT, hex );
+        });
 
         action.resolve();
+
+        // Helper functions
+        function canMoveBanditIntoThisHex(hex) {
+            if (claimedHexes.contains(hex) || respawnHexes.contains(hex)) return false;
+            if (vacatedHexes.contains(hex)) return true;
+            return !pawns.pawnAt(hex);
+        }
+
+        function canPotentiallyFreeUpHex(hex) {
+            return (!respawnHexes.contains(hex) && pawns.pawnAt(hex) && pawns.pawnAt(hex).pawnType == pawns.BANDIT && bandits.has(pawns.pawnAt(hex)));
+        }        
+
     }, { undo() {}});
 
     return self;

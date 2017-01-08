@@ -1,21 +1,19 @@
 import { extend } from 'lib/util';
 
-function Pawn(id, pawnType, hex) {
+function Pawn(id, pawnType, initialHex) {
 
-    let currentHex = hex;
 
     function toJSON() {
         return {
             id,
             type: pawnType.name,
-            hex: hex && hex.id,
+            hex: self.hex && self.hex.id,
         };
     }
 
     let self = Object.create(pawnType);
     extend(self,{
-        get hex() { return currentHex; },
-        set hex(val) { currentHex = val; },
+        hex: initialHex,
         get id() { return id; },
         toString,
         toJSON,
@@ -26,7 +24,7 @@ function Pawn(id, pawnType, hex) {
     return self;
 
     function toString() {
-        return `[${pawnType.name} ♙${id} at ${hex}]`;
+        return `[${pawnType.name} ♙${id} at ${self.hex}]`;
     }        
 }
 Pawn.fromJSON = ({grid, pawns}, {id, type, hex}) => { return new Pawn(id, pawns[type], grid.getHexById(hex)); };

@@ -151,15 +151,22 @@ function Economy(spec) {
     /// ACTION TRIGGERS
 
     regions.onChanged.add((region) => {
+        log.info(`CHANGED ${region}`);
         if (capitalOf(region) && !region.hexes.contains(capitalOf(region))) {
-            regionCapital.delete(region);
+            log.warn(`DESTROY CAPITAL OF ${region}`);
+            actions.schedule("DESTROY_REGION_CAPITAL",region);
         }
     });
 
+    regions.onDestroyed.add((region)=> {
+        log.info(`DESTROYED ${region}`);
+        if (capitalOf(region)) actions.schedule("DESTROY_REGION_CAPITAL",region);
+    });
+
     regions.onMerged.add((fromRegion, toRegion)=> {
+        log.info(`MERGED ${fromRegion}->${toRegion}`);
         if (capitalOf(fromRegion) && capitalOf(toRegion)) {
             actions.schedule('ADJUST_REGION_TREASURY', toRegion, treasuryOf(fromRegion));
-            actions.schedule('DESTROY_REGION_CAPITAL', fromRegion);
         }
     });
 
