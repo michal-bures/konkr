@@ -32,7 +32,7 @@ function LandGenerator({actions, grid, log, random}) {
             largest = comps.getLargestGroup();
             ++tries;
             if (tries > 50) throw Error('Failed to generate suitable world after 50 iterations');
-        } while (largest.length < MIN_SIZE);
+        } while (!largest || largest.length < MIN_SIZE);
 
         comps.forEach((hexGroup)=>{
             if (hexGroup!=largest) {

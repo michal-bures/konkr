@@ -263,7 +263,7 @@ function ActionsProvider(spec, providerName, config) {
     function schedule(id, ...args) {
         if (handlers[id]===undefined) throw Error(`Call to unknown action '${id}'`);
         const newAction = new ScheduledAction(id, ...args);
-        log.debug(`Scheduled ${newAction})`);
+        //log.debug(`Scheduled ${newAction})`);
         if (!actionRunning) {
             actionQueue.splice(actionPointer,0,newAction);
             executeNext();
@@ -315,10 +315,10 @@ function ActionsProvider(spec, providerName, config) {
     function actionResolved(action) {
         if (action !== currentAction()) throw Error(`Action ${action} was resolved but it should not have been running at all!`);
         if (action.canBeUndone()) {
-            log.debug(`Resolved ${action}`);
+            //log.debug(`Resolved ${action}`);
             ++actionPointer;
         } else {
-            log.debug(`Resolved ${action} (history purged)`);
+            //log.debug(`Resolved ${action} (history purged)`);
             actionQueue.splice(0, actionPointer+1);
             actionPointer=0;
         }

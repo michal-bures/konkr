@@ -4,6 +4,7 @@ import Economy from 'rules/Economy';
 import Pawns from 'rules/Pawns';
 import Actions from 'rules/Actions';
 import Warfare from 'rules/Warfare';
+import Bandits from 'rules/Bandits';
 import { HexGrid } from 'lib/hexgrid/HexGrid';
 import IdGenerator from 'lib/IdGenerator';
 import LandGenerator from 'rules/LandGenerator';
@@ -11,7 +12,7 @@ import RandomGenerator from 'lib/RandomGenerator';
 import AI from 'ai/AI';
 
 function GameState(spec) {
-    let {log} = spec;
+    //let {log} = spec;
 
     const self = Object.freeze({
         get spec() { return gameStateSpec; },
@@ -25,11 +26,16 @@ function GameState(spec) {
     });
     
     let gameStateSpec = spec.extend({
-        useName: spec => (moduleName) => {
+        useName: spec => (moduleName, logLevel) => {
             return spec.extend({ 
                 actions: () => spec.actions && spec.actions.getNamedProxy(moduleName),
                 debug: () => spec.debug && spec.debug.getNamedProxy(moduleName),
-                log: () => spec.log && spec.log.getLogger(moduleName)
+                log: () => {
+                    if (!spec.log) return undefined;
+                    let logger = spec.log.getLogger(moduleName);
+                    if (logLevel!==undefined) logger.setLevel(logLevel);
+                    return logger;
+                }
             });
         },
         random: () => new RandomGenerator(),
@@ -42,17 +48,18 @@ function GameState(spec) {
         warfare: spec => new Warfare(spec.useName('warfare')),
         landGen: spec => new LandGenerator(spec.useName('landGen')),
         players: spec => new Players(spec.useName('players')),
+        bandits: spec => new Bandits(spec.useName('bandits')),
         ai: spec => new AI(spec.useName('ai')),
         gameState: () => self
     });
     let {actions, players, regions, random} = gameStateSpec;
+    let {log} = gameStateSpec.useName('gameState');
 
     // order is important - modules that rely on objects from other modules must go last
     // for example pawns will want instances of hexes, so they need grid to be loaded
     const STATEFUL_MODULES = ['grid','pawns','regions','economy','players','ai','ids','random','actions'];
 
     let initialState = toJSON();
-    log.info("INIT", initialState);
 
     function toJSON() {
         let obj = {};

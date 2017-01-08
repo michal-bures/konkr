@@ -10,7 +10,8 @@ function Players(spec) {
     let activePlayer = null,
         grabbedPawn = null,
         grabbedPawnRegion = null,
-        movedUnits = {};
+        movedUnits = {},
+        factionOwners = [];
 
     class Player {
         constructor(id, name, type) {
@@ -105,17 +106,24 @@ function Players(spec) {
             activePlayer: activePlayer && _players.indexOf(activePlayer),
             grabbedPawn: grabbedPawn && grabbedPawn.name,
             grabbedPawnRegion: grabbedPawnRegion && grabbedPawnRegion.id,
-            movedUnits: movedUnits
+            movedUnits: movedUnits,
+            factionOwners: factionOwners.map((player,faction)=>(player && {
+                faction:faction,
+                player:player.id
+            })).filter(x=>x)
         };
     }
 
     function fromJSON(src) {
         _players.length = 0;
+        factionOwners.length = 0;
         src.players.forEach(({type,name,id})=> _players[id]=new createPlayer(type, name, id));
         activePlayer = src.activePlayer && self.byId(src.activePlayer);
         grabbedPawn = src.grabbedPawn && pawns[src.grabbedPawn];
         grabbedPawnRegion = src.grabbedPawnRegion && regions.byId(src.grabbedPawnRegion);
         movedUnits = src.movedUnits;
+        src.factionOwners.forEach(({faction, player}) => factionOwners[faction] = _players[player]);
+        log.debug('FACTIONS',factionOwners);
     }
 
     function createPlayer(type, name='(unnamed)', id=ids.next('player')) {
@@ -129,9 +137,9 @@ function Players(spec) {
                 p = new Player(id,name,type);
                 p.play = ()=> { actions.schedule("AWAIT_PLAYER_INPUT"); };
                 break;
-            case 'Neutral':
+            case 'Bandits':
                 p = new Player(id,name,type);
-                p.play = ()=>{};
+                p.play = ()=> { actions.schedule("MOVE_BANDITS"); };
                 break;
             default:
                 throw Error(`Unrecognized player type: ${type}`);
@@ -152,6 +160,11 @@ function Players(spec) {
                 newPlayer = createPlayer('AI', 'AI player for faction '+i);
             }
             _players[newPlayer.id] = newPlayer;
+            factionOwners[i] = newPlayer;
+            if (i===playerFaction) {
+                //bandits play after the human player
+                _players.push(createPlayer('Bandits','Bandits'));
+            }
         }
         action.resolve();
     });
@@ -220,9 +233,10 @@ function Players(spec) {
         }
         action.schedule('CREATE_PAWN',grabbedPawn, hex);
 
+        const p = grabbedPawn;
         grabbedPawn = null;
         grabbedPawnRegion = null;
-        self.onDroppedPawn.dispatch(grabbedPawn,hex);
+        self.onDroppedPawn.dispatch(p,hex);
         action.resolve();
     }, { undo(action) {
         grabbedPawn = action.data.grabbedPawn;
@@ -280,7 +294,7 @@ MovedUnits: ${Object.keys(movedUnits).map(hex=>hex.toString()).join(', ')}
 Grabbed: ${(grabbedPawn ? `${grabbedPawn} (owned by ${grabbedPawnRegion})` : '(nothing)')}
 
 Players:
-${_players.filter(x=>x).map(p=>` * ${p}`).join('\n')}
+${_players.filter(x=>x).map(p=>` * ${p} (controls ${getRegionsControlledBy(p).length} regions)`).join('\n')}
 `;
     }
 
@@ -289,8 +303,7 @@ ${_players.filter(x=>x).map(p=>` * ${p}`).join('\n')}
     }
 
     function ownerOf(region) {
-        //TODO less bullshit, more actual implementation
-        return _players[region.faction];
+        return factionOwners[region.faction];
     }
 
     return Object.freeze(self);

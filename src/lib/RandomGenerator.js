@@ -30,7 +30,7 @@ function RandomGenerator() {
 
     function hex(hexGroup) {
         if (!hexGroup.length) return null;
-        let i = integer(0, hexGroup._length-1);
+        let i = integer(0, hexGroup.length-1);
         let n = 0;
         var res = null;
         hexGroup.find(hex => { 

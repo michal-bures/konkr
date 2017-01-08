@@ -32,8 +32,8 @@ function Planner() {
         return new Promise(resolve=> {
             let plan = getExecutionPlan();
 
-            executeRemaining().then(resolve);
             console.debug(plan.map((line,i)=>`${i}->${line}`).join('\n'));
+            executeRemaining().then(resolve);
 
             function executeRemaining() {
                 if (!plan.length) return Promise.resolve();

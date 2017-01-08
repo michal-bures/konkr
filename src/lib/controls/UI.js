@@ -21,6 +21,7 @@ const componentConstructors = {
 };
 
 function UIComponent({game, log, debug, tweens, ui}, def) {
+
     let self = game.add.group(),
         config = def,
         name = def.name || def.component + '#'+ generateComponentId(),
@@ -312,7 +313,7 @@ function LargeTextButton(spec, def) {
 
 function UI (spec, def) {
     let {log, game} = spec;
-    
+
     let components =[];
     let self = {
         addComponent,

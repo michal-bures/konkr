@@ -26,12 +26,14 @@ function FastSpectating(spec){
                 onDroppedPawn,
                 onGrabbedPawn,
                 onBoughtPawn,
+            },
+            pawns: {
+                onMoved: onPawnMoved
             }
         },
     });
 
     function onDroppedPawn(pawnType, targetHex) {
-        log.debug(`event: dropped pawn ${pawnType} at ${targetHex}`);
         animationQueue.addTask(
             grabbedFrom.toArray()
             .concat([targetHex]),
@@ -41,6 +43,10 @@ function FastSpectating(spec){
         boughtFrom = [];
     }
 
+    function onPawnMoved(pawn, fromHex, toHex) {
+        animationQueue.addTask(fromHex,movePawnTransition(fromHex, toHex));
+    }    
+
     function onGrabbedPawn(pawn) {
         log.debug(`event: grabbed pawn ${pawn} from ${pawn.hex}`);
         grabbedFrom.add(pawn.hex);
@@ -49,6 +55,13 @@ function FastSpectating(spec){
 
     function onBoughtPawn(pawnType, region) {
         if (pawnType.isTroop()) boughtFrom.push({hex:economy.capitalOf(region), pawnType:pawnType});
+    }
+
+    function movePawnTransition(fromHex, toHex) {
+        return () => {
+            let sprite = pawnSprites.atHex(fromHex);
+            return sprite.reposition(toHex);
+        };
     }
 
     function gatherPawnsTransition(moveFrom, spawnFrom, toHex) {

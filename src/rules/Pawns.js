@@ -138,7 +138,7 @@ function Pawns(spec) {
     }});
 
     actions.setHandler("MOVE_PAWN", (action, pawn, hex) => {
-        action.data.previousHex = hex;
+        action.data.previousHex = pawn.hex;
         movePawn(pawn, hex);
         action.resolve();
     }, { undo(action, pawn) {
@@ -224,9 +224,9 @@ function Pawns(spec) {
                 if (pawn && filterFunction(pawn)) ret.push(pawn);
             });
         } else {
-            for (const pawn in _pawns) {
+            forEach((pawn)=>{
                 if (filterFunction(pawn)) ret.push(pawn);
-            }
+            });
         }
         return ret;
     } 

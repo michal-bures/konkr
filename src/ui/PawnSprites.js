@@ -5,7 +5,7 @@ import { convertToWorldCoordinates } from './Renderer';
 import HexGroup from 'lib/hexgrid/HexGroup';
 import Planner from 'lib/Planner';
 
-function PawnSprites ({tweens, game, log, pawns, regions, gameState, grid, players, economy}) {
+function PawnSprites ({tweens, game, log, pawns, ui, regions, gameState, grid, players, economy}) {
     let spriteAtHex = {},
         group = game.make.group(),
         idleHighlighting=false;
@@ -101,25 +101,36 @@ function PawnSprites ({tweens, game, log, pawns, regions, gameState, grid, playe
         }
 
         reposition(targetHex,animate=true) {
-            if (this.hex) delete spriteAtHex[this.hex];
+            log.debug(`Sprite reposition: ${this} ${this.hex}->${targetHex}`);
+            if (this.hex) delete spriteAtHex[this.hex.id];
+            this.hex = null;
             const wasJumping = !!this.jumpTween;
             if (wasJumping) this.stopJumping();
+
+            let animationDone = ()=>{
+                log.debug(`Sprite reposition DONE: ${this} ${this.hex}->${targetHex}`);
+                if (spriteAtHex[targetHex.id] && spriteAtHex[targetHex.id]!==this) {
+                    log.debug(`Deleting redundant sprite at ${spriteAtHex[targetHex.id]}`);
+                    spriteAtHex[targetHex.id].destroy();
+                }
+                spriteAtHex[targetHex.id] = this;
+                this.hex = targetHex;
+                if (wasJumping) this.startJumping();
+            };
             return new Promise( resolve => {
-            const [x,y] = convertToWorldCoordinates(targetHex.position.x, targetHex.position.y);
+                const [x,y] = convertToWorldCoordinates(targetHex.position.x, targetHex.position.y);
                 if (animate) {
                     const tween = tweens.add(this).to( { x: x, y: Math.floor(y+PAWN_OFFSET_TOP/2) }, BASE_TWEEN_DURATION, Phaser.Easing.Sinusoidal.InOut, true);  
                     tween.onComplete.add(()=> {
-                        if (spriteAtHex[targetHex]) spriteAtHex[targetHex].destroy();
-                        spriteAtHex[targetHex] = this;
-                        if (wasJumping) this.startJumping();
-                        //TODO: what if jumping is oprdered to stop during animation?!
-                        resolve();
+                        animationDone();
+                        //TODO: what if jumping is ordered to stop during animation?!
+                        resolve();            
                     });
                 } else {
                     this.x = x;
                     this.y = y+Math.floor(PAWN_OFFSET_TOP/2);
-                    if (wasJumping) this.startJumping();
-                    return resolve();
+                    animationDone();
+                    resolve();
                 }
             });
         }
@@ -208,8 +219,9 @@ function PawnSprites ({tweens, game, log, pawns, regions, gameState, grid, playe
 
     function destroyOrphanedSprites() {
         for (const key in spriteAtHex) {
-            if (!grid.getHexById(key) || !pawns.pawnAt(grid.getHexById(key))) {
-                log.debug("Destroyed orphaned sprite "+spriteAtHex[key].toString());
+            const hex = grid.getHexById(key);
+            if (!hex || !pawns.pawnAt(hex)) {
+                log.debug(`Destroyed orphaned sprite ${spriteAtHex[key].toString()} at ${hex}`);
                 spriteAtHex[key].destroy();
                 delete spriteAtHex[key];
             }

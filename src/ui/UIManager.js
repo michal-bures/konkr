@@ -15,7 +15,7 @@ import ModalsManager from './ModalsManager';
 
 function UIManager(spec) {
     
-    let {game, regions, log, gameState, actions, players, grid} = spec;
+    const {game, regions, gameState, actions, players, grid} = spec;
         
     let selectedRegion,
         selectedHex,
@@ -33,6 +33,7 @@ function UIManager(spec) {
         get selectedRegion() { return selectedRegion; },
         get selectedHex() { return selectedHex; },
         changeScene,
+        reloadScene,
         changeSceneNow,
         selectHex,
         selectRegion,
@@ -46,29 +47,36 @@ function UIManager(spec) {
         toDebugString
     });
 
+    const { log } = spec.useName('ui');
+
     let uiElements = spec.extend({
-        useName: spec => (moduleName) => {
+        useName: spec => (moduleName, logLevel) => {
             return spec.extend({ 
                 actions: () => spec.actions && spec.actions.getNamedProxy(moduleName),
                 debug: () => spec.debug && spec.debug.getNamedProxy(moduleName),
-                log: () => spec.log && spec.log.getLogger(moduleName)
+                log: () => {
+                    if (!spec.log) return undefined;
+                    let logger = spec.log.getLogger(moduleName);
+                    if (logLevel!==undefined) logger.setLevel(logLevel);
+                    return logger;
+                }
             });
         },
         landSprites: spec => new Renderer.LandSprites(spec.useName('landSprites')),
-        regionBorders: spec => new Renderer.RegionBorders(spec),
-        conquerableHexesHighlight: spec => new Renderer.ConquerableHexesHighlight(spec),
+        regionBorders: spec => new Renderer.RegionBorders(spec.useName('regionBorders')),
+        conquerableHexesHighlight: spec => new Renderer.ConquerableHexesHighlight(spec.useName('conquerableHexesHighlight')),
         selRegionHighlight: spec => new Renderer.SelectedRegionHighlight(spec),
         pawnSprites: spec => new PawnSprites(spec.useName('pawnSprites')),
         hexSelectionProxy: spec => new HexSelectionProxy(spec),
         scrolling: spec => new Scrolling(spec),
-        uiRegionPanel: spec => new RegionPanel(spec),
+        uiRegionPanel: spec => new RegionPanel(spec.useName('regionPanel', log.levels.INFO)),
         gridOverlays: spec => new GridOverlays(spec),
         messages: spec => new Messages(spec),
-        nextTurnButton: spec => new NextTurnButton(spec),
+        nextTurnButton: spec => new NextTurnButton(spec.useName('nextTurnButton', log.levels.INFO)),
         tweens: spec => new TweenManager(spec),
         grabbedPawn: spec => new Renderer.GrabbedPawn(spec),
         feedbackSymbols: spec => new Renderer.FeedbackSymbols(spec),
-        optionButtons: spec => new OptionButtons(spec),
+        optionButtons: spec => new OptionButtons(spec.useName('optionButtons', log.levels.INFO)),
         sfx: spec=> new SFX(spec),
         modals: spec => new ModalsManager(spec),
         ui: () => self
@@ -150,6 +158,7 @@ function UIManager(spec) {
     });
 
     gameState.onReset.add(()=> {
+        resumeActionsCallback = null; // discard callback for previous AWAIT_PLAYER_TURN if present
         changeSceneNow(defaultSpectatorScene);
         selectRegion(null);
         updateWorldBounds();
@@ -191,6 +200,10 @@ function UIManager(spec) {
                 });
 
         });
+    }
+
+    function reloadScene() {
+        changeSceneNow(scene.name);
     }
 
     function showRestartMenu() {

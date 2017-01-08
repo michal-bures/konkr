@@ -50,7 +50,7 @@ class HexGroup {
         this.forEach(hex => {
             if (!comps.getOwnerOf(hex)) {
                 comps.add(hex, compNumber);
-                comps.add(hex.floodFill(hex2=>this.contains(hex2) && condition(hex2)), compNumber);
+                comps.add(hex.floodFill(hex2=>this.contains(hex2) && condition(hex,hex2)), compNumber);
                 ++compNumber;
             }
         });

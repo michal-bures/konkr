@@ -5,7 +5,7 @@ function Actions(spec) {
     return new ActionsProvider(spec, "Actions", {
 
         // WARNING: remember that all objects passed as action parameters must either
-        // have plain types, or provide id property for serialization
+        // have plain types, or support serialization (fromJSON, toJSON)
 
     "actions": {
         // Handled by GameState
@@ -33,6 +33,9 @@ function Actions(spec) {
         'AI_MANAGE_REGION': ["player", "region"],
         'AI_TASK_NEXT_UNIT': ["player", "region"],
         'AI_FREE_UP_HEX': ["hex"],
+
+        // Handled by Bandits
+        'MOVE_BANDITS': [],
 
         // Handled by HexGrid
         'RESET_HEXGRID': ['plain','plain'], // (width, height)

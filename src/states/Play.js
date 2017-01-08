@@ -6,9 +6,9 @@ import UI from 'lib/controls/UI';
 
 
 const DEFAULT_GAME_SETTTINGS = {
-    worldWidth: 20,
-    worldHeight: 20,
-    numFactions: 6,   
+    worldWidth: 5,
+    worldHeight: 5,
+    numFactions: 2,   
     playerFaction: 1,
     seed: undefined,
 };
@@ -34,6 +34,17 @@ function Play(game) {
 
     function init(spec) {
 
+        // logging plugin that display some messages directly on screen
+        // must be initialized before more loggers are forked from the root logger
+        var originalFactory = spec.log.methodFactory;
+        spec.log.methodFactory = function (methodName, logLevel, loggerName) {
+            var rawMethod = originalFactory(methodName, logLevel, loggerName);
+            return function (...args) {
+                rawMethod.apply(undefined,[(loggerName||'') + ">"].concat(...args));
+                if (gameUi && methodName!=='debug' && methodName!=='trace') gameUi.messages.push(`${args.join(' ')}`, methodName);
+            };
+        };
+        spec.log.setLevel(spec.log.getLevel()); // apply plugin
 
         // Main injector for game mechanic modules
         gameState = new GameState(spec);
@@ -43,18 +54,7 @@ function Play(game) {
         // Main injector for UI and, rendering and animation modules
         gameUi = (new UIManager(gameSpec)).uiSpec;
 
-        // logging plugin that display some messages directly on screen
-        // must be initialized before more loggers are forked from the root logger
-        var originalFactory = spec.log.methodFactory;
-        spec.log.methodFactory = function (methodName, logLevel, loggerName) {
-            var rawMethod = originalFactory(methodName, logLevel, loggerName);
 
-            return function (...args) {
-                rawMethod.apply(undefined,[(loggerName||'') + ">"].concat(...args));
-                if (methodName!=='debug' && methodName!=='trace') gameUi.messages.push(`${args.join(' ')}`, methodName);
-            };
-        };
-        spec.log.setLevel(spec.log.getLevel()); // apply plugin
 
         log = spec.log;
         window.c = gameUi;
@@ -91,6 +91,11 @@ function Play(game) {
         }
 
         gameSpec.actions.attachGuard('debug breakpoint',(prevAction, nextAction) => new Promise(resolve => {
+            //resolve previous debugBreakCallback
+            if (debugBreakCallback) {
+                debugBreakCallback();
+                debugBreakCallback = null;
+            }
             if (shouldBreakAfter(prevAction)) {
                 log.info('❚❚ Halted after ' + prevAction.name);
                 debugBreakCallback = resolve;
@@ -189,6 +194,7 @@ function Play(game) {
             gameUi.messages.push('↶ '+gameSpec.actions.getLast().name);
             breakAfterEveryAction = true;
             gameSpec.actions.undoLastAction();
+            gameUi.ui.reloadScene();
         });
 
         gameUi.debug.addCommand('gameState','restart', ()=> {
@@ -209,10 +215,12 @@ function Play(game) {
         });
 
         gameUi.debug.addCommand('gameState','storeSnapshot', ()=> {
-            if (gameSpec.actions.getCurrent() && gameSpec.actions.getCurrent().name ==='AWAIT_PLAYER_INPUT') {
+            let atPlayerInput = (gameSpec.actions.getCurrent() && gameSpec.actions.getCurrent().name ==='AWAIT_PLAYER_INPUT')
+            if (atPlayerInput) {
                 gameSpec.actions.schedule('AWAIT_PLAYER_INPUT');
             }
             gameState.storeState("konkr_devsnapshot");
+            if (atPlayerInput) gameUi.ui.processActions();
             if (debugBreakCallback) {
                 debugBreakCallback();
                 debugBreakCallback = null;
@@ -226,7 +234,6 @@ function Play(game) {
                 debugBreakCallback();
                 debugBreakCallback = null;
             }
-            gameUi.ui.processActions();
         });
 
         setupDebugDiv();
