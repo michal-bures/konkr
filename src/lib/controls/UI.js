@@ -32,7 +32,8 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
         // bounding box unexpectedly expands due to badly positioned (out-of-bounds) children, layout and 
         // positioning of other children within the group and the group itself will not be affected
         anchorObject = null,
-        hidden = false;
+        hidden = false,
+        visibilityTransitionTween = null;
 
     extend(self, {
         get name() { return name; },
@@ -75,10 +76,14 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
 
     function hide() {
         if (hidden) return;
+        if (visibilityTransitionTween) {
+            visibilityTransitionTween.stop();
+            visibilityTransitionTween = null;
+        }
         hidden = true;
         if (def.align == Phaser.BOTTOM_CENTER) {
-            let t = tweens.add(self.cameraOffset).to({y:game.height}, SHOWHIDE_DURATION, Phaser.Easing.Quadratic.InOut, true);
-            t.onComplete.add(()=>{
+            visibilityTransitionTween = tweens.add(self.cameraOffset).to({y:game.height}, SHOWHIDE_DURATION, Phaser.Easing.Quadratic.InOut, true);
+            visibilityTransitionTween.onComplete.add(()=>{
                 self.visible = false;
             });
         } else {
@@ -87,7 +92,11 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
     }
 
     function show() {
-        if (!hidden) return;
+        if (!hidden && self.visible) return;
+        if (visibilityTransitionTween) {
+            visibilityTransitionTween.stop();
+            visibilityTransitionTween = null;
+        }
         hidden = false;
         self.visible = true;
         reflow();
@@ -95,7 +104,7 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
             let targetY = self.cameraOffset.y;
             self.y = game.height;
             self.cameraOffset.y=self.y;
-            tweens.add(self.cameraOffset).to({y:targetY}, SHOWHIDE_DURATION, Phaser.Easing.Quadratic.InOut, true);
+            visibilityTransitionTween = tweens.add(self.cameraOffset).to({y:targetY}, SHOWHIDE_DURATION, Phaser.Easing.Quadratic.InOut, true);
         }
     }
 

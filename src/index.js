@@ -26,7 +26,7 @@ var spec = new Injector(undefined,{
     game: () => game,
     assets: spec => new GameAssets(spec),
     debug: spec => new DebugInfo(spec),
-    inDebugMode: () => true//!!document.getElementById("debug")
+    inDebugMode: () => document.getElementById("debug")
 });
 
 //default loglevel

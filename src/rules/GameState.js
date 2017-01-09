@@ -21,6 +21,8 @@ const DEFAULT_GAME_SETTINGS = {
 };
 
 function GameState(spec) {
+    // version identifier to determine compatibility of stored gamestate
+    const VERSION = 1;
 
     const self = Object.freeze({
         get spec() { return gameStateSpec; },
@@ -72,7 +74,7 @@ function GameState(spec) {
 
 
     function toJSON() {
-        let obj = {};
+        let obj = { version: VERSION };
         STATEFUL_MODULES.forEach(moduleName=> {
             log.debug("Saving "+moduleName);
             obj[moduleName] = gameStateSpec[moduleName].toJSON();
@@ -108,12 +110,19 @@ function GameState(spec) {
         } else {
             data = jsonOrKey;
         }
+        if (!data) {
+            log.debug(`No savedata found.`);
+            return false;
+        } else if (data.version != VERSION) {
+            log.warn(`Saved game is not compatible with current version (save=${data.version}, current=${VERSION}).`)
+            return false;
+        }
         log.debug('Loading game data:',jsonOrKey);
         fromJSON(data);
-        log.info('Game loaded:',jsonOrKey);        
+        log.info('Game loaded.');        
     }
 
-    function startNewGame(options=DEFAULT_GAME_SETTINGS) {
+    function startNewGame(options) {
         loadState(initialState);
         actions.schedule('START_NEW_GAME', options);
     }
@@ -129,7 +138,9 @@ function GameState(spec) {
         action.resolve();
     });
 
-    actions.setHandler('START_NEW_GAME',  (action, {worldWidth, worldHeight, numFactions, playerFaction=1, seed}) => {
+    actions.setHandler('START_NEW_GAME',  (action, options) => {
+        if (!options) options = DEFAULT_GAME_SETTINGS;
+        let {worldWidth, worldHeight, numFactions, playerFaction, seed} = options;
         random.reset(seed);
         log.info("Starting new game (seed="+random.seed+")");
         action.schedule('RESET_HEXGRID', worldWidth, worldHeight);

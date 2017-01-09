@@ -25,6 +25,7 @@ function PawnSprites ({tweens, game, log, pawns, ui, regions, gameState, grid, p
 
     class PawnSprite extends Phaser.Sprite {
         constructor(pawnType, hex) {
+            log.debug(`PAWN ${pawnType} TO ${hex}`);
             if (hex) {
                 const [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
                 super(game, x, y+Math.floor(PAWN_OFFSET_TOP/2), 'pawn');
@@ -35,6 +36,7 @@ function PawnSprites ({tweens, game, log, pawns, ui, regions, gameState, grid, p
             this.setType(pawnType);
             this.hex = hex;
             this.flagSprite = null;
+            log.debug(`DONE ${this}`);
             group.add(this);
         }
 
@@ -79,6 +81,7 @@ function PawnSprites ({tweens, game, log, pawns, ui, regions, gameState, grid, p
         }
 
         refreshDecorations() {
+            this.alpha = 1;
             if (!idleHighlighting || !this.hex) {
                 this.stopJumping();
                 this.removeFlag();

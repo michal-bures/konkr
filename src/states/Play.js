@@ -59,7 +59,7 @@ function Play(game) {
 
         // DEBUG TOOLS SETUP
 
-        let breakAfterEveryAction = false;
+        let breakAfterEveryAction = gameUi.inDebugMode;
         let debugBreakCallback = null;
         let breakBeforeAction = null;
 
@@ -230,7 +230,8 @@ function Play(game) {
         //END OF DEBUG TOOLS SETUP
 
         gameSpec.actions.checkHandlers();
-        gameState.startNewGame();
+        gameSpec.actions.schedule('START_NEW_GAME', null);
+        gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_turn_start');
 
         log.info("Level initialization complete.");
     }

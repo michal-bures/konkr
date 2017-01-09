@@ -259,7 +259,6 @@ function UIManager(spec) {
 
     function undo() {
         actions.undoUntil('AWAIT_PLAYER_INPUT');
-        changeSceneNow('PLAYER_TURN');
     }
 
     function changeSceneNow(nextSceneName) {
