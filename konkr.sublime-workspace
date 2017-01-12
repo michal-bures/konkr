@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"hex",
+				"hexesWithCommitedUnits〔variable〕"
+			],
+			[
 				"regionQu",
 				"regionQualifiesForCapital"
 			],
@@ -236,17 +240,45 @@
 			"file": "src/ui/UIManager.js",
 			"settings":
 			{
-				"buffer_size": 9793,
+				"buffer_size": 11051,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "src/rules/Players.js",
+			"file": "src/rules/Actions.js",
 			"settings":
 			{
-				"buffer_size": 10860,
+				"buffer_size": 4401,
 				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/lib/hexgrid/HexGrid.js",
+			"settings":
+			{
+				"buffer_size": 4787,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "import IterableOn from 'lib/decorators/IterableOn';\nimport HexGroup from 'lib/hexgrid/HexGroup';\n\nfunction Players(spec) {\n\n    let { actions, economy, grid, pawns, regions, ids, log, warfare } = spec;\n\n    const _players = [];\n    \n    let activePlayer = null,\n        grabbedPawn = null,\n        grabbedPawnRegion = null,\n        movedUnits = {},\n        factionOwners = [];\n\n    class Player {\n        constructor(id, name, type) {\n            this.id = id;\n            this.name = name;\n            this.type = type;\n        }\n\n        get regions() {\n            return getRegionsControlledBy(this);\n        }\n\n        controls(region) {\n            //cannot compare directly because sublasses don't share 'this'\n            return ownerOf(region) && (ownerOf(region).id === this.id);\n        }\n\n        canGrabPawn(pawn) {\n            return pawn.isTroop() && this.controls(regions.regionOf(pawn.hex)) && !movedUnits[pawn.hex.id];\n        }\n\n        canDropPawnAt(hex) {\n            if (!grabbedPawn) return false;\n            if (regions.regionOf(hex)!=grabbedPawnRegion) return false;\n            if (pawns.pawnAt(hex)) {\n                return (pawns.getMergeResult(pawns.pawnAt(hex),grabbedPawn));\n            } else {\n                return true;\n            }\n        }\n\n        canConquerHex(hex) {\n            if (!grabbedPawn || !grabbedPawn.isTroop()) return false;\n            if (!grabbedPawnRegion.hexes.neighbours().contains(hex)) {\n                log.debug(`Cannot conquer ${hex} as it's not adjacent to the selected region`);\n                return false;\n            }\n            if (warfare.defenseOf(hex) >= grabbedPawn.might) {\n                log.debug(`Cannot conquer ${hex} - not enough might`);\n                return false;\n            }\n            return true;\n        }\n\n        getAvailableUnits(region) {\n            if (!region) {\n                return this.regions.reduce(\n                    (result,nextRegion)=>result.concat(this.getAvailableUnits(nextRegion)), \n                []);\n            }\n\n            let ret = pawns.select({ \n                hexes: region.hexes, \n                custom: pawn=> pawn.isTroop() && this.canGrabPawn(pawn)\n            });\n            return ret;\n        }\n\n        play() { throw Error(`Not implemented`); }\n\n        toString() {\n            return `[${this.name} #${this.id}]`;\n        }\n    }\n    const nullPlayer = new Player(-1,'No player','dummy');\n\n    // public API\n    let self = {\n        byId(id) { return _players[id]; },\n        ownerOf,\n        getRegionsControlledBy,\n        bestRegionOf,\n        get activePlayer() { return activePlayer || nullPlayer; },\n        get localPlayer() { return _players[1]; },\n        onGrabbedPawn: new Phaser.Signal(/* pawn */),\n        onDroppedPawn: new Phaser.Signal(/* pawnType, hex */),\n        onConqueringHex: new Phaser.Signal(/* hex */),\n        onBoughtPawn: new Phaser.Signal(/* pawnType, region */),\n        get grabbedPawn() { return grabbedPawn; },\n        get grabbedPawnRegion() { return grabbedPawnRegion; },\n        toDebugString,\n        toJSON,\n        fromJSON\n    };\n    IterableOn(self, _players);\n    Object.freeze(self);\n\n    function toJSON() {\n        return {\n            players: _players.filter(x=>x).map(player=>({\n                id:player.id,\n                name: player.name,\n                type: player.type\n            })),\n            activePlayer: activePlayer && _players.indexOf(activePlayer),\n            grabbedPawn: grabbedPawn && grabbedPawn.name,\n            grabbedPawnRegion: grabbedPawnRegion && grabbedPawnRegion.id,\n            movedUnits: movedUnits,\n            factionOwners: factionOwners.map((player,faction)=>(player && {\n                faction:faction,\n                player:player.id\n            })).filter(x=>x)\n        };\n    }\n\n    function fromJSON(src) {\n        _players.length = 0;\n        factionOwners.length = 0;\n        src.players.forEach(({type,name,id})=> _players[id]=new createPlayer(type, name, id));\n        activePlayer = src.activePlayer && self.byId(src.activePlayer);\n        grabbedPawn = src.grabbedPawn && pawns[src.grabbedPawn];\n        grabbedPawnRegion = src.grabbedPawnRegion && regions.byId(src.grabbedPawnRegion);\n        movedUnits = src.movedUnits;\n        src.factionOwners.forEach(({faction, player}) => factionOwners[faction] = _players[player]);\n        log.debug('FACTIONS',factionOwners);\n    }\n\n    function createPlayer(type, name='(unnamed)', id=ids.next('player')) {\n        let p;\n        switch (type) {\n            case 'AI':\n                p = new Player(id,name,type);\n                p.play = ()=> { actions.schedule(\"AI_PLAYER_BEGIN\", p); };\n                break;\n            case 'Local':\n                p = new Player(id,name,type);\n                p.play = ()=> { actions.schedule(\"AWAIT_PLAYER_INPUT\"); };\n                break;\n            case 'Bandits':\n                p = new Player(id,name,type);\n                p.play = ()=> { actions.schedule(\"MOVE_BANDITS\"); };\n                break;\n            default:\n                throw Error(`Unrecognized player type: ${type}`);\n        }\n        log.debug(`Created ${p}`);\n        return p;\n\n    }\n\n    actions.setHandler('SETUP_PLAYERS', (action, numFactions,playerFaction=0)=> {\n        _players.length = 0;\n        ids.reset('player');\n        for (let i = 1; i<=numFactions; ++i) {\n            let newPlayer;\n            if (i===playerFaction) {\n                newPlayer = createPlayer('Local', 'Human player for faction '+i);\n            } else {\n                newPlayer = createPlayer('AI', 'AI player for faction '+i);\n            }\n            _players[newPlayer.id] = newPlayer;\n            factionOwners[i] = newPlayer;\n            if (i===playerFaction) {\n                //bandits play after the human player\n                _players.push(createPlayer('Bandits','Bandits'));\n            }\n        }\n        action.resolve();\n    });\n\n    actions.setHandler('START_PLAYER_TURN', (action, player) => {\n        if (activePlayer) throw Error(`Cannot start turn for ${player}, because another players turn is in progress: ${activePlayer}`);\n        activePlayer = player;\n        action.data.previousMovedUnits=movedUnits;\n        movedUnits = {};\n        player.play();\n        action.schedule('END_PLAYER_TURN', player);\n        action.resolve();\n    },{\n        undo(action) {\n            movedUnits = action.data.previousMovedUnits;\n            activePlayer = null;\n        }\n    });\n\n    actions.setHandler('CONQUER_HEX', (action, hex) => {\n        if (!grabbedPawn) return action.reject(`Attempted to conquer ${hex} with no pawn grabbed!`);\n        movedUnits[hex.id] = true;\n\n        if (pawns.pawnAt(hex)) {\n            if (economy.capitalOf(regions.regionOf(hex)) === hex) {\n                actions.schedule('DESTROY_REGION_CAPITAL',regions.regionOf(hex));\n            } else {\n                action.schedule('DESTROY_PAWN', pawns.pawnAt(hex));\n            }\n        }\n        action.schedule('CHANGE_HEXES_REGION', new HexGroup(hex), grabbedPawnRegion);\n        action.schedule('DROP_UNIT', hex);\n        action.resolve();\n        self.onConqueringHex.dispatch(grabbedPawn,hex);\n    }, { undo(action, hex) {\n        delete movedUnits[hex.id];\n    }});\n\n    actions.setHandler('GRAB_UNIT', (action, pawn) => {\n        if (movedUnits[pawn.hex.id]) throw Error(`Tried to grab ${pawn}, which has already moved this turn.`);\n        if (!pawn.pawnType.isTroop()) throw Error(`${pawn} is not movable by player!`);\n        const region = regions.regionOf(pawn.hex);\n        if (!activePlayer.controls(region)) throw Error(`Tried to grab ${pawn}, which does not belong to ${activePlayer}`);\n\n        action.data.previousGrabbed = grabbedPawn;\n        addUnitToGrabbed(pawn.pawnType);\n        grabbedPawnRegion = region;\n        self.onGrabbedPawn.dispatch(pawn);\n        action.schedule('DESTROY_PAWN',pawn);\n        action.resolve();\n    },{ \n        undo(action) {\n            grabbedPawn = action.data.previousGrabbed;\n        }\n    });\n\n    actions.setHandler('DROP_UNIT', (action, hex) => {\n        if (regions.regionOf(hex) != grabbedPawnRegion) throw Error(`Tried to drop pawn into a different region then it originates from.`);\n        action.data.grabbedPawn = grabbedPawn;\n        action.data.grabbedPawnRegion = grabbedPawnRegion;\n        if (pawns.pawnAt(hex)) {\n            let pawnOnTheHex = pawns.pawnAt(hex);\n            let newType = pawns.getMergeResult(pawnOnTheHex, grabbedPawn);\n            if (!newType) throw Error(`Cannot drop pawn on ${hex} - already occupied by ${pawns.pawnAt(hex)}, merge impossible.`);\n            actions.schedule('DESTROY_PAWN', pawnOnTheHex);\n\n            if (pawnOnTheHex.pawnType.pest) movedUnits[hex.id] = true;\n            grabbedPawn = newType;\n        }\n        action.schedule('CREATE_PAWN',grabbedPawn, hex);\n\n        const p = grabbedPawn;\n        grabbedPawn = null;\n        grabbedPawnRegion = null;\n        self.onDroppedPawn.dispatch(p,hex);\n        action.resolve();\n    }, { undo(action, hex) {\n        grabbedPawn = action.data.grabbedPawn;\n        grabbedPawnRegion = action.data.grabbedPawnRegion;\n        movedUnits[hex] = false;\n    }});\n\n    actions.setHandler('BUY_UNIT', (action, unitType, region)=> {\n        const cost = economy.priceOf(unitType);\n        if (!cost) throw Error(`Unit ${unitType} cannot be bought by a player.`);\n        if (!region) throw Error(`No region specified, who is supposed to pay for this?!`);\n        if (cost > economy.treasuryOf(region)) throw Error(`Region ${region} cannot afford to buy ${unitType}.`);\n        action.schedule('ADJUST_REGION_TREASURY',region, -cost);\n        action.data.grabbedPawn = grabbedPawn;\n        action.data.grabbedPawnRegion = grabbedPawnRegion;\n        addUnitToGrabbed(unitType);\n        grabbedPawnRegion = region;\n        self.onBoughtPawn.dispatch(unitType, region);\n        action.resolve();\n    },{\n        undo(action) {\n            grabbedPawn = action.data.grabbedPawn;\n            grabbedPawnRegion = action.data.grabbedPawnRegion;\n        }\n    });\n\n    actions.setHandler('END_PLAYER_TURN', (action, player) => {\n        if (player!=activePlayer)  throw Error(`${player} requested to end his turn but it's not his turn currently!`);\n        if (grabbedPawn) throw Error(`${player} tried to end turn with an unplaced pawn still grabbed.`);\n        activePlayer = null;P\n        action.resolve();\n    },{ undo(action, player) {\n        activePlayer = player;\n    } });\n\n    // when the current region was merged into another one, make sure to update\n    // grabbedPawnRegion with the new region identity\n    regions.onMerged.add((srcRegion, rcvRegion)=>{\n        if (grabbedPawnRegion === srcRegion) grabbedPawnRegion = rcvRegion;\n    });\n\n    function addUnitToGrabbed(pawnType) {\n        if (grabbedPawn) {\n            let result = pawns.getMergeResult(grabbedPawn, pawnType);\n            if (!result) throw Error(`Illegal attempt to merge ${grabbedPawn} with ${pawnType}`);\n            grabbedPawn = result;\n        } else {\n            grabbedPawn = pawnType;\n        }\n    }\n\n    function toDebugString() {\n        return `\nActivePlayer: ${activePlayer}\nMovedUnits: ${Object.keys(movedUnits).map(hex=>hex.toString()).join(', ')}\nGrabbed: ${(grabbedPawn ? `${grabbedPawn} (owned by ${grabbedPawnRegion})` : '(nothing)')}\n\nPlayers:\n${_players.filter(x=>x).map(p=>` * ${p} (controls ${getRegionsControlledBy(p).length} regions)`).join('\\n')}\n`;\n    }\n\n    function getRegionsControlledBy(player) {\n        return regions.filter(r=>ownerOf(r) === player);\n    }\n\n    function ownerOf(region) {\n        return factionOwners[region.faction];\n    }\n\n    function bestRegionOf(player) {\n        return getRegionsControlledBy(player)\n            .reduce((best,next)=>!best || (next.hexes.length > best.hexes.length) ? next : best, null);\n    }\n\n    return Object.freeze(self);\n}\n\nexport default Players;",
+			"file": "src/rules/Players.js",
+			"file_size": 12284,
+			"file_write_time": 131283612922701906,
+			"settings":
+			{
+				"buffer_size": 11962,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/lib/util.spec.js",
+			"settings":
+			{
+				"buffer_size": 876,
 				"line_ending": "Windows"
 			}
 		},
@@ -254,7 +286,7 @@
 			"file": "src/ui/PawnSprites.js",
 			"settings":
 			{
-				"buffer_size": 7860,
+				"buffer_size": 8620,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -290,35 +322,53 @@
 			"file": "src/rules/Pawns.js",
 			"settings":
 			{
-				"buffer_size": 6618,
+				"buffer_size": 6614,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "src/ui/RegionPanel.js",
+			"file": "src/rules/Bandits.js",
 			"settings":
 			{
-				"buffer_size": 4054,
+				"buffer_size": 2880,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"contents": "Searching 59 files for \"onDroppedPawn\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Players.js:\n   86:         onDroppedPawn: new Phaser.Signal(/* pawnType, hex */),\n  223:         self.onDroppedPawn.dispatch(grabbedPawn,hex);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\RegionPanel.js:\n   77:     players.onDroppedPawn.add((pawnType, hex)=>{\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n  300:     players.onDroppedPawn.add(()=>redraw());\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\FastSpectating.js:\n   26:                 onDroppedPawn,\n   33:     function onDroppedPawn(pawnType, targetHex) {\n\n6 matches across 4 files\n\n\nSearching 59 files for \"onDroppedPawn\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Players.js:\n   86:         onDroppedPawn: new Phaser.Signal(/* pawnType, hex */),\n  223:         self.onDroppedPawn.dispatch(grabbedPawn,hex);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\RegionPanel.js:\n   77:     players.onDroppedPawn.add((pawnType, hex)=>{\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n  300:     players.onDroppedPawn.add(()=>redraw());\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\FastSpectating.js:\n   26:                 onDroppedPawn,\n   33:     function onDroppedPawn(pawnType, targetHex) {\n\n6 matches across 4 files\n\n\nSearching 59 files for \"grabbedPawn\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Players.js:\n   11:         grabbedPawn = null,\n   12:         grabbedPawnRegion = null,\n   36:             if (!grabbedPawn) return false;\n   37:             if (regions.regionOf(hex)!=grabbedPawnRegion) return false;\n   39:                 return (pawns.getMergeResult(pawns.pawnAt(hex),grabbedPawn));\n   46:             if (!grabbedPawn || !grabbedPawn.isTroop()) return false;\n   47:             if (!grabbedPawnRegion.hexes.neighbours().contains(hex)) {\n   51:             if (warfare.defenseOf(hex) >= grabbedPawn.might) {\n   89:         get grabbedPawn() { return grabbedPawn; },\n   90:         get grabbedPawnRegion() { return grabbedPawnRegion; },\n  106:             grabbedPawn: grabbedPawn && grabbedPawn.name,\n  107:             grabbedPawnRegion: grabbedPawnRegion && grabbedPawnRegion.id,\n  116:         grabbedPawn = src.grabbedPawn && pawns[src.grabbedPawn];\n  117:         grabbedPawnRegion = src.grabbedPawnRegion && regions.byId(src.grabbedPawnRegion);\n  175:         if (!grabbedPawn) return action.reject(`Attempted to conquer ${hex} with no pawn grabbed!`);\n  185:         action.schedule('CHANGE_HEXES_REGION', new HexGroup(hex), grabbedPawnRegion);\n  188:         self.onConqueringHex.dispatch(grabbedPawn,hex);\n  200:         action.data.previousGrabbed = grabbedPawn;\n  202:         grabbedPawnRegion = region;\n  207:             grabbedPawn = action.data.previousGrabbed;\n  212:         if (regions.regionOf(hex) != grabbedPawnRegion) throw Error(`Tried to drop pawn into a different region then it originates from.`);\n  213:         action.data.grabbedPawn = grabbedPawn;\n  214:         action.data.grabbedPawnRegion = grabbedPawnRegion;\n  216:             let newType = pawns.getMergeResult(pawns.pawnAt(hex), grabbedPawn);\n  219:             grabbedPawn = newType;\n  221:         action.schedule('CREATE_PAWN',grabbedPawn, hex);\n  223:         self.onDroppedPawn.dispatch(grabbedPawn,hex);\n  224:         grabbedPawn = null;\n  225:         grabbedPawnRegion = null;\n  228:         grabbedPawn = action.data.grabbedPawn;\n  229:         grabbedPawnRegion = action.data.grabbedPawnRegion;\n  238:         action.data.grabbedPawn = grabbedPawn;\n  239:         action.data.grabbedPawnRegion = grabbedPawnRegion;\n  241:         grabbedPawnRegion = region;\n  246:             grabbedPawn = action.data.grabbedPawn;\n  247:             grabbedPawnRegion = action.data.grabbedPawnRegion;\n  253:         if (grabbedPawn) throw Error(`${player} tried to end turn with an unplaced pawn still grabbed.`);\n  261:     // grabbedPawnRegion with the new region identity\n  263:         if (grabbedPawnRegion === srcRegion) grabbedPawnRegion = rcvRegion;\n  267:         if (grabbedPawn) {\n  268:             let result = pawns.getMergeResult(grabbedPawn, pawnType);\n  269:             if (!result) throw Error(`Illegal attempt to merge ${grabbedPawn} with ${pawnType}`);\n  270:             grabbedPawn = result;\n  272:             grabbedPawn = pawnType;\n  280: Grabbed: ${(grabbedPawn ? `${grabbedPawn} (owned by ${grabbedPawnRegion})` : '(nothing)')}\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\states\\Play.js:\n  279:         gameUi.grabbedPawn.update();\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\RegionPanel.js:\n   81:        if (players.grabbedPawnRegion === currentRegion) synchronize();\n  116:             if (players.grabbedPawn) netIncome -= (players.grabbedPawn.upkeep || 0);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n   69:         const pawnType = players.grabbedPawn;\n  308:         redraw(players.grabbedPawn);\n  311:     function redraw(grabbedPawnType) {\n  317:         if (!region || !grabbedPawnType) return;\n  323:         let hexes = region.hexes.neighbours().filter(hex=>warfare.defenseOf(hex) < grabbedPawnType.might);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\LocalPlayerTurn.js:\n   21:             grabbedPawn:true,\n   60:         if (players.grabbedPawn) {\n   64:                 feedbackSymbols.showDefendedBy(hex, players.grabbedPawn.defense);\n   74:                 } else if (!players.grabbedPawnRegion.hexes.neighbours().contains(hex)) {\n   77:                     feedbackSymbols.showDefendersOf(hex, players.grabbedPawn.might);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\UIManager.js:\n   69:         grabbedPawn: spec => new Renderer.GrabbedPawn(spec),\n   90:         'grabbedPawn',\n  261:         if (players.grabbedPawn) {\n\n84 matches across 6 files\n\n\nSearching 59 files for \"onGrabbedPawn\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Players.js:\n   85:         onGrabbedPawn: new Phaser.Signal(/* pawn */),\n  199:         self.onGrabbedPawn.dispatch(pawn);\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\RegionPanel.js:\n   80:     players.onGrabbedPawn.add(()=> {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n  298:     players.onGrabbedPawn.add(pawn=>redraw(pawn.pawnType));\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\FastSpectating.js:\n   27:                 onGrabbedPawn,\n   44:     function onGrabbedPawn(pawn) {\n\n6 matches across 4 files\n",
+			"file": "src/lib/RandomGenerator.js",
 			"settings":
 			{
-				"buffer_size": 6364,
-				"line_ending": "Windows",
-				"name": "Find Results",
-				"scratch": true
+				"buffer_size": 1350,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
 			}
 		},
 		{
 			"file": "src/ui/scene/FastSpectating.js",
 			"settings":
 			{
-				"buffer_size": 3100,
+				"buffer_size": 3428,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/lib/hexgrid/HexValuation.js",
+			"settings":
+			{
+				"buffer_size": 2432,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/lib/Planner.js",
+			"settings":
+			{
+				"buffer_size": 2493,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
@@ -344,7 +394,7 @@
 			"file": "src/rules/LandGenerator.js",
 			"settings":
 			{
-				"buffer_size": 1542,
+				"buffer_size": 1582,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -353,7 +403,7 @@
 			"file": "src/rules/GameState.js",
 			"settings":
 			{
-				"buffer_size": 6026,
+				"buffer_size": 7763,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -362,7 +412,33 @@
 			"file": "src/states/Play.js",
 			"settings":
 			{
-				"buffer_size": 10097,
+				"buffer_size": 10228,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ui/RegionPanel.js",
+			"settings":
+			{
+				"buffer_size": 4054,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ui/scene/Scene.js",
+			"settings":
+			{
+				"buffer_size": 1697,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/index.js",
+			"settings":
+			{
+				"buffer_size": 5438,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -380,7 +456,8 @@
 			"file": "src/lib/hexgrid/HexGroup.js",
 			"settings":
 			{
-				"buffer_size": 3624,
+				"buffer_size": 3628,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
@@ -398,7 +475,7 @@
 			"file": "src/rules/Economy.js",
 			"settings":
 			{
-				"buffer_size": 7817,
+				"buffer_size": 7956,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -407,7 +484,17 @@
 			"file": "src/lib/hexgrid/HexValuation.spec.js",
 			"settings":
 			{
-				"buffer_size": 1610,
+				"buffer_size": 2447,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/lib/RandomGenerator.spec.js",
+			"settings":
+			{
+				"buffer_size": 787,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
@@ -424,7 +511,7 @@
 			"file": "src/ui/ModalsManager.js",
 			"settings":
 			{
-				"buffer_size": 1882,
+				"buffer_size": 3300,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -451,16 +538,7 @@
 			"file": "src/lib/controls/UI.js",
 			"settings":
 			{
-				"buffer_size": 10653,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/index.js",
-			"settings":
-			{
-				"buffer_size": 5440,
+				"buffer_size": 11066,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -503,7 +581,7 @@
 			"file": "src/lib/ActionsProvider.js",
 			"settings":
 			{
-				"buffer_size": 14060,
+				"buffer_size": 14066,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -538,32 +616,6 @@
 			}
 		},
 		{
-			"file": "src/lib/hexgrid/HexGrid.js",
-			"settings":
-			{
-				"buffer_size": 4787,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/lib/RandomGenerator.js",
-			"settings":
-			{
-				"buffer_size": 1349,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/lib/RandomGenerator.spec.js",
-			"settings":
-			{
-				"buffer_size": 407,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
 			"file": "src/rules/Warfare.js",
 			"settings":
 			{
@@ -572,10 +624,41 @@
 			}
 		},
 		{
-			"file": "src/ai/Marshal.js",
+			"contents": "Searching 60 files for \"CHECK_VICTORY\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Actions.js:\n   17:         'CHECK_VICTORY_CONDITIONS': [],\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\GameState.js:\n  150:         action.schedule('CHECK_VICTORY_CONDITIONS');\n  165:     actions.setHandler('CHECK_VICTORY_CONDITIONS', (action)=>{\n\n3 matches across 2 files\n\n\nSearching 60 files for \"CHECK_VICTORY\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Actions.js:\n   17:         'CHECK_VICTORY_CONDITIONS': [],\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\GameState.js:\n  150:         action.schedule('CHECK_VICTORY_CONDITIONS');\n  165:     actions.setHandler('CHECK_VICTORY_CONDITIONS', (action)=>{\n\n3 matches across 2 files\n\n\nSearching 60 files for \"RESTART_GAME\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Actions.js:\n   20:         'RESTART_GAME': [],\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\GameState.js:\n  115:     actions.setHandler('RESTART_GAME', action=> {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\states\\Play.js:\n  198:             gameSpec.actions.schedule('RESTART_GAME');\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\ModalsManager.js:\n   14:         RESTART_GAME: () => new Menu(spec, {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\UIManager.js:\n  212:         uiElements.modals.show('RESTART_GAME', result=> {\n  221:                     actions.schedule('RESTART_GAME');\n  242:                     actions.schedule('RESTART_GAME');\n  263:                     actions.schedule('RESTART_GAME');\n\n8 matches across 5 files\n\n\nSearching 60 files for \"game saved\" (case sensitive)\n\n0 matches\n\nSearching 60 files for \"saved\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\GameState.js:\n   97:         log.info(\"Game saved: \"+name);\n  103:             log.debug(`Loading saved game from localStorage[${jsonOrKey}]`);\n\n2 matches in 1 file\n\n\nSearching 60 files for \"bestRegionOf\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Players.js:\n   86:         bestRegionOf,\n  316:     function bestRegionOf(player) {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\UIManager.js:\n  154:         if (!selectedRegion) selectRegion(players.bestRegionOf(players.localPlayer));\n\n3 matches across 2 files\n\n\nSearching 60 files for \"VICTORY_CON\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Actions.js:\n   17:         'CHECK_VICTORY_CONDITIONS': [],\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\GameState.js:\n  161:         action.schedule('CHECK_VICTORY_CONDITIONS');\n  176:     actions.setHandler('CHECK_VICTORY_CONDITIONS', (action)=>{\n\n3 matches across 2 files\n\n\nSearching 60 files for \"synchronize\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\PawnSprites.js:\n   20:         synchronize,\n  158:     function synchronize() {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\RegionPanel.js:\n   78:         if (regions.regionOf(hex) === currentRegion) synchronize();\n   81:        if (players.grabbedPawnRegion === currentRegion) synchronize();\n   95:         synchronize        \n  100:         if(region === currentRegion) synchronize();\n  110:     function synchronize() {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n   64:         synchronize,\n   68:     function synchronize() {\n   80:         synchronize();\n   95:         synchronize,\n  104:     function synchronize() {\n  304:         synchronize\n  307:     function synchronize()  {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\FastSpectating.js:\n   93:                 pawnSprites.synchronize();\n   94:                 landSprites.synchronize();\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\UIManager.js:\n  280:                     if (el.synchronize) el.synchronize();\n\n18 matches across 5 files\n\n\nSearching 60 files for \"creating\" (case sensitive)\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\hexgrid\\HexGrid.js:\n   26:             log.error('Invalid coordinates specification for creating a GridPoint ',{x:x,y:y,r:r,c:c,index:index,rowSize:rowSize});\n\n1 match in 1 file\n\n\nSearching 60 files for \"creating\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\lib\\hexgrid\\HexGrid.js:\n   26:             log.error('Invalid coordinates specification for creating a GridPoint ',{x:x,y:y,r:r,c:c,index:index,rowSize:rowSize});\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\PawnSprites.js:\n  200:             log.debug(`Creating pawn sprite ${pawnType} at ${hex}`);\n\n2 matches across 2 files\n\n\nSearching 60 files for \"synchronize()\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\PawnSprites.js:\n  159:     function synchronize() {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\RegionPanel.js:\n   78:         if (regions.regionOf(hex) === currentRegion) synchronize();\n   81:        if (players.grabbedPawnRegion === currentRegion) synchronize();\n  100:         if(region === currentRegion) synchronize();\n  110:     function synchronize() {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\Renderer.js:\n   68:     function synchronize() {\n   80:         synchronize();\n  104:     function synchronize() {\n  307:     function synchronize()  {\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\scene\\FastSpectating.js:\n   93:                 pawnSprites.synchronize();\n   94:                 landSprites.synchronize();\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\UIManager.js:\n  280:                     if (el.synchronize) el.synchronize();\n\n12 matches across 5 files\n\n\nSearching 60 files for \"entering scene\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\ui\\UIManager.js:\n  271:         log.warn(`entering scene ${nextSceneName}`);\n\n1 match in 1 file\n\n\nSearching 60 files for \"LOAD_STATE\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Actions.js:\n   19:         'LOAD_STATE': ['plain'], // ( jsonData )\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\GameState.js:\n  130:     actions.setHandler('LOAD_STATE', (action, jsonOrKey) => {\n  137:         action.schedule('LOAD_STATE','konkr_autosave_gamestart');\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\states\\Play.js:\n  201:             gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_turn_start');\n  234:         gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_turn_start');\n\n5 matches across 3 files\n\n\nSearching 60 files for \"LOAD_STATE\"\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\Actions.js:\n   19:         'LOAD_STATE': ['plain'], // ( jsonData )\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\rules\\GameState.js:\n  130:     actions.setHandler('LOAD_STATE', (action, jsonOrKey) => {\n  137:         action.schedule('LOAD_STATE','konkr_autosave_gamestart');\n\nC:\\Users\\Embair\\dev\\www\\konkr\\src\\states\\Play.js:\n  201:             gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_turn_start');\n  234:         gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_turn_start');\n\n5 matches across 3 files\n",
 			"settings":
 			{
-				"buffer_size": 2147,
+				"buffer_size": 6621,
+				"line_ending": "Windows",
+				"name": "Find Results",
+				"scratch": true
+			}
+		},
+		{
+			"file": "src/ai/AI.js",
+			"settings":
+			{
+				"buffer_size": 9463,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/ui/GridOverlays.js",
+			"settings":
+			{
+				"buffer_size": 3819,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"contents": "import { extend } from 'lib/util';\n\nfunction Pawn(id, pawnType, initialHex) {\n\n\n    function toJSON() {\n        return {\n            id,\n            type: pawnType.name,\n            hex: self.hex && self.hex.id,\n        };\n    }\n\n    let self = Object.create(pawnType);\n    extend(self,{\n        hex: initialHex,\n        get id() { return id; },\n        toString,\n        toJSON,\n        pawnType: pawnType\n    });\n    self.Constructor = Pawn;\n\n    return self;\n\n    function toString() {\n        return `[${pawnType.name} ♙${i} at ${self.hex}]`;\n    }        \n}\nPawn.fromJSON = ({grid, pawns}, {id, type, hex}) => { return new Pawn(id, pawns[type], grid.getHexById(hex)); };\n\nexport default Pawn;",
+			"file": "src/rules/entities/Pawn.js",
+			"file_size": 731,
+			"file_write_time": 131283460317830742,
+			"settings":
+			{
+				"buffer_size": 697,
 				"line_ending": "Windows"
 			}
 		}
@@ -587,7 +670,7 @@
 	"build_varint": "",
 	"command_palette":
 	{
-		"height": 392.0,
+		"height": 334.0,
 		"last_filter": "",
 		"selected_items":
 		[
@@ -787,12 +870,18 @@
 	[
 		"/C/Users/Embair/dev/www/konkr/src",
 		"/C/Users/Embair/dev/www/konkr/src/lib",
-		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid",
-		"/C/Users/Embair/dev/www/konkr/src/rules",
-		"/C/Users/Embair/dev/www/konkr/src/ui"
+		"/C/Users/Embair/dev/www/konkr/src/ui",
+		"/C/Users/Embair/dev/www/konkr/src/ui/modals",
+		"/C/Users/Embair/dev/www/konkr/static"
 	],
 	"file_history":
 	[
+		"/C/Users/Embair/dev/www/konkr/src/ui/modals/Menu.js",
+		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid/HexGrid.js",
+		"/C/Users/Embair/dev/www/konkr/src/ai/Marshal.js",
+		"/C/Users/Embair/dev/www/konkr/src/index.js",
+		"/C/Users/Embair/dev/www/konkr/src/ui/RegionPanel.js",
+		"/C/Users/Embair/dev/www/konkr/src/rules/Bandits.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/Pawns.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/Actions.js",
 		"/C/Users/Embair/dev/www/konkr/src/ai/Marshal.spec.js",
@@ -802,7 +891,6 @@
 		"/C/Users/Embair/dev/www/konkr/src/states/Play.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/scene/LocalPlayerTurn.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/Scrolling.js",
-		"/C/Users/Embair/dev/www/konkr/src/index.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/PawnSprites.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/NextTurnButton.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/OptionButtons.js",
@@ -814,7 +902,6 @@
 		"/C/Users/Embair/dev/www/konkr/src/ui/assets/GameAssets.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/GameState.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/AssetManager.js",
-		"/C/Users/Embair/dev/www/konkr/src/ui/RegionPanel.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/Regions.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/ModalsManager.js",
 		"/C/Users/Embair/dev/www/konkr/src/ui/UIManager.js",
@@ -848,11 +935,9 @@
 		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid/HexValuation.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid/Hexagon.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/RandomGenerator.js",
-		"/C/Users/Embair/dev/www/konkr/src/lib/hexgrid/HexGrid.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/Random.js",
 		"/C/Users/Embair/dev/www/konkr/src/rules/entities/PlayerFactory.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/IdGenerator.js",
-		"/C/Users/Embair/dev/www/konkr/src/ai/Marshal.js",
 		"/C/Users/Embair/dev/www/konkr/src/lib/util.spec.js",
 		"/C/Users/Embair/dev/www/konkr/karma.conf.js",
 		"/C/Users/Embair/dev/www/konkr/tests.webpack.js",
@@ -918,9 +1003,7 @@
 		"/C/Users/Embair/dev/www/practice/twitterapp/package.json",
 		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/SortableTable.js",
 		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/FilterEditor.js",
-		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/Stats.js",
-		"/C/Users/Embair/dev/www/practice/twitterapp/src/model/Filter.js",
-		"/C/Users/Embair/dev/www/practice/twitterapp/src/model/Tweet.js"
+		"/C/Users/Embair/dev/www/practice/twitterapp/src/components/Stats.js"
 	],
 	"find":
 	{
@@ -955,137 +1038,137 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": true,
+		"case_sensitive": false,
 		"find_history":
 		[
-			"onDestroyed",
-			"onGrabbedPawn",
-			"grabbedPawn",
-			"onDroppedPawn",
+			"loadState",
+			"LOAD_STATE",
+			"entering scene",
+			".alpha",
+			"PawnSprite",
+			"getOrCreateSprite",
+			"_undoLast",
+			"undoUntil",
+			"undo",
+			"synchronize()",
+			"setType",
+			"PawnSprite",
+			"creating",
 			"synchronize",
-			"upkeepOfPawn",
-			"expensesOf",
-			"netIncomeOf",
-			"getMergeResult",
-			"canDrop",
-			"canDropUnit",
-			"getMergeResult",
-			"GRAVE",
-			"BANDIT",
-			"GRAVE",
-			"delete",
-			"i",
-			"regionOf",
-			"selected",
-			"selectHex",
-			"UPDATE_REGION_ECONOMY",
-			"SET_INITIAL",
-			"Guard",
-			"shouldBreakBefore",
-			"guard",
-			"shouldBreakBefore",
-			"breakBeforeAction",
-			"getNext",
-			"executeNext",
-			"shouldBreakAfter",
-			"executeNext",
-			"next",
-			"attachGuard",
-			"executeNext",
-			"pendingGuardPromises",
-			"fromJSON",
-			"pendingGuardPromises",
-			"treeAnnotation",
-			"resumeActionsCallback",
-			"pendingGuardCallbacks",
-			"resume",
-			"resumenext",
-			"next",
-			"attachGuard",
-			"guard",
-			"updateWorldBounds",
-			"size",
-			"guards",
-			"processing =",
-			"schedule(",
-			"AWAIT_PLAYER_INPUT",
-			"guard",
-			"START_NEW_GAME",
-			"reset",
-			"assigning",
-			"console.info",
-			"UPDATE_REGION_ECONOMY",
-			"SET_INITIAL_TREASURY",
+			"visibilityTransitionTween",
+			"selectRegion",
+			"show",
 			"START_NEW",
-			"INITIALIZE",
-			"hexFaction",
-			"factionOf",
-			"NEW_GAME",
-			"START_NE",
-			"seed=",
-			"random.reset",
 			"START_NEW_GAME",
-			"DEFAULT_GAME_SETTTINGS",
-			"START_NEW_GAME",
-			"GENERATE",
-			"spec.",
-			"warfare",
-			"setIn(['regions",
-			"setIn(['region",
-			"RANDOMIZE_REGIONS",
-			"hexFaction",
-			".remove",
-			"random",
-			"randomHex",
-			"algorithm",
-			"algorithms",
-			"randomize",
-			"button",
-			"INPUTEVENT_DEBOUNCE_INTERVAL\n",
-			"debounce",
-			"onInputUp",
-			"Button",
-			".abs",
-			"inDebugMode",
-			"onInputDown",
-			"background",
-			"FeedbackSym",
-			"shieldSymbol",
-			"reflow",
-			"sgiw/",
-			"guards",
-			"resumeActionsCallback",
-			"resumeActions",
+			"loadState",
+			"bestPlayerRegion",
+			"VICTORY_CON",
+			"bestRegionOf",
+			"Pane",
+			"CHECK_VICTORY_CONDITIONS",
+			"gameOver",
+			"CHECK_VICTORY_CONDITIONS",
+			"saved",
+			"game saved",
+			"DEFAULT_GAME_SETTINGS",
+			"startNewGame",
+			"initial",
+			"RESTART_GAME",
+			"CHECK_VICTORY",
+			"MENU",
+			"changeScene",
+			"reloadScene",
+			"changeSceneNow(",
+			"changeScene(",
+			"changeScene",
+			"changeScene(",
+			"changeScene",
+			"_setupNex",
+			"changeScene",
+			"undo(",
+			"reloadScene",
+			"_setupNextScene",
+			"changeScene",
+			"recalculateWhileIgnoring",
+			"recalculate",
+			"DefensiveMoveBenefit",
+			"tryExecutePlan",
+			".value",
+			"DefenseBenefit",
+			"nextTarget",
+			"commitedUnitHexes",
+			"commitedUnits",
+			"recalculate",
+			"commitedUnits",
+			"locateDangerousBandits",
+			"otherBandits",
+			"CHANGED",
+			"spriteAtHEx[",
+			"delete sprite",
+			"spriteAtHex[",
+			"spriteAtHex",
+			"DESTROYED",
+			"onMerged",
+			"CREATE_REGION_CAPITAL",
+			"REMOVE_REGION",
+			"capitalOf",
+			"hexesRemovedFromRegion",
+			"CHANGE_HEXES_REGION",
+			"MERGE_REGIONS",
+			"drop",
+			"currentHex",
+			"movePawn",
+			"hex",
+			"pawnAt",
+			"CREATE_PAWN",
+			"log",
+			"RegionPanel",
+			"setLevel",
+			"getLogger",
+			"spriteAtHex",
+			"destroyOrphanedSprites",
+			"synchronize",
+			"refreshDecorations",
+			"useName",
+			"named",
+			"log.debug(",
+			"log.debug",
+			"scheduled",
+			"scheduleed",
+			"spriteAtHex[",
+			"spriteAtHex",
+			"getOrCreateSprite",
+			"reset",
+			"dbuegger",
+			"reposition",
+			"Orphaned",
+			"reposition",
+			"changeSceneNow",
+			"scene.name",
+			"changeSceneNow",
+			"synchronize",
+			"changeSceneNow",
+			"undo()",
+			"movePawn",
+			"MOVE_PAWN",
+			"gatherPawnsTransition",
+			"_pawns",
+			"selec(",
+			"undo",
+			"undo(",
+			"select(",
+			"undo",
+			"MOVE_BANDITS",
+			"storeState",
+			"factionOwners",
 			"processActions",
-			"activePlayer",
-			"initImage",
-			"mainContainer",
-			"hidden",
-			"childResized",
-			"cameraOffset",
-			"alignIn",
-			"clientRect",
-			"parentGroup",
-			"clientRect",
-			"reflow(",
-			"self.anchorObject",
-			"(spec, def, parent)",
-			"reflowChildren",
-			"anchor",
-			"addComponent",
-			"VerticalGrou",
-			"reflowChildren",
-			"reflow",
-			"setText",
-			" reflow(",
-			"reflow(",
-			"reflow()",
-			"clientRect",
-			"reflow",
-			"hidden",
-			"reflowChildren",
-			"addComponent",
-			"UIComponent"
+			"createPlayer",
+			"fromJSON",
+			"seTUP_",
+			"components",
+			"select",
+			"pawns.select",
+			"onDroppedP"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -1093,6 +1176,13 @@
 		"regex": false,
 		"replace_history":
 		[
+			".val",
+			"TowerBenefit",
+			"hexesWithCommitedUnits",
+			"commitedUnitHexes",
+			"recalculateWhileIgnoring",
+			"adjacentBandits",
+			"hex",
 			"faction",
 			"pendingGuardPromises",
 			"strategy",
@@ -1213,14 +1303,7 @@
 			"pawns",
 			"hexPawn",
 			"",
-			"OrderedMap",
-			"name",
-			"._resolved",
-			"'ui",
-			"'rules",
-			"from 'lib/ui/Renderer'",
-			"hexGroup",
-			"HexGroup"
+			"OrderedMap"
 		],
 		"reverse": false,
 		"show_context": false,
@@ -1231,7 +1314,7 @@
 	"groups":
 	[
 		{
-			"selected": 7,
+			"selected": 19,
 			"sheets":
 			[
 				{
@@ -1247,8 +1330,8 @@
 						"selection":
 						[
 							[
-								103,
-								103
+								224,
+								224
 							]
 						],
 						"settings":
@@ -1263,7 +1346,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 49,
+					"stack_index": 14,
 					"type": "text"
 				},
 				{
@@ -1272,15 +1355,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 9793,
+						"buffer_size": 11051,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								712,
-								712
+								1142,
+								1145
 							]
 						],
 						"settings":
@@ -1295,24 +1378,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 18,
+					"stack_index": 6,
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "src/rules/Players.js",
+					"file": "src/rules/Actions.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10860,
+						"buffer_size": 4401,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6388,
-								6388
+								493,
+								493
 							]
 						],
 						"settings":
@@ -1323,27 +1406,119 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2249.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 15,
 					"type": "text"
 				},
 				{
 					"buffer": 3,
-					"file": "src/ui/PawnSprites.js",
+					"file": "src/lib/hexgrid/HexGrid.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7860,
+						"buffer_size": 4787,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1933,
-								1933
+								4156,
+								4156
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1661.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 22,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "src/rules/Players.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11962,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								530,
+								530
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 21,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "src/lib/util.spec.js",
+					"semi_transient": true,
+					"settings":
+					{
+						"buffer_size": 876,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								541,
+								541
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 19,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "src/ui/PawnSprites.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8620,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2991,
+								2991
 							]
 						],
 						"settings":
@@ -1355,14 +1530,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1017.0,
+						"translation.y": 961.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 13,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 7,
 					"file": "src/ui/scene/LocalPlayerTurn.js",
 					"semi_transient": false,
 					"settings":
@@ -1387,14 +1562,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 588.0,
+						"translation.y": 445.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 12,
+					"stack_index": 56,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
+					"buffer": 8,
 					"file": "src/ui/HexSelectionProxy.js",
 					"semi_transient": false,
 					"settings":
@@ -1422,11 +1597,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 19,
+					"stack_index": 59,
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 9,
 					"file": "src/rules/Regions.js",
 					"semi_transient": false,
 					"settings":
@@ -1438,558 +1613,13 @@
 						"selection":
 						[
 							[
-								3921,
-								3938
+								0,
+								0
 							]
 						],
 						"settings":
 						{
 							"auto_complete": false,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1134.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 10,
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "src/rules/Pawns.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6618,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2546,
-								2546
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"history_list_is_closing": true,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1311.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 8,
-					"file": "src/ui/RegionPanel.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4054,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2385,
-								2398
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"history_list_is_closing": true,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 771.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 9,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6364,
-						"regions":
-						{
-							"match":
-							{
-								"flags": 112,
-								"regions":
-								[
-									[
-										124,
-										137
-									],
-									[
-										199,
-										212
-									],
-									[
-										313,
-										326
-									],
-									[
-										420,
-										433
-									],
-									[
-										539,
-										552
-									],
-									[
-										574,
-										587
-									],
-									[
-										763,
-										776
-									],
-									[
-										838,
-										851
-									],
-									[
-										952,
-										965
-									],
-									[
-										1059,
-										1072
-									],
-									[
-										1178,
-										1191
-									],
-									[
-										1213,
-										1226
-									],
-									[
-										1400,
-										1411
-									],
-									[
-										1435,
-										1446
-									],
-									[
-										1485,
-										1496
-									],
-									[
-										1558,
-										1569
-									],
-									[
-										1661,
-										1672
-									],
-									[
-										1700,
-										1711
-									],
-									[
-										1716,
-										1727
-									],
-									[
-										1777,
-										1788
-									],
-									[
-										1880,
-										1891
-									],
-									[
-										1920,
-										1931
-									],
-									[
-										1943,
-										1954
-									],
-									[
-										1978,
-										1989
-									],
-									[
-										2007,
-										2018
-									],
-									[
-										2048,
-										2059
-									],
-									[
-										2061,
-										2072
-									],
-									[
-										2076,
-										2087
-									],
-									[
-										2113,
-										2124
-									],
-									[
-										2132,
-										2143
-									],
-									[
-										2153,
-										2164
-									],
-									[
-										2190,
-										2201
-									],
-									[
-										2208,
-										2219
-									],
-									[
-										2233,
-										2244
-									],
-									[
-										2262,
-										2273
-									],
-									[
-										2286,
-										2297
-									],
-									[
-										2324,
-										2335
-									],
-									[
-										2364,
-										2375
-									],
-									[
-										2525,
-										2536
-									],
-									[
-										2590,
-										2601
-									],
-									[
-										2653,
-										2664
-									],
-									[
-										2681,
-										2692
-									],
-									[
-										2728,
-										2739
-									],
-									[
-										2815,
-										2826
-									],
-									[
-										2945,
-										2956
-									],
-									[
-										2959,
-										2970
-									],
-									[
-										2999,
-										3010
-									],
-									[
-										3019,
-										3030
-									],
-									[
-										3111,
-										3122
-									],
-									[
-										3144,
-										3155
-									],
-									[
-										3212,
-										3223
-									],
-									[
-										3274,
-										3285
-									],
-									[
-										3307,
-										3318
-									],
-									[
-										3342,
-										3353
-									],
-									[
-										3383,
-										3394
-									],
-									[
-										3409,
-										3420
-									],
-									[
-										3437,
-										3448
-									],
-									[
-										3469,
-										3480
-									],
-									[
-										3515,
-										3526
-									],
-									[
-										3529,
-										3540
-									],
-									[
-										3569,
-										3580
-									],
-									[
-										3589,
-										3600
-									],
-									[
-										3623,
-										3634
-									],
-									[
-										3670,
-										3681
-									],
-									[
-										3696,
-										3707
-									],
-									[
-										3728,
-										3739
-									],
-									[
-										3760,
-										3771
-									],
-									[
-										3798,
-										3809
-									],
-									[
-										3906,
-										3917
-									],
-									[
-										3972,
-										3983
-									],
-									[
-										4005,
-										4016
-									],
-									[
-										4055,
-										4066
-									],
-									[
-										4123,
-										4134
-									],
-									[
-										4219,
-										4230
-									],
-									[
-										4271,
-										4282
-									],
-									[
-										4312,
-										4323
-									],
-									[
-										4355,
-										4366
-									],
-									[
-										4372,
-										4383
-									],
-									[
-										4397,
-										4408
-									],
-									[
-										4507,
-										4518
-									],
-									[
-										4609,
-										4620
-									],
-									[
-										4692,
-										4703
-									],
-									[
-										4727,
-										4738
-									],
-									[
-										4844,
-										4855
-									],
-									[
-										4887,
-										4898
-									],
-									[
-										4928,
-										4939
-									],
-									[
-										4978,
-										4989
-									],
-									[
-										5093,
-										5104
-									],
-									[
-										5200,
-										5211
-									],
-									[
-										5245,
-										5256
-									],
-									[
-										5327,
-										5338
-									],
-									[
-										5392,
-										5403
-									],
-									[
-										5518,
-										5529
-									],
-									[
-										5605,
-										5616
-									],
-									[
-										5674,
-										5685
-									],
-									[
-										5715,
-										5726
-									],
-									[
-										5883,
-										5896
-									],
-									[
-										5949,
-										5962
-									],
-									[
-										6052,
-										6065
-									],
-									[
-										6147,
-										6160
-									],
-									[
-										6281,
-										6294
-									],
-									[
-										6316,
-										6329
-									]
-								],
-								"scope": ""
-							}
-						},
-						"selection":
-						[
-							[
-								5962,
-								5962
-							]
-						],
-						"settings":
-						{
-							"detect_indentation": false,
-							"line_numbers": false,
-							"output_tag": 4,
-							"result_base_dir": "",
-							"result_file_regex": "^([^ \t].*):$",
-							"result_line_regex": "^ +([0-9]+):",
-							"scroll_past_end": true,
-							"syntax": "Packages/Default/Find Results.hidden-tmLanguage",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1722.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 10,
-					"file": "src/ui/scene/FastSpectating.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3100,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								915,
-								915
-							]
-						],
-						"settings":
-						{
 							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
@@ -1998,11 +1628,197 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 37,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "src/rules/Pawns.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6614,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1137,
+								1137
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 504.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 53,
 					"type": "text"
 				},
 				{
 					"buffer": 11,
+					"file": "src/rules/Bandits.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2880,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2854,
+								2854
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 734.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 35,
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "src/lib/RandomGenerator.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1350,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								847,
+								847
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 168.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 28,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"file": "src/ui/scene/FastSpectating.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3428,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2152,
+								2152
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 504.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 34,
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "src/lib/hexgrid/HexValuation.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2432,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1013,
+								1013
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 336.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 27,
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"file": "src/lib/Planner.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2493,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								686,
+								686
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 84.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 50,
+					"type": "text"
+				},
+				{
+					"buffer": 16,
 					"file": "/C/Users/Embair/Desktop/layout.latte",
 					"semi_transient": false,
 					"settings":
@@ -2027,11 +1843,11 @@
 						"translation.y": 84.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 8,
+					"stack_index": 54,
 					"type": "text"
 				},
 				{
-					"buffer": 12,
+					"buffer": 17,
 					"file": "/C/Users/Embair/Desktop/Faleron.html",
 					"semi_transient": false,
 					"settings":
@@ -2056,29 +1872,30 @@
 						"translation.y": 84.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 9,
+					"stack_index": 55,
 					"type": "text"
 				},
 				{
-					"buffer": 13,
+					"buffer": 18,
 					"file": "src/rules/LandGenerator.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1542,
+						"buffer_size": 1582,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								32,
-								32
+								942,
+								942
 							]
 						],
 						"settings":
 						{
 							"auto_complete": false,
+							"history_list_is_closing": true,
 							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
@@ -2087,24 +1904,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 17,
+					"stack_index": 24,
 					"type": "text"
 				},
 				{
-					"buffer": 14,
+					"buffer": 19,
 					"file": "src/rules/GameState.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6026,
+						"buffer_size": 7763,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3503,
-								3536
+								4814,
+								4814
 							]
 						],
 						"settings":
@@ -2116,27 +1933,27 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 840.0,
+						"translation.y": 1512.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 25,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
-					"buffer": 15,
+					"buffer": 20,
 					"file": "src/states/Play.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10097,
+						"buffer_size": 10228,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3259,
-								3259
+								8317,
+								8317
 							]
 						],
 						"settings":
@@ -2148,14 +1965,108 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1344.0,
+						"translation.y": 2823.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 16,
+					"stack_index": 12,
 					"type": "text"
 				},
 				{
-					"buffer": 16,
+					"buffer": 21,
+					"file": "src/ui/RegionPanel.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4054,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3192,
+								3192
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 933.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 22,
+					"file": "src/ui/scene/Scene.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1697,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								253,
+								255
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 23,
+					"file": "src/index.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5438,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1087,
+								1087
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 336.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 13,
+					"type": "text"
+				},
+				{
+					"buffer": 24,
 					"file": "src/ui/DebugInfo.js",
 					"semi_transient": false,
 					"settings":
@@ -2182,16 +2093,16 @@
 						"translation.y": 336.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 26,
+					"stack_index": 62,
 					"type": "text"
 				},
 				{
-					"buffer": 17,
+					"buffer": 25,
 					"file": "src/lib/hexgrid/HexGroup.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3624,
+						"buffer_size": 3628,
 						"regions":
 						{
 						},
@@ -2204,6 +2115,7 @@
 						],
 						"settings":
 						{
+							"auto_complete": false,
 							"history_list_is_closing": true,
 							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
 							"tab_size": 4,
@@ -2213,11 +2125,11 @@
 						"translation.y": 252.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 35,
+					"stack_index": 64,
 					"type": "text"
 				},
 				{
-					"buffer": 18,
+					"buffer": 26,
 					"file": "src/rules/RegionRandomizer.js",
 					"semi_transient": false,
 					"settings":
@@ -2244,16 +2156,16 @@
 						"translation.y": 924.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 14,
+					"stack_index": 57,
 					"type": "text"
 				},
 				{
-					"buffer": 19,
+					"buffer": 27,
 					"file": "src/rules/Economy.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7817,
+						"buffer_size": 7956,
 						"regions":
 						{
 						},
@@ -2271,32 +2183,65 @@
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
-						"translation.x": -0.0,
-						"translation.y": 924.0,
+						"translation.x": 252.0,
+						"translation.y": 1008.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 15,
+					"stack_index": 58,
 					"type": "text"
 				},
 				{
-					"buffer": 20,
+					"buffer": 28,
 					"file": "src/lib/hexgrid/HexValuation.spec.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1610,
+						"buffer_size": 2447,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								281,
-								281
+								1333,
+								1333
 							]
 						],
 						"settings":
 						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 434.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 30,
+					"type": "text"
+				},
+				{
+					"buffer": 29,
+					"file": "src/lib/RandomGenerator.spec.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 787,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								346,
+								346
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"history_list_is_closing": true,
 							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
@@ -2305,11 +2250,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 34,
+					"stack_index": 29,
 					"type": "text"
 				},
 				{
-					"buffer": 21,
+					"buffer": 30,
 					"file": "src/ui/Scrolling.js",
 					"semi_transient": false,
 					"settings":
@@ -2336,16 +2281,16 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 44,
+					"stack_index": 69,
 					"type": "text"
 				},
 				{
-					"buffer": 22,
+					"buffer": 31,
 					"file": "src/ui/ModalsManager.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1882,
+						"buffer_size": 3300,
 						"regions":
 						{
 						},
@@ -2367,11 +2312,11 @@
 						"translation.y": 84.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 46,
+					"stack_index": 71,
 					"type": "text"
 				},
 				{
-					"buffer": 23,
+					"buffer": 32,
 					"file": "src/ui/OptionButtons.js",
 					"semi_transient": false,
 					"settings":
@@ -2399,11 +2344,11 @@
 						"translation.y": 101.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 45,
+					"stack_index": 70,
 					"type": "text"
 				},
 				{
-					"buffer": 24,
+					"buffer": 33,
 					"file": "static/index.html",
 					"semi_transient": false,
 					"settings":
@@ -2430,16 +2375,16 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 36,
+					"stack_index": 46,
 					"type": "text"
 				},
 				{
-					"buffer": 25,
+					"buffer": 34,
 					"file": "src/lib/controls/UI.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10653,
+						"buffer_size": 11066,
 						"regions":
 						{
 						},
@@ -2462,43 +2407,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 37,
+					"stack_index": 45,
 					"type": "text"
 				},
 				{
-					"buffer": 26,
-					"file": "src/index.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5440,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3915,
-								3915
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"history_list_is_closing": true,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": -0.0,
-						"translation.y": 1680.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 31,
-					"type": "text"
-				},
-				{
-					"buffer": 27,
+					"buffer": 35,
 					"file": "src/lib/Injector.js",
 					"semi_transient": false,
 					"settings":
@@ -2525,11 +2438,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 38,
+					"stack_index": 65,
 					"type": "text"
 				},
 				{
-					"buffer": 28,
+					"buffer": 36,
 					"file": "src/lib/AssetManager.js",
 					"semi_transient": false,
 					"settings":
@@ -2555,11 +2468,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 39,
+					"stack_index": 66,
 					"type": "text"
 				},
 				{
-					"buffer": 29,
+					"buffer": 37,
 					"file": "src/ui/assets/GameAssets.js",
 					"semi_transient": false,
 					"settings":
@@ -2585,11 +2498,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 40,
+					"stack_index": 67,
 					"type": "text"
 				},
 				{
-					"buffer": 30,
+					"buffer": 38,
 					"file": "src/ui/Renderer.js",
 					"semi_transient": false,
 					"settings":
@@ -2616,24 +2529,24 @@
 						"translation.y": 4031.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 24,
+					"stack_index": 61,
 					"type": "text"
 				},
 				{
-					"buffer": 31,
+					"buffer": 39,
 					"file": "src/lib/ActionsProvider.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 14060,
+						"buffer_size": 14066,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								10542,
-								10542
+								2440,
+								2449
 							]
 						],
 						"settings":
@@ -2645,14 +2558,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 3887.0,
+						"translation.y": 975.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 21,
+					"stack_index": 7,
 					"type": "text"
 				},
 				{
-					"buffer": 32,
+					"buffer": 40,
 					"file": "src/ui/NextTurnButton.js",
 					"semi_transient": false,
 					"settings":
@@ -2680,17 +2593,17 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 43,
+					"stack_index": 68,
 					"type": "text"
 				}
 			]
 		},
 		{
-			"selected": 1,
+			"selected": 27,
 			"sheets":
 			[
 				{
-					"buffer": 33,
+					"buffer": 41,
 					"file": "src/ui/SFX.js",
 					"semi_transient": false,
 					"settings":
@@ -2716,11 +2629,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 23,
+					"stack_index": 60,
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 21,
 					"file": "src/ui/RegionPanel.js",
 					"semi_transient": false,
 					"settings":
@@ -2732,8 +2645,8 @@
 						"selection":
 						[
 							[
-								2370,
-								2370
+								265,
+								265
 							]
 						],
 						"settings":
@@ -2745,14 +2658,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 672.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
+					"stack_index": 43,
 					"type": "text"
 				},
 				{
-					"buffer": 34,
+					"buffer": 42,
 					"file": "src/lib/controls/InputProxy.js",
 					"semi_transient": false,
 					"settings":
@@ -2778,24 +2691,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 48,
+					"stack_index": 44,
 					"type": "text"
 				},
 				{
-					"buffer": 15,
+					"buffer": 20,
 					"file": "src/states/Play.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10097,
+						"buffer_size": 10228,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7493,
-								7493
+								7106,
+								7106
 							]
 						],
 						"settings":
@@ -2807,27 +2720,27 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2834.0,
+						"translation.y": 2344.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 29,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
-					"buffer": 25,
+					"buffer": 34,
 					"file": "src/lib/controls/UI.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10653,
+						"buffer_size": 11066,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								224,
-								224
+								3526,
+								3526
 							]
 						],
 						"settings":
@@ -2839,14 +2752,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 877.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 42,
+					"stack_index": 10,
 					"type": "text"
 				},
 				{
-					"buffer": 35,
+					"buffer": 3,
 					"file": "src/lib/hexgrid/HexGrid.js",
 					"semi_transient": false,
 					"settings":
@@ -2858,70 +2771,8 @@
 						"selection":
 						[
 							[
-								2922,
-								2922
-							]
-						],
-						"settings":
-						{
-							"history_list_is_closing": true,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1176.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 41,
-					"type": "text"
-				},
-				{
-					"buffer": 17,
-					"file": "src/lib/hexgrid/HexGroup.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3624,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								485,
-								485
-							]
-						],
-						"settings":
-						{
-							"history_list_is_closing": true,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 27,
-					"type": "text"
-				},
-				{
-					"buffer": 36,
-					"file": "src/lib/RandomGenerator.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1349,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								683,
-								683
+								2223,
+								2223
 							]
 						],
 						"settings":
@@ -2932,14 +2783,77 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 840.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 11,
+					"stack_index": 23,
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 25,
+					"file": "src/lib/hexgrid/HexGroup.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3628,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1002,
+								1002
+							]
+						],
+						"settings":
+						{
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 1428.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 52,
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "src/lib/RandomGenerator.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1350,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								386,
+								386
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 51,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
 					"file": "src/rules/Regions.js",
 					"semi_transient": false,
 					"settings":
@@ -2951,8 +2865,8 @@
 						"selection":
 						[
 							[
-								3150,
-								3150
+								3807,
+								3807
 							]
 						],
 						"settings":
@@ -2963,19 +2877,19 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1031.0,
+						"translation.y": 1051.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 28,
+					"stack_index": 40,
 					"type": "text"
 				},
 				{
-					"buffer": 37,
+					"buffer": 29,
 					"file": "src/lib/RandomGenerator.spec.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 407,
+						"buffer_size": 787,
 						"regions":
 						{
 						},
@@ -2998,11 +2912,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 30,
+					"stack_index": 63,
 					"type": "text"
 				},
 				{
-					"buffer": 38,
+					"buffer": 43,
 					"file": "src/rules/Warfare.js",
 					"semi_transient": false,
 					"settings":
@@ -3014,8 +2928,8 @@
 						"selection":
 						[
 							[
-								201,
-								201
+								118,
+								118
 							]
 						],
 						"settings":
@@ -3028,54 +2942,24 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 32,
+					"stack_index": 31,
 					"type": "text"
 				},
 				{
-					"buffer": 39,
-					"file": "src/ai/Marshal.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2147,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								210,
-								210
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 33,
-					"type": "text"
-				},
-				{
-					"buffer": 22,
+					"buffer": 31,
 					"file": "src/ui/ModalsManager.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1882,
+						"buffer_size": 3300,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								893,
-								893
+								1574,
+								1574
 							]
 						],
 						"settings":
@@ -3086,19 +2970,19 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 168.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 47,
+					"stack_index": 18,
 					"type": "text"
 				},
 				{
-					"buffer": 26,
+					"buffer": 23,
 					"file": "src/index.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5440,
+						"buffer_size": 5438,
 						"regions":
 						{
 						},
@@ -3121,7 +3005,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 51,
+					"stack_index": 72,
 					"type": "text"
 				},
 				{
@@ -3130,15 +3014,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 9793,
+						"buffer_size": 11051,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4203,
-								4203
+								8927,
+								8927
 							]
 						],
 						"settings":
@@ -3150,27 +3034,27 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1303.0,
+						"translation.y": 3324.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 22,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
-					"buffer": 31,
+					"buffer": 39,
 					"file": "src/lib/ActionsProvider.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 14060,
+						"buffer_size": 14066,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3473,
-								3473
+								4808,
+								4808
 							]
 						],
 						"settings":
@@ -3182,58 +3066,740 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1171.0,
+						"translation.y": 1899.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 47,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "src/rules/Players.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11962,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								10433,
+								10433
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 9.0,
+						"translation.y": 3663.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 16,
+					"type": "text"
+				},
+				{
+					"buffer": 44,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6621,
+						"regions":
+						{
+							"match":
+							{
+								"flags": 112,
+								"regions":
+								[
+									[
+										125,
+										138
+									],
+									[
+										243,
+										256
+									],
+									[
+										302,
+										315
+									],
+									[
+										494,
+										507
+									],
+									[
+										612,
+										625
+									],
+									[
+										671,
+										684
+									],
+									[
+										862,
+										874
+									],
+									[
+										967,
+										979
+									],
+									[
+										1090,
+										1102
+									],
+									[
+										1177,
+										1189
+									],
+									[
+										1305,
+										1317
+									],
+									[
+										1376,
+										1388
+									],
+									[
+										1437,
+										1449
+									],
+									[
+										1498,
+										1510
+									],
+									[
+										1740,
+										1745
+									],
+									[
+										1794,
+										1799
+									],
+									[
+										1986,
+										1998
+									],
+									[
+										2020,
+										2032
+									],
+									[
+										2152,
+										2164
+									],
+									[
+										2345,
+										2356
+									],
+									[
+										2463,
+										2474
+									],
+									[
+										2522,
+										2533
+									],
+									[
+										2706,
+										2717
+									],
+									[
+										2739,
+										2750
+									],
+									[
+										2869,
+										2880
+									],
+									[
+										2947,
+										2958
+									],
+									[
+										2977,
+										2988
+									],
+									[
+										3041,
+										3052
+									],
+									[
+										3076,
+										3087
+									],
+									[
+										3158,
+										3169
+									],
+									[
+										3191,
+										3202
+									],
+									[
+										3222,
+										3233
+									],
+									[
+										3252,
+										3263
+									],
+									[
+										3285,
+										3296
+									],
+									[
+										3316,
+										3327
+									],
+									[
+										3348,
+										3359
+									],
+									[
+										3463,
+										3474
+									],
+									[
+										3513,
+										3524
+									],
+									[
+										3614,
+										3625
+									],
+									[
+										3630,
+										3641
+									],
+									[
+										3852,
+										3860
+									],
+									[
+										4105,
+										4113
+									],
+									[
+										4260,
+										4268
+									],
+									[
+										4447,
+										4460
+									],
+									[
+										4577,
+										4590
+									],
+									[
+										4655,
+										4668
+									],
+									[
+										4714,
+										4727
+									],
+									[
+										4749,
+										4762
+									],
+									[
+										4836,
+										4849
+									],
+									[
+										4867,
+										4880
+									],
+									[
+										4902,
+										4915
+									],
+									[
+										4938,
+										4951
+									],
+									[
+										5053,
+										5066
+									],
+									[
+										5103,
+										5116
+									],
+									[
+										5220,
+										5233
+									],
+									[
+										5381,
+										5395
+									],
+									[
+										5542,
+										5552
+									],
+									[
+										5668,
+										5678
+									],
+									[
+										5738,
+										5748
+									],
+									[
+										5876,
+										5886
+									],
+									[
+										5960,
+										5970
+									],
+									[
+										6135,
+										6145
+									],
+									[
+										6261,
+										6271
+									],
+									[
+										6331,
+										6341
+									],
+									[
+										6469,
+										6479
+									],
+									[
+										6553,
+										6563
+									]
+								],
+								"scope": ""
+							}
+						},
+						"selection":
+						[
+							[
+								6271,
+								6271
+							]
+						],
+						"settings":
+						{
+							"detect_indentation": false,
+							"line_numbers": false,
+							"output_tag": 14,
+							"result_base_dir": "",
+							"result_file_regex": "^([^ \t].*):$",
+							"result_line_regex": "^ +([0-9]+):",
+							"scroll_past_end": true,
+							"syntax": "Packages/Default/Find Results.hidden-tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 2618.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "src/ui/PawnSprites.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8620,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1358,
+								1358
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 84.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 15,
+					"file": "src/lib/Planner.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2493,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								578,
+								578
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 49,
+					"type": "text"
+				},
+				{
+					"buffer": 45,
+					"file": "src/ai/AI.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 9463,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4603,
+								4603
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1157.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 25,
+					"type": "text"
+				},
+				{
+					"buffer": 46,
+					"file": "src/ui/GridOverlays.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3819,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								725,
+								725
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 121.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 26,
+					"type": "text"
+				},
+				{
+					"buffer": 28,
+					"file": "src/lib/hexgrid/HexValuation.spec.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2447,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2143,
+								2143
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 336.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 32,
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "src/lib/hexgrid/HexValuation.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2432,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2090,
+								2090
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1134.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 33,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "src/rules/Pawns.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6614,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								5406,
+								5406
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2547.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 38,
+					"type": "text"
+				},
+				{
+					"buffer": 47,
+					"file": "src/rules/entities/Pawn.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 697,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								527,
+								527
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 41,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "src/rules/Bandits.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2880,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								702,
+								702
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 48,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/rules/Actions.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4401,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2330,
+								2330
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 429.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 42,
+					"type": "text"
+				},
+				{
+					"buffer": 19,
+					"file": "src/rules/GameState.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7763,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4625,
+								4625
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1437.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 32,
+					"file": "src/ui/OptionButtons.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1589,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								987,
+								987
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"history_list_is_closing": true,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 336.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 20,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
-					"file": "src/rules/Players.js",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10860,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								10167,
-								10167
-							]
-						],
-						"settings":
-						{
-							"auto_complete": false,
-							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3327.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 7,
-					"type": "text"
-				},
-				{
-					"buffer": 19,
+					"buffer": 27,
 					"file": "src/rules/Economy.js",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7817,
+						"buffer_size": 7956,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3694,
-								3694
+								5143,
+								5143
 							]
 						],
 						"settings":
@@ -3244,14 +3810,45 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1176.0,
+						"translation.y": 1686.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 36,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 13,
+					"file": "src/ui/scene/FastSpectating.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3428,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1750,
+								1750
+							]
+						],
+						"settings":
+						{
+							"auto_complete": false,
+							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 504.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 39,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
 					"file": "src/ui/scene/LocalPlayerTurn.js",
 					"semi_transient": false,
 					"settings":
@@ -3279,11 +3876,11 @@
 						"translation.y": 461.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 52,
+					"stack_index": 73,
 					"type": "text"
 				},
 				{
-					"buffer": 29,
+					"buffer": 37,
 					"file": "src/ui/assets/GameAssets.js",
 					"semi_transient": false,
 					"settings":
@@ -3309,7 +3906,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 50,
+					"stack_index": 17,
 					"type": "text"
 				}
 			]
@@ -3343,7 +3940,7 @@
 		"cols":
 		[
 			0.0,
-			0.495694956949,
+			0.370233702336,
 			1.0
 		],
 		"rows":
@@ -3375,12 +3972,256 @@
 		"selected_items":
 		[
 			[
-				"pawns",
-				"src\\rules\\Pawns.js"
+				"games",
+				"src\\rules\\GameState.js"
+			],
+			[
+				"pawnsprites",
+				"src\\ui\\PawnSprites.js"
+			],
+			[
+				"uiman",
+				"src\\ui\\UIManager.js"
+			],
+			[
+				"actionsprovide",
+				"src\\lib\\ActionsProvider.js"
+			],
+			[
+				"uimana",
+				"src\\ui\\UIManager.js"
+			],
+			[
+				"gamestate",
+				"src\\rules\\GameState.js"
+			],
+			[
+				"ui",
+				"src\\lib\\controls\\UI.js"
+			],
+			[
+				"regionpane",
+				"src\\ui\\RegionPanel.js"
+			],
+			[
+				"uima",
+				"src\\ui\\UIManager.js"
+			],
+			[
+				"scen",
+				"src\\ui\\scene\\Scene.js"
 			],
 			[
 				"regionpanel",
 				"src\\ui\\RegionPanel.js"
+			],
+			[
+				"gamesta",
+				"src\\rules\\GameState.js"
+			],
+			[
+				"play",
+				"src\\states\\Play.js"
+			],
+			[
+				"inde",
+				"src\\index.js"
+			],
+			[
+				"players",
+				"src\\rules\\Players.js"
+			],
+			[
+				"state",
+				"src\\rules\\GameState.js"
+			],
+			[
+				"gam",
+				"src\\ui\\assets\\GameAssets.js"
+			],
+			[
+				"ui.js",
+				"src\\lib\\controls\\UI.js"
+			],
+			[
+				"modals",
+				"src\\ui\\ModalsManager.js"
+			],
+			[
+				"actions",
+				"src\\rules\\Actions.js"
+			],
+			[
+				"play.js",
+				"src\\states\\Play.js"
+			],
+			[
+				"menu",
+				"src\\ui\\modals\\Menu.js"
+			],
+			[
+				"option",
+				"src\\ui\\OptionButtons.js"
+			],
+			[
+				"grid",
+				"src\\lib\\hexgrid\\HexGrid.js"
+			],
+			[
+				"uimanager",
+				"src\\ui\\UIManager.js"
+			],
+			[
+				"play.j",
+				"src\\states\\Play.js"
+			],
+			[
+				"landgener",
+				"src\\rules\\LandGenerator.js"
+			],
+			[
+				"gridoverlys",
+				"src\\ui\\GridOverlays.js"
+			],
+			[
+				"hexvalution",
+				"src\\lib\\hexgrid\\HexValuation.js"
+			],
+			[
+				"ai",
+				"src\\ai\\AI.js"
+			],
+			[
+				"random",
+				"src\\lib\\RandomGenerator.js"
+			],
+			[
+				"rando",
+				"src\\lib\\RandomGenerator.spec.js"
+			],
+			[
+				"randomgener",
+				"src\\lib\\RandomGenerator.js"
+			],
+			[
+				"hexvalu",
+				"src\\lib\\hexgrid\\HexValuation.spec.js"
+			],
+			[
+				"hexvaluation.spec",
+				"src\\lib\\hexgrid\\HexValuation.spec.js"
+			],
+			[
+				"hexvalutaion",
+				"src\\lib\\hexgrid\\HexValuation.js"
+			],
+			[
+				"ai.",
+				"src\\ai\\AI.js"
+			],
+			[
+				"marshal",
+				"src\\ai\\Marshal.js"
+			],
+			[
+				"hexvaluation",
+				"src\\lib\\hexgrid\\HexValuation.js"
+			],
+			[
+				"hexvali",
+				"src\\lib\\hexgrid\\HexValuation.spec.js"
+			],
+			[
+				"fastspec",
+				"src\\ui\\scene\\FastSpectating.js"
+			],
+			[
+				"bandits",
+				"src\\rules\\Bandits.js"
+			],
+			[
+				"pawns",
+				"src\\rules\\Pawns.js"
+			],
+			[
+				"pawns.js",
+				"src\\rules\\Pawns.js"
+			],
+			[
+				"pawnsprite",
+				"src\\ui\\PawnSprites.js"
+			],
+			[
+				"fast",
+				"src\\ui\\scene\\FastSpectating.js"
+			],
+			[
+				"fastsp",
+				"src\\ui\\scene\\FastSpectating.js"
+			],
+			[
+				"regions",
+				"src\\rules\\Regions.js"
+			],
+			[
+				"economy",
+				"src\\rules\\Economy.js"
+			],
+			[
+				"pawn.",
+				"src\\rules\\entities\\Pawn.js"
+			],
+			[
+				"play.",
+				"src\\states\\Play.js"
+			],
+			[
+				"regionpae",
+				"src\\ui\\RegionPanel.js"
+			],
+			[
+				"uimanage",
+				"src\\ui\\UIManager.js"
+			],
+			[
+				"index.js",
+				"src\\index.js"
+			],
+			[
+				"index.j",
+				"src\\index.js"
+			],
+			[
+				"index",
+				"static\\index.html"
+			],
+			[
+				"actionsprov",
+				"src\\lib\\ActionsProvider.js"
+			],
+			[
+				"land",
+				"src\\rules\\LandGenerator.js"
+			],
+			[
+				"pawnsp",
+				"src\\ui\\PawnSprites.js"
+			],
+			[
+				"planner",
+				"src\\lib\\Planner.js"
+			],
+			[
+				"pawns.",
+				"src\\rules\\Pawns.js"
+			],
+			[
+				"ui.",
+				"src\\ui\\UIManager.js"
+			],
+			[
+				"hexgroup",
+				"src\\lib\\hexgrid\\HexGroup.js"
 			],
 			[
 				"",
@@ -3391,52 +4232,16 @@
 				"src\\rules\\Economy.js"
 			],
 			[
-				"players",
-				"src\\rules\\Players.js"
-			],
-			[
 				"playerturn",
 				"src\\ui\\scene\\LocalPlayerTurn.js"
-			],
-			[
-				"pawnsprite",
-				"src\\ui\\PawnSprites.js"
-			],
-			[
-				"economy",
-				"src\\rules\\Economy.js"
-			],
-			[
-				"random",
-				"src\\lib\\RandomGenerator.js"
-			],
-			[
-				"play",
-				"src\\states\\Play.js"
 			],
 			[
 				"region",
 				"src\\rules\\RegionRandomizer.js"
 			],
 			[
-				"land",
-				"src\\rules\\LandGenerator.js"
-			],
-			[
-				"uiman",
-				"src\\ui\\UIManager.js"
-			],
-			[
 				"hexselection",
 				"src\\ui\\HexSelectionProxy.js"
-			],
-			[
-				"actions",
-				"src\\lib\\ActionsProvider.js"
-			],
-			[
-				"actionsprovide",
-				"src\\lib\\ActionsProvider.js"
 			],
 			[
 				"actionsprovid",
@@ -3447,20 +4252,8 @@
 				"src\\lib\\ActionsProvider.js"
 			],
 			[
-				"uimana",
-				"src\\ui\\UIManager.js"
-			],
-			[
-				"play.",
-				"src\\states\\Play.js"
-			],
-			[
 				"actions.",
 				"src\\rules\\Actions.js"
-			],
-			[
-				"gamestate",
-				"src\\rules\\GameState.js"
 			],
 			[
 				"debugino",
@@ -3471,24 +4264,8 @@
 				"src\\lib\\hexgrid\\HexGroup.js"
 			],
 			[
-				"regions",
-				"src\\rules\\Regions.js"
-			],
-			[
-				"index.js",
-				"src\\index.js"
-			],
-			[
 				"warf",
 				"src\\rules\\Warfare.js"
-			],
-			[
-				"marshal",
-				"src\\ai\\Marshal.js"
-			],
-			[
-				"randomgener",
-				"src\\lib\\RandomGenerator.js"
 			],
 			[
 				"regionrandom",
@@ -3499,28 +4276,8 @@
 				"src\\rules\\RegionRandomizer.js"
 			],
 			[
-				"ai",
-				"src\\ai\\AI.js"
-			],
-			[
-				"hexgroup",
-				"src\\lib\\hexgrid\\HexGroup.js"
-			],
-			[
-				"grid",
-				"src\\lib\\hexgrid\\HexGrid.js"
-			],
-			[
-				"ui",
-				"src\\ui\\UIManager.js"
-			],
-			[
 				"next",
 				"src\\ui\\NextTurnButton.js"
-			],
-			[
-				"ui.",
-				"src\\lib\\controls\\UI.js"
 			],
 			[
 				"index.html",
@@ -3529,10 +4286,6 @@
 			[
 				"hexsel",
 				"src\\ui\\HexSelectionProxy.js"
-			],
-			[
-				"ui.js",
-				"src\\lib\\controls\\UI.js"
 			],
 			[
 				"button",
@@ -3551,24 +4304,12 @@
 				"src\\lib\\Injector.js"
 			],
 			[
-				"index",
-				"static\\index.html"
-			],
-			[
-				"gam",
-				"src\\ui\\assets\\GameAssets.js"
-			],
-			[
 				"gamea",
 				"src\\ui\\assets\\GameAssets.js"
 			],
 			[
 				"assetman",
 				"src\\lib\\AssetManager.js"
-			],
-			[
-				"index.j",
-				"src\\index.js"
 			],
 			[
 				"optionbu",
@@ -3583,28 +4324,12 @@
 				"src\\ui\\NextTurnButton.js"
 			],
 			[
-				"pawnsprites",
-				"src\\ui\\PawnSprites.js"
-			],
-			[
-				"option",
-				"src\\ui\\OptionButtons.js"
-			],
-			[
 				"hexsele",
 				"src\\ui\\HexSelectionProxy.js"
 			],
 			[
-				"modals",
-				"src\\ui\\ModalsManager.js"
-			],
-			[
 				"modalsmana",
 				"src\\ui\\ModalsManager.js"
-			],
-			[
-				"menu",
-				"src\\ui\\modals\\Menu.js"
 			],
 			[
 				"renderer",
@@ -3639,16 +4364,8 @@
 				"src\\ui\\UIManager.js"
 			],
 			[
-				"play.js",
-				"src\\states\\Play.js"
-			],
-			[
 				"game",
 				"src\\ui\\assets\\GameAssets.js"
-			],
-			[
-				"inde",
-				"src\\index.js"
 			],
 			[
 				"style.c",
@@ -3661,10 +4378,6 @@
 			[
 				"heyx",
 				"src\\ui\\HexSelectionProxy.js"
-			],
-			[
-				"uima",
-				"src\\ui\\UIManager.js"
 			],
 			[
 				"landgen",
@@ -3769,122 +4482,6 @@
 			[
 				"heys",
 				"src\\ui\\HexSelectionProxy.js"
-			],
-			[
-				"regionpane",
-				"src\\ui\\RegionPanel.js"
-			],
-			[
-				"hexselect",
-				"src\\ui\\HexSelectionProxy.js"
-			],
-			[
-				"nextt",
-				"src\\ui\\NextTurnButton.js"
-			],
-			[
-				"tweenmana",
-				"src\\ui\\TweenManager.js"
-			],
-			[
-				"pawnspr",
-				"src\\ui\\PawnSprites.js"
-			],
-			[
-				"tweenm",
-				"src\\ui\\TweenManager.js"
-			],
-			[
-				"ai.",
-				"src\\ai\\AI.js"
-			],
-			[
-				"localp",
-				"src\\ui\\scene\\LocalPlayerTurn.js"
-			],
-			[
-				"secene",
-				"src\\ui\\scene\\Scene.js"
-			],
-			[
-				"eceon",
-				"src\\rules\\Economy.js"
-			],
-			[
-				"ai.js",
-				"src\\ai\\AI.js"
-			],
-			[
-				"scenes",
-				"src\\ui\\scene\\Scene.js"
-			],
-			[
-				"plays",
-				"src\\states\\Play.js"
-			],
-			[
-				"economis",
-				"src\\ai\\Economist.js"
-			],
-			[
-				"eceonmy",
-				"src\\rules\\Economy.js"
-			],
-			[
-				"regionsp",
-				"src\\ui\\RegionPanel.js"
-			],
-			[
-				"actionspro",
-				"src\\lib\\ActionsProvider.js"
-			],
-			[
-				"debug",
-				"src\\ui\\scene\\Debug.js"
-			],
-			[
-				"pawn",
-				"src\\rules\\entities\\Pawn.js"
-			],
-			[
-				"war",
-				"src\\rules\\Warfare.js"
-			],
-			[
-				"playertr",
-				"src\\ui\\scene\\PlayerTurn.js"
-			],
-			[
-				"re",
-				"src\\ui\\Renderer.js"
-			],
-			[
-				"rendere",
-				"src\\ui\\Renderer.js"
-			],
-			[
-				"gamesta",
-				"src\\rules\\GameState.js"
-			],
-			[
-				"uimn",
-				"src\\ui\\UIManager.js"
-			],
-			[
-				"pla",
-				"src\\states\\Play.js"
-			],
-			[
-				"eceonom",
-				"src\\rules\\Economy.js"
-			],
-			[
-				"controls",
-				"src\\lib\\controls\\UI.js"
-			],
-			[
-				"landgener",
-				"src\\rules\\LandGenerator.js"
 			]
 		],
 		"width": 0.0

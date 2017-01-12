@@ -21,7 +21,8 @@ function UIManager(spec) {
         selectedHex,
         scene,
         resumeActionsCallback, // stored callback for pending AWAIT_PLAYER_INPUT action
-        defaultSpectatorScene = 'FAST_SPECTATING';
+        defaultSpectatorScene = 'FAST_SPECTATING',
+        canundoBuy = true;
 
     let self = Object.freeze({
         onHexSelected: new Phaser.Signal(/* hex */),
@@ -38,6 +39,7 @@ function UIManager(spec) {
         selectHex,
         selectRegion,
         buyPawn, //(pawnType)
+        undoBuy,
         endTurn,
         render,
         update,
@@ -261,6 +263,11 @@ function UIManager(spec) {
         actions.undoUntil('AWAIT_PLAYER_INPUT');
     }
 
+    function undoBuy() {
+        actions.undoUntil('REFUND_MARKER');
+        actions.undoUntil('AWAIT_PLAYER_INPUT');
+    }
+
     function changeSceneNow(nextSceneName) {
         if (scene) scene.interrupt();
         uiElements.tweens.stopAll();
@@ -322,6 +329,7 @@ function UIManager(spec) {
     }
 
     function buyPawn(pawnType) {
+        if (!players.grabbedPawn) actions.schedule("REFUND_MARKER");
         actions.schedule('BUY_UNIT', pawnType, selectedRegion);
         uiElements.sfx.grabPawn();
         processActions();

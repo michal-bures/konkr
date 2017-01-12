@@ -69,6 +69,9 @@ function Actions(spec) {
         'AWAIT_PLAYER_INPUT': [],
         'VICTORY': [],
         'DEFEAT': [],
+
+        // Marker actions
+        'REFUND_MARKER': null,
     },
 
     "types": {

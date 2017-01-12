@@ -12,6 +12,7 @@ function RegionPanel(spec) {
         component: 'image',
         src: 'regionPanel',
         align:Phaser.BOTTOM_CENTER,
+        onClicked: onPanelClick,
         contains: [
             {
                 name: 'pawnShop',
@@ -129,6 +130,10 @@ function RegionPanel(spec) {
             pawnShop.setStock(economy.buyablePawns(region));
             mainContainer.show();
         }
+    }
+
+    function onPanelClick() {
+        ui.undoBuy();
     }
 }
 

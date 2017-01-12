@@ -90,7 +90,6 @@ function GridOverlays({game, grid, log, debug, regions, gameState}) {
         }
 
         refresh() {
-            log.info("REFRESH WTF");
             const graphics = game.make.graphics(0, 0);
 
             graphics.beginFill(0x000000);

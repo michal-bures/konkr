@@ -159,6 +159,11 @@ function Image(spec, def) {
     let {src='imageBackground'} = def;
     self.anchorObject=self.add(spec.game.add.image(0, 0, src));
 
+    if (def.onClicked) {
+        self.anchorObject.inputEnabled=true;
+        self.anchorObject.events.onInputUp.add(debounce(def.onClicked,INPUTEVENT_DEBOUNCE_INTERVAL,true));
+    }
+
     return self;
 }
 
@@ -251,6 +256,10 @@ function Pane(spec, def) {
     let bgSprite = new Phaser.TileSprite(spec.game,0,0,1,1,'paneBackground');
     self.add(bgSprite);
 
+    if (def.onClicked) {
+        self.inputEnabled=true;
+        self.onInputUp.add(debounce(def.onClicked,INPUTEVENT_DEBOUNCE_INTERVAL,true));
+    }
 
     extend(self, {
         reflowSelf(clientRect) {

@@ -100,7 +100,7 @@ function ActionsProvider(spec, providerName, config) {
     }
 
     function undoUntil(actionName) {
-        if (!actionQueue.slice(0,actionPointer-1).some(action=>action.name===actionName)) {
+        if (!actionQueue.slice(0,actionPointer).some(action=>action.name===actionName)) {
             log.warn("No action left to undo");
             return;
         } 
@@ -149,11 +149,11 @@ function ActionsProvider(spec, providerName, config) {
             descendants: 0,
             data: {}, // auxiliary data that can be assigned by handlers, useful for storing information needed for undo
             issuer:null,            
-            canBeUndone() { return !!handlers[name] && handlers[name].undo; },
+            canBeUndone() { return isDummy() || (!!handlers[name] && handlers[name].undo); },
             canAbort() { return !!handlers[name] && handlers[name].abort; },
         });
 
-        if (args.length != actionDefs[name].length) {
+        if (!isDummy && args.length != actionDefs[name].length) {
             throw Error(`${self} called with ${args.length} arguments (expected ${actionDefs[name].length})`);
         }
 
@@ -180,17 +180,29 @@ function ActionsProvider(spec, providerName, config) {
             a.issuer = name;
         }
 
+        // returns true if this is just a dummy marker action
+        function isDummy() {
+            return actionDefs[name] === null;
+        }
+
         function start() {
             if (resolution) throw Error(`Attempt to restart action that is already done. (${self})`);
             if (processing) throw Error(`Attempt to restart action that is already running. (${self})`);
             processing = true;
-            if (!handlers[name]) throw Error(`Missign handler for action ${name}`);
             log.debug(`Now running ${self}`);
-            handlers[name].handle(self,...args);
+
+            if (isDummy()) { //dummy marker action
+                self.resolve();
+            } else {
+                if (!handlers[name]) throw Error(`Missign handler for action ${name}`);
+                handlers[name].handle(self,...args);
+            }
         }
 
         function undo() {
-            handlers[name].undo(self,...args);
+            if (!isDummy()) {
+                handlers[name].undo(self,...args);
+            }
             log.debug(`Undone ${self}`);
             resolution = null;
             processing = false;
@@ -338,10 +350,12 @@ function ActionsProvider(spec, providerName, config) {
     //check that all actions have handlers
     function checkHandlers() {
         Object.keys(handlers).forEach(key => {
-            if (!handlers[key]) log.warn(`Action ${key} has no handler assigned.`);
-            actionDefs[key].forEach(arg=> {
-                if (!typeDefs[arg]) throw Error(`Action ${key} uses unrecognized argument type '${arg}' `);
-            });
+            if (actionDefs[key] !== null) {
+                if (!handlers[key]) log.warn(`Action ${key} has no handler assigned.`);
+                actionDefs[key].forEach(arg=> {
+                    if (!typeDefs[arg]) throw Error(`Action ${key} uses unrecognized argument type '${arg}' `);
+                });
+            }
         });
     }
 

@@ -34,7 +34,7 @@ function LocalPlayerTurn(spec){
                 onRegionTreasuryChanged                
             },
             ui: {
-                onHexSelected
+                onHexSelected,
             }
         },
         setup,
