@@ -6,10 +6,14 @@ function Scrolling(spec) {
         dragStartPoint = null,
         dragging = false,
         dx = 0, dy = 0,
-        cooldown = null;
+        cooldown = null,
+        mode = null;
 
     const self = Object.freeze({
         update,
+        toDebugString,
+        get mode() { return mode; },
+        set mode(val) { mode = val; },
         get isActive() { return dragging; }
     });
 
@@ -27,17 +31,36 @@ function Scrolling(spec) {
               dy += ddy;
               if (dragging || (Math.abs(dx)+Math.abs(dy) > DRAG_DEADZONE)) {
                   dragging = true;
-                  game.camera.x += ddx;     
-                  game.camera.y += ddy; 
+                  switch (mode) {
+                        case 'CAMERA':
+                            game.camera.x += ddx;     
+                            game.camera.y += ddy;
+                            break;
+                        default:
+                  }
               }
             } 
             dragStartPoint = game.input.activePointer.position.clone();
         } else {    
-            if (dragStartPoint) startCooldown();
+            if (dragging) {
+                startCooldown();                
+                switch (mode) {
+                    case 'PAWN':
+                        spec.hexSelectionProxy.trigger();
+                        break;
+                    default:
+                }
+            }
             dragStartPoint = null;
             dx = 0;
             dy = 0;
         }
+    }
+
+    function toDebugString() {
+        return `mode: ${mode}
+active: ${self.isActive}
+from: ${dragStartPoint}`;
     }
 
     return self;

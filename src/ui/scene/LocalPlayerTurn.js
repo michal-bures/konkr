@@ -3,7 +3,7 @@ import Scene from './Scene';
 function LocalPlayerTurn(spec){
 
     let { actions,  players, pawns, regions, ui, economy, log,
-          sfx, pawnSprites, landSprites, feedbackSymbols } = spec;
+          sfx, pawnSprites, landSprites, feedbackSymbols, scrolling } = spec;
 
     return new Scene(spec, { 
     name: 'PLAYER_TURN',
@@ -58,6 +58,7 @@ function LocalPlayerTurn(spec){
     }
     function onHexSelected(hex) {
         if (players.grabbedPawn) {
+            scrolling.mode="CAMERA";
             if (players.activePlayer.canDropPawnAt(hex)) {
                 actions.schedule('DROP_UNIT', hex);
                 sfx.dropPawn();
@@ -80,10 +81,13 @@ function LocalPlayerTurn(spec){
             }
         } else {
             if (pawns.pawnAt(hex) && players.activePlayer.canGrabPawn(pawns.pawnAt(hex))) {
+                scrolling.mode="PAWN";
                 actions.schedule('GRAB_UNIT', pawns.pawnAt(hex));
                 sfx.grabPawn();
                 ui.processActions();
-            } 
+            } else {
+                scrolling.mode="CAMERA";
+            }
             const r = regions.regionOf(hex);
             if (players.activePlayer.controls(r) && economy.capitalOf(r)) {
                 ui.selectRegion(regions.regionOf(hex));

@@ -330,6 +330,7 @@ function UIManager(spec) {
 
     function buyPawn(pawnType) {
         if (!players.grabbedPawn) actions.schedule("REFUND_MARKER");
+        uiElements.scrolling.mode="PAWN";
         actions.schedule('BUY_UNIT', pawnType, selectedRegion);
         uiElements.sfx.grabPawn();
         processActions();

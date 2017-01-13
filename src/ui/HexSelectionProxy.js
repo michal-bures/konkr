@@ -17,19 +17,23 @@ function HexSelectionProxy(spec) {
 
     proxy.events.onInputOver.add(() => active = true);
     proxy.events.onInputOut.add(() => active = false);
-    proxy.events.onInputDown.add((target, pointer) => {
+
+    proxy.events.onInputDown.add(debounce((target, pointer) => {
         rightButtonPressed = pointer.rightButton.isDown;
-    });
-    proxy.events.onInputUp.add(debounce(() => {
         if (!rightButtonPressed && !scrolling.isActive) {
-            const hex = getHexUnderCursor();
-            if (hex) ui.selectHex(hex);
+            trigger();
         }
     }, INPUTEVENT_DEBOUNCE_INTERVAL, true));
+
+    function trigger() {
+        const hex = getHexUnderCursor();
+        if (hex) ui.selectHex(hex);
+    }
 
     //public
     return Object.freeze({
         update,
+        trigger,
         getHexUnderCursor,
         toDebugString,
         get group() { return group; }
