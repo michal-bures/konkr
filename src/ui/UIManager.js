@@ -15,7 +15,7 @@ import ModalsManager from './ModalsManager';
 
 function UIManager(spec) {
     
-    const {game, regions, gameState, actions, players, grid} = spec;
+    const {game, regions, gameState, actions, players, grid, pawns} = spec;
         
     let selectedRegion,
         selectedHex,
@@ -337,6 +337,10 @@ function UIManager(spec) {
     function buyPawn(pawnType) {
         //TODO: This belongs to LocalPlayerTurn?
         if (!players.grabbedPawn) actions.schedule("REFUND_MARKER");
+        if (players.grabbedPawn && !pawns.getMergeResult(players.grabbedPawn, pawnType)) {
+            uiElements.sfx.deny();
+            return;
+        }
         uiElements.scrolling.mode="PAWN";
         actions.schedule('UNDO_MARKER');
         actions.schedule('BUY_UNIT', pawnType, selectedRegion);
