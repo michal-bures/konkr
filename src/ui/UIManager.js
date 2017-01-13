@@ -21,8 +21,7 @@ function UIManager(spec) {
         selectedHex,
         scene,
         resumeActionsCallback, // stored callback for pending AWAIT_PLAYER_INPUT action
-        defaultSpectatorScene = 'FAST_SPECTATING',
-        canundoBuy = true;
+        defaultSpectatorScene = 'FAST_SPECTATING';
 
     let self = Object.freeze({
         onHexSelected: new Phaser.Signal(/* hex */),
@@ -44,6 +43,7 @@ function UIManager(spec) {
         render,
         update,
         undo,
+        microUndo,
         showRestartMenu,
         showVictoryScreen,
         showDefeatScreen,
@@ -259,7 +259,13 @@ function UIManager(spec) {
         uiElements.modals.show('DEFEAT_SCREEN', menuActionCallback);
     }        
 
+    function microUndo() {
+        actions.undoUntil('AWAIT_PLAYER_INPUT');
+    }
+
+
     function undo() {
+        actions.undoUntil('UNDO_MARKER');
         actions.undoUntil('AWAIT_PLAYER_INPUT');
     }
 
@@ -329,8 +335,10 @@ function UIManager(spec) {
     }
 
     function buyPawn(pawnType) {
+        //TODO: This belongs to LocalPlayerTurn?
         if (!players.grabbedPawn) actions.schedule("REFUND_MARKER");
         uiElements.scrolling.mode="PAWN";
+        actions.schedule('UNDO_MARKER');
         actions.schedule('BUY_UNIT', pawnType, selectedRegion);
         uiElements.sfx.grabPawn();
         processActions();

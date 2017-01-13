@@ -54,7 +54,7 @@ function Play(game) {
 
         game.canvas.oncontextmenu = function (e) { 
             e.preventDefault(); 
-            gameUi.ui.undo();
+            gameUi.ui.microUndo();
         };
 
         // DEBUG TOOLS SETUP

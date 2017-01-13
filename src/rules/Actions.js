@@ -72,6 +72,7 @@ function Actions(spec) {
 
         // Marker actions
         'REFUND_MARKER': null,
+        'UNDO_MARKER': null,
     },
 
     "types": {

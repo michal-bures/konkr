@@ -82,6 +82,7 @@ function LocalPlayerTurn(spec){
         } else {
             if (pawns.pawnAt(hex) && players.activePlayer.canGrabPawn(pawns.pawnAt(hex))) {
                 scrolling.mode="PAWN";
+                actions.schedule('UNDO_MARKER');
                 actions.schedule('GRAB_UNIT', pawns.pawnAt(hex));
                 sfx.grabPawn();
                 ui.processActions();
