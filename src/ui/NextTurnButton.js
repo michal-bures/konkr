@@ -7,24 +7,26 @@ function NextTurnButton(spec) {
     let group;
 
     let { nextTurnButton } = new UI(spec,{
-            name: 'nextTurnButton',
-            component: 'button',
-            sprite: 'nextTurnButton',
-            align: Phaser.BOTTOM_CENTER,
-            hOffset: 100,
-            vOffset: -10,
-            onClicked: ui.endTurn,
-        });
+        name: 'nextTurnButton',
+        component: 'button',
+        sprite: 'nextTurnButton',
+        align: Phaser.BOTTOM_CENTER,
+        hOffset: 100,
+        vOffset: -10,
+        onClicked: ui.endTurn,
+        tooltip: 'Next turn',
+    });
 
     let { undoButton } = new UI(spec,{
-            name: 'undoButton',
-            component: 'button',
-            sprite: 'undoButton',
-            align: Phaser.BOTTOM_CENTER,
-            hOffset: -100,
-            vOffset: -10,
-            onClicked: ui.undo,
-        });
+        name: 'undoButton',
+        component: 'button',
+        sprite: 'undoButton',
+        align: Phaser.BOTTOM_CENTER,
+        hOffset: -100,
+        vOffset: -10,
+        onClicked: ui.undo,
+        tooltip: 'Undo last action',
+    });
 
     assertDefined(nextTurnButton);
     group = game.make.group();

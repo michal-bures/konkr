@@ -153,7 +153,11 @@ function UIManager(spec) {
     actions.setHandler('AWAIT_PLAYER_INPUT', (action) => {
         action.data.prevScene = scene.name;
         if (scene!=scenes.PLAYER_TURN) changeScene('PLAYER_TURN');
-        if (!selectedRegion) selectRegion(players.bestRegionOf(players.localPlayer));
+        if (players.grabbedPawn) {
+            selectRegion(players.grabbedPawnRegion);
+        } else if (!selectedRegion) {
+            selectRegion(players.bestRegionOf(players.localPlayer));
+        }
         resumeActionsCallback = action.resolve;
     },
     {

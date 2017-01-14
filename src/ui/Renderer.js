@@ -295,9 +295,9 @@ function ConquerableHexesHighlight({game,ui, players, warfare}) {
     let group = game.make.group(),
         sprite = null;
 
-    players.onGrabbedPawn.add(pawn=>redraw(pawn.pawnType));
-    players.onBoughtPawn.add(pawnType=>redraw(pawnType));
-    players.onDroppedPawn.add(()=>redraw());
+    players.onGrabbedPawn.add(redraw);
+    players.onBoughtPawn.add(redraw);
+    players.onDroppedPawn.add(redraw);
 
     return Object.freeze({
         get group() { return group; },
@@ -305,11 +305,12 @@ function ConquerableHexesHighlight({game,ui, players, warfare}) {
     });
 
     function synchronize()  {
-        redraw(players.grabbedPawn);
+        redraw();
     }
 
-    function redraw(grabbedPawnType) {
-        let region = ui.selectedRegion;
+    function redraw() {
+        let region = players.grabbedPawnRegion;
+        let grabbedPawnType = players.grabbedPawn;
         if (sprite) {
             sprite.destroy();
             sprite = null;

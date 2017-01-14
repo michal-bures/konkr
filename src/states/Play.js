@@ -233,6 +233,9 @@ function Play(game) {
         gameSpec.actions.schedule('START_NEW_GAME', null);
         gameSpec.actions.schedule('LOAD_STATE','konkr_autosave_turn_start');
 
+        const loadingPlaceholder = document.getElementById("konkr_loading_placeholder");
+        if (loadingPlaceholder) loadingPlaceholder.style.visibility='hidden';
+
         log.info("Level initialization complete.");
     }
 

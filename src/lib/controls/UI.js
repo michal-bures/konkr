@@ -1,4 +1,5 @@
 import { assertDefined, debounce, extend } from 'lib/util';
+import Phasetips from 'lib/vendor/Phasetips';
 
 const SHOWHIDE_DURATION = 200;
 const INPUTEVENT_DEBOUNCE_INTERVAL = 100;
@@ -295,6 +296,19 @@ function Button(spec, def) {
     self.onInputDown = btn.onInputDown;
     self.add(btn);
     if (def.onClicked) self.onInputUp.add(debounce(def.onClicked,INPUTEVENT_DEBOUNCE_INTERVAL,true));
+
+    if (def.tooltip) {
+        var tip1 = new Phasetips(spec.game, {
+            targetObject: btn,
+            //fixedToCamera : true,
+            context: def.tooltip,
+            strokeColor: "white",
+            position: "top",
+            textStyle: { fontSize: 12, fill: "#ffffff", stroke: "#1e1e1e", strokeThickness: 1, wordWrap: true, wordWrapWidth: 200, lineSpacing: -2 },
+            animationDelay: 500,
+            padding: 4
+        });
+    }
 
     self.setFrame =(frame) => {
         btn.frame = frame;
