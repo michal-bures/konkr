@@ -53,12 +53,10 @@ function RegionPanel(spec) {
     });
 
     let { 
-        stats,
         mainContainer, 
         treasuryLabel,
         incomeLabel,
         pawnShop,
-        goldIcon
     } = controls;
 
     assertDefined(mainContainer, treasuryLabel, incomeLabel);

@@ -99,17 +99,36 @@ function ActionsProvider(spec, providerName, config) {
         }
     }
 
-    function undoUntil(actionName) {
-        if (!actionQueue.slice(0,actionPointer).some(action=>action.name===actionName)) {
-            log.warn("No action left to undo");
-            return;
-        } 
-        if (actionRunning) _undoLast();
-        _undoLast();
-        while (actionQueue[actionPointer].name !== actionName) {
-            _undoLast();
+    function undoUntil(targetActionName, options={}) {
+        let { blockers=[] } = options;
+        let blockersSet = {};
+        blockers.forEach(item=>blockersSet[item]=true);
+        
+        let ptr = actionPointer-1;
+        while (ptr>0) {
+            let action = actionQueue[ptr];
+            if (action.name === targetActionName) {
+                _undoUntil(ptr);
+                return true;
+            } else if (blockersSet[action.name]) {
+                log.debug(`Undo blocked by ${action}`);
+                return false;
+            }
+            --ptr;
         }
-        executeNext();
+
+        log.warn("No action left to undo");
+        return false;
+
+        function _undoUntil(ptr) {
+            if (actionRunning) _undoLast();
+            _undoLast();
+            while (actionPointer !== ptr) {
+                log.debug("=>>", actionPointer, ptr);
+                _undoLast();
+            }
+            executeNext();
+        }
     }
 
 

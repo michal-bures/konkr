@@ -4,13 +4,14 @@ import Planner from 'lib/Planner';
 
 function FastSpectating(spec){
 
-    let { log, economy,
+    let { log, economy, players, regions,
           pawnSprites, landSprites } = spec;
     
     let grabbedFrom = new HexGroup(), //list of hexes from which the currently grabbed unit was sourced
         boughtFrom = [],
-        animationQueue = new Planner();
-
+        animationQueue = new Planner(),
+        lostHexes = new HexGroup();
+    
     return new Scene(spec, { 
         name: 'FAST_SPECTATING',
         uiElements: { landSprites:true,
@@ -23,6 +24,7 @@ function FastSpectating(spec){
         },
         bindSignals: {
             players: {
+                onConqueringHex,
                 onDroppedPawn,
                 onGrabbedPawn,
                 onBoughtPawn,
@@ -52,6 +54,10 @@ function FastSpectating(spec){
         grabbedFrom.add(pawn.hex);
     }
 
+    function onConqueringHex(pawn,hex) {
+        let region = regions.regionOf(hex);
+        if (players.localPlayer.controls(region) && economy.capitalOf(region)) lostHexes.add(hex);
+    }
 
     function onBoughtPawn(pawnType, region) {
         if (pawnType.isTroop()) boughtFrom.push({hex:economy.capitalOf(region), pawnType:pawnType});
@@ -60,8 +66,17 @@ function FastSpectating(spec){
     function movePawnTransition(fromHex, toHex) {
         return () => {
             let sprite = pawnSprites.atHex(fromHex);
-            return sprite.reposition(toHex);
+            return sprite.reposition(toHex,calculateTweenInterval(toHex));
         };
+    }
+
+    function calculateTweenInterval(toHex) {
+        if (lostHexes.contains(toHex)) {
+            lostHexes.remove(toHex);
+            return 1000;
+        } else {
+            return 200;
+        }
     }
 
     function gatherPawnsTransition(moveFrom, spawnFrom, toHex) {
@@ -75,7 +90,7 @@ function FastSpectating(spec){
                             let sprite = pawnSprites.create(pawnType, hex);
                             return sprite;
                           }));
-            let promises = sprites.map(sprite=>sprite.reposition(toHex));
+            let promises = sprites.map(sprite=>sprite.reposition(toHex, calculateTweenInterval(toHex)));
             return Promise.all(promises);
         };
     }    

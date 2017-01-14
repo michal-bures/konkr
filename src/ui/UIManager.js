@@ -269,13 +269,15 @@ function UIManager(spec) {
 
 
     function undo() {
-        actions.undoUntil('UNDO_MARKER');
-        actions.undoUntil('AWAIT_PLAYER_INPUT');
+        return actions.undoUntil('UNDO_MARKER', { 
+            blockers: ['END_PLAYER_TURN'] 
+        }) && actions.undoUntil('AWAIT_PLAYER_INPUT');
     }
 
     function undoBuy() {
-        actions.undoUntil('REFUND_MARKER');
-        actions.undoUntil('AWAIT_PLAYER_INPUT');
+        return actions.undoUntil('REFUND_MARKER', {
+            blockers: ['DROP_UNIT', 'GRAB_UNIT', 'CONQUER_HEX'] 
+        }) && actions.undoUntil('AWAIT_PLAYER_INPUT');
     }
 
     function changeSceneNow(nextSceneName) {

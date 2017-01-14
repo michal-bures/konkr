@@ -103,7 +103,7 @@ function PawnSprites ({tweens, game, log, pawns, ui, regions, gameState, grid, p
             }
         }
 
-        reposition(targetHex,animate=true) {
+        reposition(targetHex,tweenDuration=BASE_TWEEN_DURATION) {
             log.debug(`Sprite reposition: ${this} ${this.hex}->${targetHex}`);
             if (this.hex && spriteAtHex[this.hex.id] === this) delete spriteAtHex[this.hex.id];
             this.hex = null;
@@ -122,8 +122,8 @@ function PawnSprites ({tweens, game, log, pawns, ui, regions, gameState, grid, p
             };
             return new Promise( resolve => {
                 const [x,y] = convertToWorldCoordinates(targetHex.position.x, targetHex.position.y);
-                if (animate) {
-                    const tween = tweens.add(this).to( { x: x, y: Math.floor(y+PAWN_OFFSET_TOP/2) }, BASE_TWEEN_DURATION, Phaser.Easing.Sinusoidal.InOut, true);  
+                if (tweenDuration) {
+                    const tween = tweens.add(this).to( { x: x, y: Math.floor(y+PAWN_OFFSET_TOP/2) }, tweenDuration, Phaser.Easing.Sinusoidal.InOut, true);  
                     tween.onComplete.add(()=> {
                         animationDone();
                         //TODO: what if jumping is ordered to stop during animation?!
