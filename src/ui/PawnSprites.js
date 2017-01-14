@@ -1,5 +1,5 @@
 const PAWN_OFFSET_TOP = -13;
-const BASE_TWEEN_DURATION = 200;
+const BASE_TWEEN_DURATION = 400;
 
 import { convertToWorldCoordinates } from './Renderer';
 import HexGroup from 'lib/hexgrid/HexGroup';

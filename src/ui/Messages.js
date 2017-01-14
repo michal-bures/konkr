@@ -1,6 +1,6 @@
 import { debounce } from 'lib/util';
 
-const OFFSET_FROM_BOTTOM=36;
+const OFFSET_FROM_BOTTOM=100;
 
 const STYLE_COLORS = {
     default:'white',
@@ -22,7 +22,8 @@ function Messages({game, log, debug}) {
     });
 
     function push(message,style='default') {
-        let newSprite = new MessageSprite(10,currentYOffset, message, style);
+        let newSprite = new MessageSprite(game.width/2,currentYOffset, message, style);
+        newSprite.anchor.x=0.5;
         group.add(newSprite);
         currentYOffset += newSprite.height;
         game.add.tween(group.cameraOffset).to({y: calculateY()},300,Phaser.Easing.Quadratic.InOut,true);
