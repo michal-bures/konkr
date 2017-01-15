@@ -3,7 +3,7 @@ import Scene from './Scene';
 function LocalPlayerTurn(spec){
 
     let { actions,  players, pawns, regions, ui, economy, log,
-          sfx, pawnSprites, landSprites, feedbackSymbols, scrolling } = spec;
+          sfx, pawnSprites, landSprites, feedbackSymbols, scrolling, popovers } = spec;
 
     return new Scene(spec, { 
     name: 'PLAYER_TURN',
@@ -21,6 +21,7 @@ function LocalPlayerTurn(spec){
             grabbedPawn:true,
             feedbackSymbols:true,
             optionButtons:true,
+            popovers:true,
         },
         bindSignals: {
             pawns: {
@@ -57,6 +58,7 @@ function LocalPlayerTurn(spec){
         pawnSprites.destroySprite(pawn.hex);
     }
     function onHexSelected(hex) {
+        popovers.hide();
         if (players.grabbedPawn) {
             scrolling.mode="CAMERA";
             if (players.activePlayer.canDropPawnAt(hex)) {

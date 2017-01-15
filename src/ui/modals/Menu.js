@@ -50,7 +50,7 @@ function Menu(spec, cfg) {
 
     let controls = new UI(spec,{
         name: 'mainContainer',
-        component: 'pane',
+        component: 'decoratorPane',
         align:Phaser.CENTER,
         stretchHorizontally: true,
         padding: 15,

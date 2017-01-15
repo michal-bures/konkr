@@ -5,6 +5,7 @@ import RegionPanel from './RegionPanel';
 import GridOverlays from './GridOverlays';
 import Messages from './Messages';
 import PawnSprites from './PawnSprites';
+import Popovers from './Popovers';
 import NextTurnButton from './NextTurnButton';
 import TweenManager from './TweenManager';
 import { extend, debounce } from 'lib/util';
@@ -83,6 +84,7 @@ function UIManager(spec) {
         optionButtons: spec => new OptionButtons(spec.useName('optionButtons', log.levels.INFO)),
         sfx: spec=> new SFX(spec),
         modals: spec => new ModalsManager(spec),
+        popovers: spec => new Popovers(spec),
         ui: () => self
     });
 
@@ -98,10 +100,11 @@ function UIManager(spec) {
         'hexSelectionProxy',
         'messages',
         'uiRegionPanel',
-        'nextTurnButton',
         'grabbedPawn',
         'feedbackSymbols',
+        'nextTurnButton',
         'optionButtons',
+        'popovers',
     ];
     Z_ORDER.forEach(e => game.world.add(uiElements[e].group));
     game.world.add(uiElements.modals.group);

@@ -2,7 +2,7 @@ import Scene from './Scene';
 
 function Debug(spec){
 
-    let { pawnSprites, landSprites, hexSelectionProxy, ui, regions } = spec;
+    let { pawnSprites, landSprites, hexSelectionProxy, ui, regions, popovers, pawns } = spec;
 
     return new Scene(spec, { 
         name: 'DEBUG',
@@ -16,6 +16,7 @@ function Debug(spec){
             messages:true,
             uiRegionPanel:true,
             optionButtons:true,
+            popovers: true,
         },
         bindSignals: {
             pawns: {
@@ -31,12 +32,6 @@ function Debug(spec){
         }
     });
 
-    function setup() {
-        hexSelectionProxy.setFilter((region) => {
-
-        });
-    }
-
     function onCreated(pawn) {
         let p = pawnSprites.getOrCreate(pawn.hex, pawn.pawnType);
         p.fadeIn();
@@ -47,6 +42,14 @@ function Debug(spec){
 
     function onHexSelected(hex) {
         ui.selectRegion(regions.regionOf(hex));
+        const pawn = hex && pawns.pawnAt(hex);
+        const region = hex && regions.regionOf(hex);        
+        const str = [
+            (hex?hex.toString():null),
+            (pawn?'♙'+pawn.id:null),
+            (region?'♔'+region.id:null),
+        ];
+        popovers.show('HEX_TOOLTIP', hex, str.filter(x=>x).join('\n'));
     }
 
 }

@@ -94,7 +94,7 @@ class DebugInfo {
             }
             y +=32;
         });
-        this.sprites.forEach(sprite=>this.game.debug.spriteBounds(sprite));
+        this.sprites.forEach(sprite=>sprite.exists && this.game.debug.spriteBounds(sprite));
     }
 }
 

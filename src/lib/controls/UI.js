@@ -3,6 +3,10 @@ import Phasetips from 'lib/vendor/Phasetips';
 
 const SHOWHIDE_DURATION = 200;
 const INPUTEVENT_DEBOUNCE_INTERVAL = 100;
+const DEFAULT_PADDING = 5;
+// Recommended minimal offset of world-bound UI components from screen edge
+const SCREEN_PADDING = 20;
+
 
 let lastComponentId = 0;
 function generateComponentId() {
@@ -14,11 +18,12 @@ const componentConstructors = {
     image : (...args) => new Image(...args),
     label : (...args) => new Label(...args),
     button : (...args) => new Button(...args),
-    pane: (...args) => new Pane(...args),
+    decoratorPane: (...args) => new DecoratorPane(...args),
     largeTextButton: (...args) => new LargeTextButton(...args),
     pawnShop : (...args) => new PawnShop(...args),
     horizontalGroup : (...args) => new HorizontalGroup(...args),
     verticalGroup : (...args) => new VerticalGroup(...args),
+    popoverPanel : (...args) => new PopoverPanel(...args)
 };
 
 function UIComponent({game, log, debug, tweens, ui}, def) {
@@ -26,7 +31,7 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
     let self = game.add.group(),
         config = def,
         name = def.name || def.component + '#'+ generateComponentId(),
-        parentGroup = game.camera.view,
+        parentGroup = (def.useWorldCoords ? game.world.bounds : game.camera.view),
         childComponents = [],
         // if anchorObject is specified, it's used as bounding box when positioning this component and laying 
         // out its children (instead of using the actual bounding box of the group itself); that way, even if the group
@@ -35,6 +40,16 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
         anchorObject = null,
         hidden = false,
         visibilityTransitionTween = null;
+
+    self.fixedToCamera = !def.useWorldCoords;
+
+    let base_update = self.update.bind(self);
+    let base_destroy = self.destroy.bind(self);
+    self.destroy = ()=> {
+        log.debug(`DESTROY ${self}, ${self.children}`);
+        base_destroy(true);
+        log.debug(`DONE ${self}, ${self.children}`);
+    };
 
     extend(self, {
         get name() { return name; },
@@ -69,6 +84,7 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
 
     function addComponent(component) {
         component.parentGroup = self;
+        component.fixedToCamera = false;
         component.hasParent = true;
         childComponents.push(component);
         component.onResized.add(()=>self.childResized(component));
@@ -110,6 +126,7 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
     }
 
     function update() {
+        base_update();
         if (self.dirty) {
             reflow();
         }
@@ -134,6 +151,8 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
             self.y = y;
         } else {
             self.alignIn(clientRect,align,hOffset,vOffset);
+            self.x=Math.floor(self.x);
+            self.y=Math.floor(self.y);
         }
 
         if (self.fixedToCamera) {
@@ -248,13 +267,13 @@ function VerticalGroup (spec, def) {
     return self;
 }
 
-function Pane(spec, def) {
+function DecoratorPane(spec, def) {
     let self = new UIComponent(spec, def);
     let { padding=5 } = def;
     let reflowBase = self.reflowSelf;
     self.anchorObject = self.parentGroup;
 
-    let bgSprite = new Phaser.TileSprite(spec.game,0,0,1,1,'paneBackground');
+    let bgSprite = spec.game.add.image(0,0,'paneBackground');
     self.add(bgSprite);
 
     if (def.onClicked) {
@@ -264,28 +283,77 @@ function Pane(spec, def) {
 
     extend(self, {
         reflowSelf(clientRect) {
-            refreshChrome();
+            self.refreshChrome();
             reflowBase(clientRect);
         },
+        refreshChrome() {
+            let target = self.childComponents[0];
+            if (!target) return;
+            if (def.stretchHorizontally) {
+                bgSprite.x=(self.fixedToCamera?spec.game.camera.view.x:0);
+                bgSprite.width = self.parentGroup.width;
+            } else {
+                bgSprite.x = target.x - padding;
+                bgSprite.width = target.width + 2*padding;
+            }
+            bgSprite.y = target.y - padding;
+            bgSprite.height = target.height + 2*padding;
+        }
     });
     return self;
 
-    function refreshChrome() {
-        let target = self.childComponents[0];
-        if (!target) return;
-        if (def.stretchHorizontally) {
-            bgSprite.x=(self.fixedToCamera?spec.game.camera.view.x:0);
-            bgSprite.width = self.parentGroup.width;
-        } else {
-            bgSprite.x = target.x - padding;
-            bgSprite.width = target.width + 2*padding;
-        }
-        bgSprite.y = target.y - padding;
-        bgSprite.height = target.height + 2*padding;
-    }
 }
 
+function PopoverPanel(spec, def) {
+    let self = new UIComponent(spec, def);
+    const {game} = spec;
+    let pointerSprite = spec.game.add.image(0,0,'popoverPointer');
+    pointerSprite.anchor.set(0.5,1);
+    let bgSprite = game.add.image(0,0,'paneBackground');
+    // WARNING: pointerSprite has to be added after bgSprite, or it will cause
+    // alpha flicker for some reason
+    self.add(bgSprite);
+    self.add(pointerSprite);
 
+    self.reflowSelf=(clientRect) => {
+    };
+    self.reflowChildren=()=> {
+        if (!self.childComponents.length) return;
+        const comp = self.childComponents[0];
+        const padding = def.padding || DEFAULT_PADDING;
+        const inverted = def.y-comp.height-pointerSprite.height-padding*2 < game.camera.view.y + SCREEN_PADDING;
+        const rect = getPanelRect(inverted);
+        pointerSprite.scale.y = (inverted?-1:1);
+        pointerSprite.x = def.x;
+        pointerSprite.y = def.y+(def.vOffset||0)*(inverted?1:-1);
+        bgSprite.x = rect.x;
+        bgSprite.y = rect.y;
+        bgSprite.width = rect.width;
+        bgSprite.height = rect.height;
+        rect.inflate(-2*padding, -2*padding);
+        comp.reflow(rect);
+    };
+
+    function getPanelRect(inverted) {
+        const comp = self.childComponents[0];
+        const padding = def.padding || DEFAULT_PADDING;
+        let y = def.y + ((def.vOffset||0)+pointerSprite.height)*(inverted?1:-1);
+        if (!inverted) y -= comp.height+2*padding;
+        const clientRect = new Phaser.Rectangle(
+            def.x-comp.width/2-padding,
+            y,
+            comp.width+2*padding,
+            comp.height+2*padding);
+
+        if ((clientRect.right) > game.camera.view.right-SCREEN_PADDING) 
+            clientRect.x -= clientRect.right - game.camera.view.right + SCREEN_PADDING;
+        if ((clientRect.x) < game.camera.view.x+SCREEN_PADDING) 
+            clientRect.x = game.camera.view.x+SCREEN_PADDING;
+        return clientRect;
+    }
+
+    return self;
+}
 
 function Button(spec, def) {
     let self = new UIComponent(spec, def);
@@ -361,8 +429,6 @@ function UI (spec, def) {
         let newComp = createComponent(def);
         if (parent) {
             parent.addComponent(newComp);
-        } else {
-            newComp.fixedToCamera = true;
         }
 
         self[def.name] = newComp;

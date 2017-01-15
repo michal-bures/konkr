@@ -11,7 +11,7 @@ import URL_NEXTTURNBUTTON from 'assets/ui/nextTurnButton.png';
 import URL_UNDOBUTTON from 'assets/ui/undoButton.png'; 
 import URL_SHIELD_SYMBOL from 'assets/shieldSymbol.png'; 
 import URL_OPTION_BUTTON from 'assets/ui/optionButton.png'; 
-
+import URL_POPOVER_SPRITE from 'assets/ui/popoverPointer.png';
 
 import deny from 'assets/audio/deny.wav';
 import grabPawn from 'assets/audio/grab.wav';
@@ -34,7 +34,8 @@ function GameAssets(spec) {
 		    nextTurnButton : [ URL_NEXTTURNBUTTON, 67,29],
 		    undoButton : [ URL_UNDOBUTTON, 67,29],
             shieldSymbol: [ URL_SHIELD_SYMBOL, 11, 15],
-            optionButtons : [ URL_OPTION_BUTTON, 33, 33 ]
+            optionButtons : [ URL_OPTION_BUTTON, 33, 33 ],
+            popoverPointer : [ URL_POPOVER_SPRITE, 16, 16 ]
 		},
         sounds: {
             grabPawn,
