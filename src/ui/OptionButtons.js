@@ -6,7 +6,7 @@ function OptionButtons(spec) {
     let group;
 
     let controls = new UI(spec,{
-        name: 'mainContainer',
+        name: 'optionButtons',
         component: 'horizontalGroup',
         align:Phaser.BOTTOM_CENTER,
         hOffset: -200,
@@ -35,14 +35,14 @@ function OptionButtons(spec) {
     });
 
     let {
-        mainContainer,
+        optionButtons,
         mute,
         restart,
         fullscreen,
     } = controls;
 
     group = game.make.group();
-    group.add(mainContainer);
+    group.add(optionButtons);
 
     mute.onInputUp.add(() => {
         game.sound.mute = !game.sound.mute;

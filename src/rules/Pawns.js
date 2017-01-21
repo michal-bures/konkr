@@ -115,7 +115,7 @@ function Pawns(spec) {
     }
 
     actions.setHandler("CREATE_PAWN", (action, pawnType, hex) => {
-        if (pawnAt(hex)) return action.reject("Cannot replace existing pawn"); //TODO: Implement
+        if (pawnAt(hex)) return action.reject("Cannot replace existing pawn");
         const newPawn = placeAt(pawnType, hex);
         pawns.onCreated.dispatch(newPawn);
         return action.resolve();

@@ -82,7 +82,7 @@ function ModalsManager(spec) {
         if (currentModal) resolveModal();
         currentModal = library[key];
         if (!currentModal) {
-            throw Error(`Unkonwn modal type: ${key}`);
+            throw Error(`Unknown modal type: ${key}`);
         }
         group.removeAll();
         group.add(inputProxy);

@@ -8,7 +8,7 @@ function RegionPanel(spec) {
         currentRegion = null;
 
     let controls = new UI(spec,{
-        name: 'mainContainer',
+        name: 'regionsPanel',
         component: 'image',
         src: 'regionPanel',
         align:Phaser.BOTTOM_CENTER,
@@ -54,14 +54,14 @@ function RegionPanel(spec) {
     });
 
     let { 
-        mainContainer, 
+        regionsPanel, 
         treasuryLabel,
         incomeLabel,
         pawnShop,
     } = controls;
 
-    assertDefined(mainContainer, treasuryLabel, incomeLabel);
-    group = mainContainer;
+    assertDefined(regionsPanel, treasuryLabel, incomeLabel);
+    group = regionsPanel;
 
 //    debug.sprite(stats);
 //    debug.sprite(treasuryLabel);
@@ -114,7 +114,7 @@ function RegionPanel(spec) {
     function setRegion(region) {
         currentRegion = region;
         if (!region) {
-            mainContainer.hide();
+            regionsPanel.hide();
         } else {
             //regionNameLabel.text = `#${region.id}`;
             const treasury = economy.treasuryOf(region);
@@ -127,7 +127,7 @@ function RegionPanel(spec) {
             incomeLabel.text = netIncome;
             incomeLabel.addColor(incomeColor, 0);
             pawnShop.setStock(economy.buyablePawns(region));
-            mainContainer.show();
+            regionsPanel.show();
         }
     }
 

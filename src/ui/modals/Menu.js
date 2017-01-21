@@ -49,7 +49,7 @@ function Menu(spec, cfg) {
     }
 
     let controls = new UI(spec,{
-        name: 'mainContainer',
+        name: 'menu',
         component: 'decoratorPane',
         align:Phaser.CENTER,
         stretchHorizontally: true,
@@ -64,18 +64,18 @@ function Menu(spec, cfg) {
     });
 
     let { 
-        mainContainer,
+        menu,
     } = controls;
 
-    assertDefined(mainContainer);
+    assertDefined(menu);
 
-    group = mainContainer;
+    group = menu;
 
     function show() {
-        mainContainer.show(); 
+        menu.show(); 
     }
     function hide() {
-        mainContainer.hide(); 
+        menu.hide(); 
     }
 
 

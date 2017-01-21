@@ -41,11 +41,11 @@ function AnimatorSlideUp({game,tweens,log}, component) {
             component.reflow();
             let targetY = component.cameraOffset.y;
             component.y = game.height;
-            component.cameraOffset.y=component.y - game.camera.view.y;
+            component.cameraOffset.y=component.y;
             return tweens.add(component.cameraOffset).to({y:targetY}, SHOWHIDE_DURATION, Phaser.Easing.Quadratic.InOut, true);
         },
         hide() {
-            return tweens.add(component.cameraOffset).to({y:game.height - game.camera.view.y}, SHOWHIDE_DURATION, Phaser.Easing.Quadratic.InOut, true);
+            return tweens.add(component.cameraOffset).to({y:game.height}, SHOWHIDE_DURATION, Phaser.Easing.Quadratic.InOut, true);
         }
     });
 }
