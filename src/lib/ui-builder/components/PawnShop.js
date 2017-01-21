@@ -3,6 +3,8 @@ import { extend } from 'lib/util';
 
 export default function PawnShop (spec, def) {
     let self = new UIComponent(spec, def);
+    let { popovers, help } = spec;
+
     extend(self, {
         setStock(pawnTypeArray) {
             self.removeAll(true);
@@ -11,7 +13,15 @@ export default function PawnShop (spec, def) {
                 sprite.inputEnabled = true;
                 sprite.events.onInputDown.add(()=>{
                     spec.ui.buyPawn(pawnType);
+                    popovers.hide();
                 });
+                sprite.events.onInputOver.add(()=>{
+                    popovers.showDelayed('BUY_PAWN_TOOLTIP', sprite, help.pawnShopInfo(pawnType));
+                });
+                sprite.events.onInputOut.add(()=>{
+                    popovers.hide();
+                });
+
                 return sprite;
             }));
             self.align(-1,1,32,32,Phaser.BOTTOM_CENTER);

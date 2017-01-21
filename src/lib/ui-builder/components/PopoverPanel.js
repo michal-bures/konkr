@@ -28,24 +28,31 @@ export default function PopoverPanel(spec, def) {
         bgSprite.height = rect.height;
         rect.inflate(-2*padding, -2*padding);
         comp.reflow(rect);
+        if (self.fixedToCamera) {
+            self.cameraOffset.x = def.x;
+            self.cameraOffset.y = def.y;
+        }
     };
 
     function getPanelRect(inverted) {
         const comp = self.childComponents[0];
         const padding = def.padding || UIComponent.DEFAULT_PADDING;
+        const panelHeight = comp.height+2*padding;
         // Math.abs needed since height can be negative when scale is negative
         let y = def.y + ((def.vOffset||0)+Math.abs(pointerSprite.height))*(inverted?1:-1);
-        if (!inverted) y -= (comp.height+2*padding);
+        if (!inverted) y -= panelHeight;
         const clientRect = new Phaser.Rectangle(
             def.x-comp.width/2-padding,
             y,
             comp.width+2*padding,
-            comp.height+2*padding);
+            panelHeight);
 
-        if ((clientRect.right) > game.camera.view.right-UIComponent.SCREEN_PADDING) 
-            clientRect.x -= clientRect.right - game.camera.view.right + UIComponent.SCREEN_PADDING;
-        if ((clientRect.x) < game.camera.view.x+UIComponent.SCREEN_PADDING) 
-            clientRect.x = game.camera.view.x+UIComponent.SCREEN_PADDING;
+        if (!self.fixedToCamera) {
+            if ((clientRect.right) > game.camera.view.right-UIComponent.SCREEN_PADDING) 
+                clientRect.x -= clientRect.right - game.camera.view.right + UIComponent.SCREEN_PADDING;
+            if ((clientRect.x) < game.camera.view.x+UIComponent.SCREEN_PADDING) 
+                clientRect.x = game.camera.view.x+UIComponent.SCREEN_PADDING;
+        }
         return clientRect;
     }
 

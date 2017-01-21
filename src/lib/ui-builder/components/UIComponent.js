@@ -114,11 +114,7 @@ export default function UIComponent(spec, def) {
             self.x = x;
             self.y = y;
         } else {
-            log.debug(`ALIGN IN ${clientRect}`);
-            log.debug(`BEFORE OFFSET ${self.cameraOffset.x}:${self.cameraOffset.y}`);
             self.alignIn(clientRect,align,hOffset,vOffset);
-
-            log.debug(`AFTER OFFSET ${self.cameraOffset.x}:${self.cameraOffset.y}`);
             self.x=Math.floor(self.x);
             self.y=Math.floor(self.y);
         }
@@ -137,7 +133,9 @@ export default function UIComponent(spec, def) {
     }
 
     function toString() {
-        return `[UIComponent ${name}]`;
+        let x = (self.fixedToCamera? self.cameraOffset.x:self.x);
+        let y = (self.fixedToCamera? self.cameraOffset.y:self.y);
+        return `[UIComponent '${name}' at ${x}:${y} ${self.width}x${self.height}${self.visible?'':' (hidden)'}${self.fixedToCamera?' (fixedToCamera)':''}]`;
     }
 
     return self;

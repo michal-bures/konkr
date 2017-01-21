@@ -1,4 +1,3 @@
-import UI from 'lib/controls/UI';
 import { assertDefined } from 'lib/util';
 
 function Menu(spec, cfg) {
@@ -48,7 +47,7 @@ function Menu(spec, cfg) {
         });
     }
 
-    let controls = new UI(spec,{
+    let controls = ui.build({
         name: 'menu',
         component: 'decoratorPane',
         align:Phaser.CENTER,

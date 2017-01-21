@@ -12,7 +12,14 @@ export default function Button(spec, def) {
     if (def.onClicked) self.onInputUp.add(debounce(def.onClicked,UIComponent.INPUTEVENT_DEBOUNCE_INTERVAL,true));
 
     if (def.tooltip) {
-   }
+        let {popovers} = spec;
+        btn.events.onInputOver.add(()=>{
+            popovers.showDelayed('UI_TOOLTIP', btn, def.tooltip);
+        });
+        btn.events.onInputOut.add(()=>{
+            popovers.hide();
+        });    
+    }
 
     self.setFrame =(frame) => {
         btn.frame = frame;

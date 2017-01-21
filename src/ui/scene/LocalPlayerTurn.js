@@ -59,6 +59,7 @@ function LocalPlayerTurn(spec){
     }
     function onHexSelected(hex) {
         popovers.hide();
+        let showPawnTooltip = false;
         if (players.grabbedPawn) {
             scrolling.mode="CAMERA";
             if (players.activePlayer.canDropPawnAt(hex)) {
@@ -91,15 +92,20 @@ function LocalPlayerTurn(spec){
             } else {
                 scrolling.mode="CAMERA";
                 if (pawns.pawnAt(hex)) {
-                    feedbackSymbols.showDefendedBy(hex, 99);
-                    popovers.show('HEX_TOOLTIP', hex, help.pawnInfo(pawns.pawnAt(hex)));
+                    showPawnTooltip = true;
                 }
             }
             const r = regions.regionOf(hex);
             if (players.activePlayer.controls(r) && economy.capitalOf(r)) {
+                if (ui.selectedRegion!=r) showPawnTooltip = false;
                 ui.selectRegion(regions.regionOf(hex));
             } else {
                 ui.selectRegion(null);
+            }
+
+            if (showPawnTooltip) {
+                feedbackSymbols.showDefendedBy(hex, 99);
+                popovers.show('HEX_TOOLTIP', hex, help.pawnInfo(pawns.pawnAt(hex)));
             }
         }
     }

@@ -1,6 +1,6 @@
 import Injector from 'lib/Injector';
 import Menu from './modals/Menu';
-import InputProxy from 'lib/controls/InputProxy';
+import InputProxy from 'lib/InputProxy';
 
 function ModalsManager(spec) {
     let { game, ui } = spec;

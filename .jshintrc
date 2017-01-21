@@ -8,6 +8,8 @@
     "console",
   	"Phaser",
     "setTimeout",
-    "setInterval"
+    "setInterval",
+    "clearTimeout",
+    "clearInterval"
   ]
 }

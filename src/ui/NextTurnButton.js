@@ -1,4 +1,3 @@
-import UI from 'lib/controls/UI';
 import { assertDefined } from 'lib/util';
 
 function NextTurnButton(spec) {
@@ -6,7 +5,7 @@ function NextTurnButton(spec) {
 
     let group;
 
-    let { nextTurnButton } = new UI(spec,{
+    let { nextTurnButton } = ui.build({
         name: 'nextTurnButton',
         component: 'button',
         sprite: 'nextTurnButton',
@@ -17,7 +16,7 @@ function NextTurnButton(spec) {
         tooltip: 'Next turn',
     });
 
-    let { undoButton } = new UI(spec,{
+    let { undoButton } = ui.build({
         name: 'undoButton',
         component: 'button',
         sprite: 'undoButton',

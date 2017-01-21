@@ -1,4 +1,3 @@
-import UI from 'lib/controls/UI';
 import { assertDefined } from 'lib/util';
 
 function RegionPanel(spec) {
@@ -7,7 +6,7 @@ function RegionPanel(spec) {
     let group = null,
         currentRegion = null;
 
-    let controls = new UI(spec,{
+    let controls = ui.build({
         name: 'regionsPanel',
         component: 'image',
         src: 'regionPanel',

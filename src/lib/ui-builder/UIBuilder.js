@@ -56,4 +56,8 @@ function UI (spec, def) {
    return self; 
 }
 
-export default UI;
+export default Object.freeze({
+    build(spec, def) {
+        return new UI(spec, def);
+    }
+});

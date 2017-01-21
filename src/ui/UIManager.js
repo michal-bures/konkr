@@ -16,6 +16,8 @@ import OptionButtons from './OptionButtons';
 import ModalsManager from './ModalsManager';
 import Help from './Help';
 
+import UIBuilder from 'lib/ui-builder/UIBuilder';
+
 function UIManager(spec) {
     
     const {game, regions, gameState, actions, players, grid, pawns} = spec;
@@ -35,6 +37,7 @@ function UIManager(spec) {
         get scene() { return scene },
         get selectedRegion() { return selectedRegion; },
         get selectedHex() { return selectedHex; },
+        build, // (def) build a new UI hierarchy using UIBuilder
         changeScene,
         reloadScene,
         changeSceneNow,
@@ -381,6 +384,10 @@ ${resumeActionsCallback?'<b>Waiting for player input...</b>':'Spectator mode'}
 
 scene: ${scene.name}
 uiElements: ${elems.join(', ')}`;
+    }
+
+    function build(def) { 
+        return UIBuilder.build(uiElements, def);
     }
 
     return self;

@@ -1,11 +1,9 @@
-import UI from 'lib/controls/UI';
-
 function OptionButtons(spec) {
     let { game, ui, sfx } = spec;
 
     let group;
 
-    let controls = new UI(spec,{
+    let controls = ui.build({
         name: 'optionButtons',
         component: 'horizontalGroup',
         align:Phaser.BOTTOM_CENTER,
@@ -17,18 +15,21 @@ function OptionButtons(spec) {
                 name: 'mute',
                 component: 'button',
                 sprite: 'optionButtons',
+                tooltip: 'toggle sound',
                 frame:1,
             },
             {
                 name: 'restart',
                 component: 'button',
                 sprite: 'optionButtons',
+                tooltip: 'start a new game',
                 frame:2,
             },
             {
                 name: 'fullscreen',
                 component: 'button',
                 sprite: 'optionButtons',
+                tooltip: 'toggle fullscreen mode',
                 frame:3,
             },
         ]

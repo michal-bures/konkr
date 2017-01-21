@@ -1,17 +1,18 @@
 import { HEX_WIDTH, HEX_HEIGHT, LINE_HEIGHT, HALF_LINE_HEIGHT, OFFSET_TOP, OFFSET_LEFT, convertToWorldCoordinates } from 'ui/Renderer';
 
-import InputProxy from 'lib/controls/InputProxy';
+import InputProxy from 'lib/InputProxy';
 import { debounce } from 'lib/util';
 
 const INPUTEVENT_DEBOUNCE_INTERVAL = 100;
 
 function HexSelectionProxy(spec) {
-    let {game,grid,debug,log,regions,pawns,ui, warfare, players, scrolling} = spec;
+    let {game,grid,debug,log,regions,pawns,ui, warfare, players, scrolling, popovers, help} = spec;
 
     let active = false,
         proxy = new InputProxy(game),
         group = game.make.group(null),
-        rightButtonPressed = false;
+        rightButtonPressed = false,
+        latestHoveredHex = null;
 
     group.add(proxy);
 
@@ -63,16 +64,25 @@ ${ret.join('\n')}`;
     function update() {
         if (active) {
             const hex = getHexUnderCursor();
+            if (hex==latestHoveredHex) return;
+            latestHoveredHex = hex;
             const pawn = hex && pawns.pawnAt(hex);
-            const region = hex && regions.regionOf(hex);
-            const str = [
-                `${game.input.activePointer.x},${game.input.activePointer.y} ->`,
-                `${game.input.activePointer.worldX},${game.input.activePointer.worldY}`,
-                (pawn?'♙'+pawn.id:null),
-                (region?'♔'+region.id:null),
-                (hex?hex.toString():null),
-            ];
-            if (spec.inDebugMode) debug.set('ptr',str.filter(x=>x).join(' '));
+            popovers.hide();
+            if (pawn) {
+                popovers.showDelayed('HEX_TOOLTIP', hex, help.pawnInfo(pawn));
+            }
+
+            if (spec.inDebugMode) {
+                const region = hex && regions.regionOf(hex);
+                const str = [
+                    `${game.input.activePointer.x},${game.input.activePointer.y} ->`,
+                    `${game.input.activePointer.worldX},${game.input.activePointer.worldY}`,
+                    (pawn?'♙'+pawn.id:null),
+                    (region?'♔'+region.id:null),
+                    (hex?hex.toString():null),
+                ];
+                debug.set('ptr',str.filter(x=>x).join(' '));
+            }
         }
     }
 
