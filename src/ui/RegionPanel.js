@@ -2,7 +2,7 @@ import UI from 'lib/controls/UI';
 import { assertDefined } from 'lib/util';
 
 function RegionPanel(spec) {
-    let { log, debug, game, economy, ui, regions, players, pawns } = spec;
+    let { log, debug, game, economy, ui, styles, regions, players, pawns } = spec;
 
     let group = null,
         currentRegion = null;
@@ -35,13 +35,13 @@ function RegionPanel(spec) {
                     },
                     {
                         name: 'treasuryLabel',
-                        style: { font: "20pt Bookman Old Style", fill: "black"},
+                        style: styles.get('TREASURY_LABEL'),
                         component: 'label',
                         align: Phaser.BOTTOM_CENTER,
                     },
                     {
                         name: 'incomeLabel',
-                        style: { font: "10pt Bookman Old Style", fill: "black"},
+                        style: styles.get('INCOME_LABEL'),
                         component: 'label',
                         align: Phaser.BOTTOM_CENTER,
                         vOffset: -4,

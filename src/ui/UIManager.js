@@ -6,6 +6,7 @@ import GridOverlays from './GridOverlays';
 import Messages from './Messages';
 import PawnSprites from './PawnSprites';
 import Popovers from './Popovers';
+import Styles from './Styles';
 import NextTurnButton from './NextTurnButton';
 import TweenManager from './TweenManager';
 import { extend, debounce } from 'lib/util';
@@ -13,6 +14,7 @@ import Scene from './scene/Scene';
 import SFX from './SFX';
 import OptionButtons from './OptionButtons';
 import ModalsManager from './ModalsManager';
+import Help from './Help';
 
 function UIManager(spec) {
     
@@ -85,7 +87,9 @@ function UIManager(spec) {
         sfx: spec=> new SFX(spec),
         modals: spec => new ModalsManager(spec),
         popovers: spec => new Popovers(spec),
-        ui: () => self
+        help: spec => new Help(spec),
+        styles: spec => new Styles(spec),
+        ui: () => self,
     });
 
 
@@ -199,10 +203,10 @@ function UIManager(spec) {
 
     game.scale.onSizeChange.add(resizeHandler);
 
-
     function updateWorldBounds() {
         let bounds = Renderer.calculateWorldBounds(grid);
-        bounds.height+=200;
+        bounds.height+=64; //add padding for bottom panel
+        log.debug(`World bounds ${bounds}`);
         if (bounds.width<game.camera.width) {
             let neededPadding = game.camera.width - bounds.width;
             bounds.left -= neededPadding/2;
@@ -210,9 +214,10 @@ function UIManager(spec) {
         }
         if (bounds.height<game.camera.height) {
             let neededPadding = game.camera.height - bounds.height;
-            bounds.y -= neededPadding - 64;
+            bounds.y -= neededPadding;
+            bounds.height += neededPadding;
         }
-        log.debug(`Setting bounds to ${bounds}`);
+        log.debug(`Adjusting bounds to ${bounds} (camera ${game.camera.width}x${game.camera.height})`);
         game.world.setBounds(bounds.left, bounds.top, bounds.width, bounds.height);
     }
 

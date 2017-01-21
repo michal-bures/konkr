@@ -3,7 +3,7 @@ import Scene from './Scene';
 function LocalPlayerTurn(spec){
 
     let { actions,  players, pawns, regions, ui, economy, log,
-          sfx, pawnSprites, landSprites, feedbackSymbols, scrolling, popovers } = spec;
+          sfx, pawnSprites, landSprites, feedbackSymbols, scrolling, popovers, help } = spec;
 
     return new Scene(spec, { 
     name: 'PLAYER_TURN',
@@ -90,6 +90,10 @@ function LocalPlayerTurn(spec){
                 ui.processActions();
             } else {
                 scrolling.mode="CAMERA";
+                if (pawns.pawnAt(hex)) {
+                    feedbackSymbols.showDefendedBy(hex, 99);
+                    popovers.show('HEX_TOOLTIP', hex, help.pawnInfo(pawns.pawnAt(hex)));
+                }
             }
             const r = regions.regionOf(hex);
             if (players.activePlayer.controls(r) && economy.capitalOf(r)) {

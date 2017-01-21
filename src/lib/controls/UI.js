@@ -26,7 +26,7 @@ const componentConstructors = {
     popoverPanel : (...args) => new PopoverPanel(...args)
 };
 
-function UIComponent({game, log, debug, tweens, ui}, def) {
+function UIComponent({game, log, debug, tweens, ui, styles}, def) {
 
     let self = game.add.group(),
         config = def,
@@ -46,9 +46,7 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
     let base_update = self.update.bind(self);
     let base_destroy = self.destroy.bind(self);
     self.destroy = ()=> {
-        log.debug(`DESTROY ${self}, ${self.children}`);
         base_destroy(true);
-        log.debug(`DONE ${self}, ${self.children}`);
     };
 
     extend(self, {
@@ -88,6 +86,7 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
         component.hasParent = true;
         childComponents.push(component);
         component.onResized.add(()=>self.childResized(component));
+        self.dirty = true;
         self.add(component);
     }
 
@@ -101,7 +100,7 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
         if (def.align == Phaser.BOTTOM_CENTER) {
             visibilityTransitionTween = tweens.add(self.cameraOffset).to({y:game.height}, SHOWHIDE_DURATION, Phaser.Easing.Quadratic.InOut, true);
             visibilityTransitionTween.onComplete.add(()=>{
-                self.visible = false;
+                if (hidden) self.visible = false;
             });
         } else {
             self.visible = false;
@@ -117,11 +116,14 @@ function UIComponent({game, log, debug, tweens, ui}, def) {
         hidden = false;
         self.visible = true;
         reflow();
-        if (def.align == Phaser.BOTTOM_CENTER) {
+        if (def.align == Phaser.BOTTOM_CENTER && self.fixedToCamera) {
             let targetY = self.cameraOffset.y;
             self.y = game.height;
             self.cameraOffset.y=self.y;
             visibilityTransitionTween = tweens.add(self.cameraOffset).to({y:targetY}, SHOWHIDE_DURATION, Phaser.Easing.Quadratic.InOut, true);
+        } else {
+            //self.scale.setTo(0.1);
+            //visibilityTransitionTween = tweens.add(self.scale).to({x:1,y:1}, SHOWHIDE_DURATION, Phaser.Easing.Quadratic.InOut, true);
         }
     }
 
@@ -189,7 +191,7 @@ function Image(spec, def) {
 
 function Label(spec, def) {
     let self = new UIComponent(spec, def);
-    let {text, style={ font: "12pt Bookman Old Style", fill: "black"}} = def;
+    let {text, style=spec.styles.get('LABEL')} = def;
     self._text= spec.game.add.text(0, 0, text || '',style);
     self.add(self._text);
     
@@ -254,6 +256,8 @@ function VerticalGroup (spec, def) {
     let self = new UIComponent(spec, def);
     let spacing = def.spacing || 0;
 
+    const _addComponent = self.addComponent;
+
     extend(self, {
         reflowChildren() {
             let y = 0;
@@ -262,8 +266,15 @@ function VerticalGroup (spec, def) {
                 member.reflow(clientRect);
                 y+=spacing + member.height;
             });            
+        },
+        addComponent(...args) {
+            _addComponent(...args);
+            // place the new component
+            self.reflowChildren();
+            self.onResized.dispatch();
         }
     });
+
     return self;
 }
 
@@ -305,13 +316,11 @@ function DecoratorPane(spec, def) {
 }
 
 function PopoverPanel(spec, def) {
+    const {game,log} = spec;
     let self = new UIComponent(spec, def);
-    const {game} = spec;
     let pointerSprite = spec.game.add.image(0,0,'popoverPointer');
     pointerSprite.anchor.set(0.5,1);
     let bgSprite = game.add.image(0,0,'paneBackground');
-    // WARNING: pointerSprite has to be added after bgSprite, or it will cause
-    // alpha flicker for some reason
     self.add(bgSprite);
     self.add(pointerSprite);
 
@@ -321,11 +330,11 @@ function PopoverPanel(spec, def) {
         if (!self.childComponents.length) return;
         const comp = self.childComponents[0];
         const padding = def.padding || DEFAULT_PADDING;
-        const inverted = def.y-comp.height-pointerSprite.height-padding*2 < game.camera.view.y + SCREEN_PADDING;
-        const rect = getPanelRect(inverted);
+        const inverted = def.y-comp.height-Math.abs(pointerSprite.height)-padding*2 < game.camera.view.y + SCREEN_PADDING;
         pointerSprite.scale.y = (inverted?-1:1);
         pointerSprite.x = def.x;
         pointerSprite.y = def.y+(def.vOffset||0)*(inverted?1:-1);
+        const rect = getPanelRect(inverted);
         bgSprite.x = rect.x;
         bgSprite.y = rect.y;
         bgSprite.width = rect.width;
@@ -337,8 +346,9 @@ function PopoverPanel(spec, def) {
     function getPanelRect(inverted) {
         const comp = self.childComponents[0];
         const padding = def.padding || DEFAULT_PADDING;
-        let y = def.y + ((def.vOffset||0)+pointerSprite.height)*(inverted?1:-1);
-        if (!inverted) y -= comp.height+2*padding;
+        // Math.abs needed since height can be negative when scale is negative
+        let y = def.y + ((def.vOffset||0)+Math.abs(pointerSprite.height))*(inverted?1:-1);
+        if (!inverted) y -= (comp.height+2*padding);
         const clientRect = new Phaser.Rectangle(
             def.x-comp.width/2-padding,
             y,
@@ -387,7 +397,7 @@ function Button(spec, def) {
 
 function LargeTextButton(spec, def) {
     let self = new UIComponent(spec, def);
-    let {game} = spec;
+    let {game, styles} = spec;
     const graphics = game.make.graphics(0, 0);
     graphics.beginFill(0xFFFFFF);
     //graphics.lineStyle(1, 0x202020, 1);
@@ -396,9 +406,9 @@ function LargeTextButton(spec, def) {
     graphics.endFill();
     const {x,y} = graphics.getBounds();
     let btn = game.make.button(x, y, graphics.generateTexture());
-    let title = game.make.text(10,6, def.title || '', { font: "24pt Bookman Old Style", fill: "black"});
+    let title = game.make.text(10,6, def.title || '', styles.get("LARGE_BUTTON_TITLE"));
     if (def.description) {
-        const desc = game.make.text(10,46, def.description || '', { font: "10pt Bookman Old Style", fill: "black"});
+        const desc = game.make.text(10,46, def.description || '', styles.get("LARGE_BUTTON_DESCRIPTION"));
         btn.addChild(desc);
     }
     btn.addChild(title);
@@ -425,13 +435,13 @@ function UI (spec, def) {
     spec.ui.onResize.add(()=>components[0].reflow());
 
     function addComponent(def, parent) {
-        if (self[def.name]) throw new Error(`Duplicate component name '${def.name}'`);
+        if (def.name && self[def.name]) throw new Error(`Duplicate component name '${def.name}'`);
         let newComp = createComponent(def);
         if (parent) {
             parent.addComponent(newComp);
         }
 
-        self[def.name] = newComp;
+        if (def.name) self[def.name] = newComp;
         components.push(newComp);
         if (def.contains) def.contains.forEach(childDef => {
             addComponent(childDef, newComp);

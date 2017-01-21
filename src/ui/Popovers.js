@@ -3,7 +3,7 @@ import { convertToWorldCoordinates, HEX_HEIGHT } from 'ui/Renderer';
 
 function Popovers(spec) {
     
-    let {game, players, economy, debug} =spec;
+    let {game, players, economy, debug, styles} =spec;
     let group = game.make.group();
 
     let self = Object.freeze({
@@ -15,19 +15,39 @@ function Popovers(spec) {
     let currentPopover = null;
 
     let uiFactory = {
-        HEX_TOOLTIP(hex, text) {
+        HEX_TOOLTIP(hex, {title, attributes, text}) {
            let [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
-           return popoverUI(x,y, {
-               name: 'label',
+           let items = [];
+           if (title) items.push({
+               component: 'label',
+               align: Phaser.LEFT_CENTER,
+               text: title,
+               style: styles.get("TOOLTIP_TITLE")
+           });
+           if (attributes) items.push({
+               component: 'label',
+               align: Phaser.LEFT_CENTER,
+               text: attributes,
+               style: styles.get("TOOLTIP_ATTRIBUTES")
+           });
+           if (text) items.push({
+               align: Phaser.LEFT_CENTER,
                component: 'label',
                text: text,
+               style: styles.get("TOOLTIP_TEXT")
+           });
+
+           return popoverUI(x,y, {
+               component: 'verticalGroup',
+               spacing: 0,
+               contains: items,
            });
         } 
     };
 
     function popoverUI(x,y,...contents) {
         let ui = new UI(spec, {
-            name: 'main',
+            name: 'popover',
             component: 'popoverPanel',
             contains: contents,
             useWorldCoords: true,
@@ -37,7 +57,7 @@ function Popovers(spec) {
         });
 
         //debug.sprite(ui.label);
-        return ui.main;
+        return ui.popover;
 
     }
 
@@ -50,7 +70,8 @@ function Popovers(spec) {
         currentPopover = cfg(...args);
 
         group.add(currentPopover);
-//        currentPopover.show();
+        currentPopover.hide();
+        currentPopover.show();
     }
 
     function hide() {

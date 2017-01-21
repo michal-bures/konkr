@@ -54,10 +54,6 @@ Boot.prototype= {
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.RESIZE;
         game.stage.backgroundColor='#d5dfef';
         game.scale.pageAlignHorizontally = true;
-        //var txt = game.add.text(game.width/2,game.height/2,"Konkr.io",{fill:"black", font:"24px Bookman Old Style"});
-        //txt.anchor.set(0.5);
-        //this.lblLoadingPhase = game.add.text(game.world.width/2,game.world.height/2+60,"Please wait...",{fill:"white", font:"16px Bookman Old Style"});
-        //this.lblLoadingPhase.anchor.set(0.5);
     },
 
     update: function() {
