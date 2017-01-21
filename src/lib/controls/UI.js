@@ -1,7 +1,7 @@
 import { assertDefined, debounce, extend } from 'lib/util';
 import Phasetips from 'lib/vendor/Phasetips';
+import UIAnimator from './UIAnimator';
 
-const SHOWHIDE_DURATION = 200;
 const INPUTEVENT_DEBOUNCE_INTERVAL = 100;
 const DEFAULT_PADDING = 5;
 // Recommended minimal offset of world-bound UI components from screen edge
@@ -26,8 +26,8 @@ const componentConstructors = {
     popoverPanel : (...args) => new PopoverPanel(...args)
 };
 
-function UIComponent({game, log, debug, tweens, ui, styles}, def) {
-
+function UIComponent(spec, def) {
+    const {game, log, debug, tweens, ui, styles} = spec;
     let self = game.add.group(),
         config = def,
         name = def.name || def.component + '#'+ generateComponentId(),
@@ -37,10 +37,9 @@ function UIComponent({game, log, debug, tweens, ui, styles}, def) {
         // out its children (instead of using the actual bounding box of the group itself); that way, even if the group
         // bounding box unexpectedly expands due to badly positioned (out-of-bounds) children, layout and 
         // positioning of other children within the group and the group itself will not be affected
-        anchorObject = null,
-        hidden = false,
-        visibilityTransitionTween = null;
+        anchorObject = null;
 
+    self.animator = (def.animator ? UIAnimator[def.animator](spec, self) : null);
     self.fixedToCamera = !def.useWorldCoords;
 
     let base_update = self.update.bind(self);
@@ -91,40 +90,12 @@ function UIComponent({game, log, debug, tweens, ui, styles}, def) {
     }
 
     function hide() {
-        if (hidden) return;
-        if (visibilityTransitionTween) {
-            visibilityTransitionTween.stop();
-            visibilityTransitionTween = null;
-        }
-        hidden = true;
-        if (def.align == Phaser.BOTTOM_CENTER) {
-            visibilityTransitionTween = tweens.add(self.cameraOffset).to({y:game.height}, SHOWHIDE_DURATION, Phaser.Easing.Quadratic.InOut, true);
-            visibilityTransitionTween.onComplete.add(()=>{
-                if (hidden) self.visible = false;
-            });
-        } else {
-            self.visible = false;
-        }
+        if (self.animator) self.animator.animateHide();
     }
 
     function show() {
-        if (!hidden && self.visible) return;
-        if (visibilityTransitionTween) {
-            visibilityTransitionTween.stop();
-            visibilityTransitionTween = null;
-        }
-        hidden = false;
-        self.visible = true;
         reflow();
-        if (def.align == Phaser.BOTTOM_CENTER && self.fixedToCamera) {
-            let targetY = self.cameraOffset.y;
-            self.y = game.height;
-            self.cameraOffset.y=self.y;
-            visibilityTransitionTween = tweens.add(self.cameraOffset).to({y:targetY}, SHOWHIDE_DURATION, Phaser.Easing.Quadratic.InOut, true);
-        } else {
-            //self.scale.setTo(0.1);
-            //visibilityTransitionTween = tweens.add(self.scale).to({x:1,y:1}, SHOWHIDE_DURATION, Phaser.Easing.Quadratic.InOut, true);
-        }
+        if (self.animator) self.animator.animateShow();
     }
 
     function update() {
@@ -138,13 +109,12 @@ function UIComponent({game, log, debug, tweens, ui, styles}, def) {
         self.dirty = false; 
         log.debug(`-> reflow ${self} in ${clientRect}:`);
         self.reflowChildren();
-        log.debug(`<- reflow ${self}`);
+        log.debug(`<- reflow ${self} (${self.x}:${self.y}, ${self.width}x${self.height})`);
         self.reflowSelf(clientRect);
     }
 
     function reflowSelf(clientRect) {
         let { align=Phaser.CENTER, x, y, hOffset=0, vOffset=0} = def;
-        if (hidden) return;
         // position/alignment
         if (x !== undefined || y !== undefined) {
             x = x || 0;
@@ -323,6 +293,7 @@ function PopoverPanel(spec, def) {
     let bgSprite = game.add.image(0,0,'paneBackground');
     self.add(bgSprite);
     self.add(pointerSprite);
+    self.animator = UIAnimator.popup(spec, self, def.x,def.y);
 
     self.reflowSelf=(clientRect) => {
     };

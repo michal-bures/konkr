@@ -70,7 +70,6 @@ function Popovers(spec) {
         currentPopover = cfg(...args);
 
         group.add(currentPopover);
-        currentPopover.hide();
         currentPopover.show();
     }
 

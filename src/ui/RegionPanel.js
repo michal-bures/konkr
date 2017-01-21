@@ -13,6 +13,7 @@ function RegionPanel(spec) {
         src: 'regionPanel',
         align:Phaser.BOTTOM_CENTER,
         onClicked: onPanelClick,
+        animator: 'slideUp',
         contains: [
             {
                 name: 'pawnShop',
