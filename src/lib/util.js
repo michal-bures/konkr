@@ -81,7 +81,7 @@ function isObject(obj) {
     return typeof obj === 'object';
 }
 
-function signedNumber(num) {
+function numberWithSign(num) {
     return String(num>=0?'+':'')+num;
 }
 
@@ -226,7 +226,7 @@ export {
     isFunction,
     isObject,
     assertDefined,
-    signedNumber,
+    numberWithSign,
     debounce,
     extend,
     createObject

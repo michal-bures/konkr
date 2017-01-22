@@ -1,7 +1,7 @@
 import { assertDefined } from 'lib/util';
 
 function RegionPanel(spec) {
-    let { log, debug, game, economy, ui, styles, regions, players, pawns } = spec;
+    let { log, debug, game, economy, ui, styles, regions, players, pawns, uiTooltips } = spec;
 
     let group = null,
         currentRegion = null;
@@ -38,6 +38,9 @@ function RegionPanel(spec) {
                         name: 'treasuryLabel',
                         style: styles.get('TREASURY_LABEL'),
                         component: 'label',
+                        onClicked: ()=>uiTooltips.show('KINGDOM_TREASURY',treasuryLabel.children[0],currentRegion),
+                        onInputOver: ()=>uiTooltips.showDelayed('KINGDOM_TREASURY',treasuryLabel.children[0],currentRegion),
+                        onInputOut: ()=>uiTooltips.hide(),
                         align: Phaser.BOTTOM_CENTER,
                     },
                     {
@@ -131,6 +134,7 @@ function RegionPanel(spec) {
     function onPanelClick() {
         ui.undoBuy();
     }
+
 }
 
 export default RegionPanel;

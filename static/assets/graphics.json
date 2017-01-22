@@ -1,0 +1,36 @@
+{"frames": {
+
+"coin.png":
+{
+	"frame": {"x":0,"y":0,"w":11,"h":15},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":11,"h":15},
+	"sourceSize": {"w":11,"h":15}
+},
+"shield-blue.png":
+{
+	"frame": {"x":11,"y":0,"w":11,"h":15},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":11,"h":15},
+	"sourceSize": {"w":11,"h":15}
+},
+"shield-red.png":
+{
+	"frame": {"x":22,"y":0,"w":11,"h":15},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":11,"h":15},
+	"sourceSize": {"w":11,"h":15}
+}},
+"meta": {
+	"app": "http://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "graphics.png",
+	"format": "RGBA8888",
+	"size": {"w":33,"h":15},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:d66513cdd46cca4bdb3f8a9ebddff4f6:1f71f0bffc86255c53224d2f881cb5d7:a37384bf37d2ba6e9251927f9499b8b7$"
+}
+}

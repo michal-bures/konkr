@@ -1,4 +1,4 @@
-import { extend } from 'lib/util';
+import { extend, debounce } from 'lib/util';
 import UIAnimator from '../UIAnimator';
 
 let lastComponentId = 0;
@@ -12,8 +12,7 @@ function cameraRect(game) {
 
 export default function UIComponent(spec, def) {
     const {game, log, debug, tweens, ui, styles} = spec;
-    let self = game.add.group(),
-        config = def,
+    let config = def,
         name = def.name || def.component + '#'+ generateComponentId(),
         parentGroup = game.world.bounds, // game.camera.view),
         childComponents = [],
@@ -22,6 +21,7 @@ export default function UIComponent(spec, def) {
         // bounding box unexpectedly expands due to badly positioned (out-of-bounds) children, layout and 
         // positioning of other children within the group and the group itself will not be affected
         anchorObject = null;
+    let self = game.make.group(null,name);
 
     self.animator = (def.animator ? UIAnimator[def.animator](spec, self) : null);
     self.fixedToCamera = !def.useWorldCoords;
@@ -46,7 +46,9 @@ export default function UIComponent(spec, def) {
         reflowChildren,
         update,
         show,
+        showFast,
         hide,
+        hideFast,
         config,
         childComponents,
         childResized,
@@ -76,16 +78,24 @@ export default function UIComponent(spec, def) {
 
     function hide() {
         if (self.animator) self.animator.animateHide();
-        else self.visible = false;
+        else hideFast();
     }
 
     function show() {
         if (self.animator) self.animator.animateShow();
-        else {
+        else showFast();
+    }
+
+    function showFast() {
+        {
             // NOTE: order is important, reflow will not work correctly unless group is visible
             self.visible = true;
             self.reflow();
-        }
+        }        
+    }
+
+    function hideFast() {
+        self.visible = false;
     }
 
     function update() {
@@ -140,6 +150,22 @@ export default function UIComponent(spec, def) {
 
     return self;
 }
+
+UIComponent.bindInputEvents = (def,sprite) => {
+    if (def.onClicked) {
+        sprite.inputEnabled=true;
+        sprite.events.onInputUp.add(debounce(def.onClicked,UIComponent.INPUTEVENT_DEBOUNCE_INTERVAL,true));
+    }
+    if (def.onInputOver) {
+        sprite.inputEnabled=true;
+        sprite.events.onInputOver.add(def.onInputOver);
+    }
+    if (def.onInputOut) {
+        sprite.inputEnabled=true;
+        sprite.events.onInputOut.add(def.onInputOut);
+    }
+};
+
 // Debounce interval (ms) for input events
 UIComponent.INPUTEVENT_DEBOUNCE_INTERVAL = 100;
 // Default padding between layout component outer border and its child components

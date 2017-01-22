@@ -17,7 +17,10 @@ function HexSelectionProxy(spec) {
     group.add(proxy);
 
     proxy.events.onInputOver.add(() => active = true);
-    proxy.events.onInputOut.add(() => active = false);
+    proxy.events.onInputOut.add(() => {
+        active = false;
+        hexTooltips.hide();
+    });
 
     proxy.events.onInputDown.add(debounce((target, pointer) => {
         rightButtonPressed = pointer.rightButton.isDown;

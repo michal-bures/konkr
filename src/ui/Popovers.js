@@ -1,4 +1,5 @@
 import { convertToWorldCoordinates, HEX_HEIGHT } from 'ui/Renderer';
+import { numberWithSign } from 'lib/util';
 
 const DEFAULT_TOOLTIP_DELAY = 750;
 const NO_DELAYS_EXPIRATION_INTERVAL = 500;
@@ -8,11 +9,12 @@ function Popovers(spec, {
     noDelaysExpiration = NO_DELAYS_EXPIRATION_INTERVAL
 }) {
     
-    let {game, styles, ui, help, players, regions} =spec;
-    let group = game.make.group();
+    let {game, styles, ui, help, players, regions, economy, debug} =spec;
+    let group = game.make.group(null,"popovers");
     let delayedShowTimer = null,
         noDelaysExpirationTimer = null,
-        noDelays = false;
+        noDelays = false,
+        currentPopoverCfg = null;
 
 
     let self = Object.freeze({
@@ -26,15 +28,46 @@ function Popovers(spec, {
 
     let currentPopover = null;
 
+    function tooltipTitle(text) {
+        return {
+            component: 'label',
+            align: Phaser.LEFT_CENTER,
+            text: text,
+            style: styles.get("TOOLTIP_TITLE")
+        };
+    }
+
+    function tooltipText(text) {
+        return {
+            component: 'label',
+            align: Phaser.LEFT_CENTER,
+            text: text,
+            style: styles.get("TOOLTIP_TEXT")
+        };
+    }
+
+    function tooltipFlavourText(text) {
+        return {
+            component: 'label',
+            align: Phaser.LEFT_CENTER,
+            text: text,
+            style: styles.get("TOOLTIP_FLAVOUR_TEXT")
+        };
+    }
+
+    function horizontalLayout(items) {
+        return {
+            component: 'horizontalGroup',
+            align: Phaser.LEFT_CENTER,
+            spacing: 5,
+            contains: items
+        };
+    }
+
     function pawnTitle(pawn) {
         const items = [];
         
-        items.push({
-            component: 'label',
-            align: Phaser.LEFT_CENTER,
-            text: help.getPawnTitle(pawn)+" ",
-            style: styles.get("TOOLTIP_TITLE")
-        });
+        items.push(tooltipTitle(help.getPawnTitle(pawn)+" "));
 
         let image, value;
         if (pawn.might) {
@@ -52,21 +85,9 @@ function Popovers(spec, {
                 src: image,
             });
         }
-        if (value) {
-            items.push({
-                component: 'label',
-                align: Phaser.LEFT_CENTER,
-                text: value,
-                style: styles.get("TOOLTIP_TEXT")
-            });
-        }
+        if (value) items.push(tooltipText(value));
 
-        return {
-            component: 'horizontalGroup',
-            align: Phaser.LEFT_CENTER,
-            spacing: 5,
-            contains: items
-        };
+        return horizontalLayout(items);
     }
 
     function pawnUpkeep(pawn) {
@@ -74,7 +95,7 @@ function Popovers(spec, {
         return {
             component: 'label',
             align: Phaser.LEFT_CENTER,
-            text: `Costs ${pawn.upkeep}g each turn`,
+            text: `Costs ${pawn.upkeep}g every turn`,
             style: styles.get("TOOLTIP_ATTRIBUTES")
         };
     }
@@ -91,12 +112,7 @@ function Popovers(spec, {
     }    
 
     function pawnDescription(pawn, isOwn=false) {
-        return {
-            component: 'label',
-            align: Phaser.LEFT_CENTER,
-            text: (isOwn ? help.getOwnPawnDescription(pawn) : help.getHostilePawnDescription(pawn)),
-            style: styles.get("TOOLTIP_FLAVOUR_TEXT")
-        };
+        return tooltipFlavourText((isOwn ? help.getOwnPawnDescription(pawn) : help.getHostilePawnDescription(pawn)));
     }
 
     let uiFactory = {
@@ -117,13 +133,34 @@ function Popovers(spec, {
         HEX_TOOLTIP(hex, text) {
            let [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
 
-           return popoverUI({x,y}, {
-                component: 'label',
-                align: Phaser.CENTER,
-                text: text,
-                style: styles.get("TOOLTIP_TEXT")
-           });
-        },        
+           return popoverUI({x,y}, tooltipText(text));
+        },    
+        KINGDOM_TREASURY(sprite, region) {
+            let x = sprite.world.x + sprite.width/2 - game.camera.view.x;
+            let y = sprite.world.y - game.camera.view.y;
+
+            let breakdown = {};
+            let str = [];
+            const netIncome = economy.netIncomeOf(region,breakdown);
+            const treasury = economy.treasuryOf(region);
+            for (const key in breakdown) {
+                str.push(help.getIncomeBreakdownItem(key)+": "+numberWithSign(breakdown[key])+"g");
+            }
+            const boldStyle = styles.get('TOOLTIP_TEXT');
+            boldStyle.fontWeight = "bold";
+
+            return popoverUI({x,y,fixedToCamera:true,vOffset:0}, {
+                component: 'verticalGroup',
+                spacing: 3,
+                contains: [
+                    tooltipTitle("Kingdom treasury"),
+                    { component: 'label', style: boldStyle, align: Phaser.LEFT_CENTER, text: "Current: "+treasury+"g" },
+                    tooltipText(str.join('\n')),
+                    { component: 'label', style: boldStyle, align: Phaser.LEFT_CENTER, text: "Net income: "+numberWithSign(netIncome)+"g" },
+                    { component: 'label', style: boldStyle, align: Phaser.LEFT_CENTER, text: "Next turn: "+(treasury+netIncome)+"g" }
+                ].filter(x=>x)
+            });
+        },              
         BUY_PAWN_TOOLTIP(sprite, pawnType) {
             let x = sprite.world.x - game.camera.view.x;
             let y = sprite.world.y - game.camera.view.y;
@@ -155,7 +192,7 @@ function Popovers(spec, {
     };
 
     function popoverUI({x,y,fixedToCamera,vOffset=10},...contents) {
-        const components = ui.build( {
+        return {
             name: 'popover',
             component: 'popoverPanel',
             contains: contents,
@@ -164,23 +201,21 @@ function Popovers(spec, {
             vOffset,
             x:x,
             y:y,
-        });
-
-        //debug.sprite(ui.label);
-        return components.popover;
-
+        };
     }
 
     function show(type, ...args) {
-        if (currentPopover) hide();
 
         let cfg = uiFactory[type];
         if (!cfg) throw `Unknown popover type: ${type}`;
+        let newPopoverCfg = cfg(...args);
 
-        currentPopover = cfg(...args);
-
+        let fast = (currentPopoverCfg && currentPopoverCfg.x == newPopoverCfg.x && currentPopoverCfg.y == newPopoverCfg.y);
+        if (currentPopover) hide();
+        currentPopoverCfg = newPopoverCfg;
+        currentPopover = ui.build(newPopoverCfg).root;
         group.add(currentPopover);
-        currentPopover.show();
+        if (fast) currentPopover.showFast(); else currentPopover.show();
     }
 
     function showDelayed(type, ...args) {
@@ -205,6 +240,7 @@ function Popovers(spec, {
         group.remove(currentPopover);
         currentPopover.destroy();
         currentPopover = null;
+        currentPopoverCfg = null;
     }
 
     function toDebugString() {

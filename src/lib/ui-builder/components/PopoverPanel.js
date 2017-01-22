@@ -9,6 +9,10 @@ export default function PopoverPanel(spec, def) {
     let bgSprite = null;
     self.add(pointerSprite);
     self.animator = UIAnimator.popup(spec, self, def.x,def.y);
+    self.pivot.x = def.x;
+    self.pivot.y = def.y;
+    self.x = def.x;
+    self.y = def.y;
 
     self.reflowSelf=() => {
     };

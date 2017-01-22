@@ -49,7 +49,7 @@ module.exports = {
       { test: /pixi\.js/, loader: 'expose?PIXI' },
       { test: /phaser-split\.js$/, loader: 'expose?Phaser' },
       { test: /p2\.js/, loader: 'expose?p2' },
-      { test: /\.jpe?g$|\.gif$|\.png$|\.svg$|\.woff$|\.ttf$|\.wav$|\.mp3$/, loader: "file" }
+      { test: /\.js$|\.jpe?g$|\.gif$|\.png$|\.svg$|\.woff$|\.ttf$|\.wav$|\.mp3$/, include: path.join(__dirname,'static'), loader: "file" }
     ]
   },
   node: {

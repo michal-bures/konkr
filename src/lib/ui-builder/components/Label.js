@@ -1,5 +1,5 @@
 import UIComponent from './UIComponent';
-import { extend } from 'lib/util';
+import { extend, debounce } from 'lib/util';
 
 export default function Label(spec, def) {
     let self = new UIComponent(spec, def);
@@ -8,7 +8,9 @@ export default function Label(spec, def) {
     self._text.lineSpacing = -0.25;
     self._text.padding.y = -5;
     self.add(self._text);
-    
+
+    UIComponent.bindInputEvents(def, self._text);
+
     extend(self,{
         addColor(...args) {
             return self._text.addColor(...args);

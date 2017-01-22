@@ -221,11 +221,12 @@ function FeedbackSymbols({game, tweens, warfare, log, debug, regions}) {
 }
 
 class RegionBorders {
-    constructor({game, regions, gameState}) {
+    constructor({game, regions, gameState, players}) {
         this.regions = regions;
         this.game = game;
         this.needsRedraw = true;
         this.group = game.make.group();
+        this.players = players;
 
         regions.onHexesChangedOwner.add(() => { this.needsRedraw = true; });
         gameState.onReset.add(() => { this.needsRedraw = true; });        

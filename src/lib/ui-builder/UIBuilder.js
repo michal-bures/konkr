@@ -15,7 +15,7 @@ const componentConstructors = {
     decoratorPane: (...args) => new DecoratorPanel(...args),
     largeTextButton: (...args) => new LargeTextButton(...args),
     pawnShop : (...args) => new PawnShop(...args),
-    horizontalGroup : (...args) => new HorizontalGroup(...args),
+horizontalGroup : (...args) => new HorizontalGroup(...args),
     verticalGroup : (...args) => new VerticalGroup(...args),
     popoverPanel : (...args) => new PopoverPanel(...args)
 };
@@ -26,7 +26,8 @@ function UI (spec, def) {
     let components =[];
     let self = {
         addComponent,
-        update() { components[0].update(); }
+        update() { components[0].update(); },
+        get root() { return components[0]; }
     };
     addComponent(def);
     components[0].reflow();

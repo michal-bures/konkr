@@ -7,6 +7,7 @@ function Help(spec) {
         getPawnTitle,
         getOwnPawnDescription,
         getHostilePawnDescription,
+        getIncomeBreakdownItem
     });
 
     const pawnData = {
@@ -36,6 +37,18 @@ function Help(spec) {
 
     };
 
+    const incomeBreakdown = {
+        taxes:"Taxes from land",
+        TROOP_1:"Militia",
+        TROOP_2:"Pikemen",
+        TROOP_3:"Knights",
+        TROOP_4:"Heroes",
+        BANDIT:"Plundered by bandits",
+    };
+
+    function getIncomeBreakdownItem(key) {
+        return incomeBreakdown[key] || key;
+    }
 
     function getPawnTitle(pawn) {
         return pawnData[pawn.name] && pawnData[pawn.name].title;

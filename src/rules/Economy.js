@@ -1,4 +1,4 @@
-import { signedNumber } from 'lib/util';
+import { numberWithSign } from 'lib/util';
 
 function Economy(spec) {
     let {log, pawns, actions, regions, grid, random} = spec;
@@ -171,28 +171,30 @@ function Economy(spec) {
 
     function toDebugString() {
         return regions.map(region => {
-            if (capitalOf(region)) return `* ${region} with capital at ${capitalOf(region)}: ${treasuryOf(region)} (${signedNumber(netIncomeOf(region))})`;
+            if (capitalOf(region)) return `* ${region} with capital at ${capitalOf(region)}: ${treasuryOf(region)} (${numberWithSign(netIncomeOf(region))})`;
         }).filter(x=>x).join('\n');
     }
 
-    function netIncomeOf(region) {
-        return incomeOf(region) - expensesOf(region);
+    function netIncomeOf(region, breakdown) {
+        return incomeOf(region, breakdown) - expensesOf(region, breakdown);
     }
 
     function priceOf(pawnType) {
         return pawnType.price || 0;
     }
 
-    function incomeOf(region) {
+    function incomeOf(region, breakdown) {
         if (!capitalOf(region)) return 0;
-        return region.hexes.length;
+        const taxes = region.hexes.length;
+        if (breakdown) breakdown.taxes=taxes;
+        return taxes;
     }
 
-    function expensesOf(region) {
+    function expensesOf(region, breakdown) {
         if (!capitalOf(region)) return 0;
         let sum = 0;
         region.hexes.forEach((hex) => {
-            sum += upkeepOfPawn(pawns.pawnAt(hex));
+            sum += upkeepOfPawn(pawns.pawnAt(hex), breakdown);
         });
         return sum;
     }
@@ -201,9 +203,14 @@ function Economy(spec) {
         return regionTreasury.get(region) || 0;
     }
 
-    function upkeepOfPawn(pawn) {
+    function upkeepOfPawn(pawn, breakdown) {
         if (!pawn) return 0;
-        return pawn.pawnType.upkeep || 0;
+        const val = pawn.upkeep;
+        if (!val) return 0;
+        if (breakdown) {
+            breakdown[pawn.name] = (breakdown[pawn.name]||0)-val;
+        }
+        return val;
     }
 
     function buyablePawns(region) {

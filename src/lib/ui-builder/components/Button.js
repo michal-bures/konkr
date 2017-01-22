@@ -9,6 +9,9 @@ export default function Button(spec, def) {
     self.add(btn);
     self.onInputUp = btn.events.onInputUp;
     self.onInputDown = btn.events.onInputDown;
+
+    UIComponent.bindInputEvents(def,btn);
+
     if (def.onClicked) self.onInputUp.add(debounce(def.onClicked,UIComponent.INPUTEVENT_DEBOUNCE_INTERVAL,true));
 
     if (def.tooltip) {
