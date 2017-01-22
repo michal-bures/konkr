@@ -14,23 +14,20 @@ function OptionButtons(spec) {
             {
                 name: 'mute',
                 component: 'button',
-                sprite: 'optionButtons',
+                sprite: 'btn-sound-on',
                 tooltip: 'toggle sound',
-                frame:1,
             },
             {
                 name: 'restart',
                 component: 'button',
-                sprite: 'optionButtons',
+                sprite: 'btn-restart',
                 tooltip: 'start a new game',
-                frame:2,
             },
             {
                 name: 'fullscreen',
                 component: 'button',
-                sprite: 'optionButtons',
+                sprite: 'btn-fullscreen',
                 tooltip: 'toggle fullscreen mode',
-                frame:3,
             },
         ]
     });
@@ -47,7 +44,7 @@ function OptionButtons(spec) {
 
     mute.onInputUp.add(() => {
         game.sound.mute = !game.sound.mute;
-        mute.setFrame(game.sound.mute?0:1);
+        mute.setFrameName(game.sound.mute?'btn-sound-off':'btn-sound-on');
     });
 
     restart.onInputUp.add(()=> {

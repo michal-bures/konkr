@@ -3,7 +3,7 @@ import Scene from './Scene';
 function LocalPlayerTurn(spec){
 
     let { actions,  players, pawns, regions, ui, economy, log,
-          sfx, pawnSprites, landSprites, feedbackSymbols, scrolling, popovers, help } = spec;
+          sfx, pawnSprites, landSprites, feedbackSymbols, scrolling, hexTooltips, help } = spec;
 
     return new Scene(spec, { 
     name: 'PLAYER_TURN',
@@ -21,7 +21,8 @@ function LocalPlayerTurn(spec){
             grabbedPawn:true,
             feedbackSymbols:true,
             optionButtons:true,
-            popovers:true,
+            hexTooltips:true,
+            uiTooltips:true,
         },
         bindSignals: {
             pawns: {
@@ -36,6 +37,7 @@ function LocalPlayerTurn(spec){
             },
             ui: {
                 onHexSelected,
+                onHexHovered
             }
         },
         setup,
@@ -57,8 +59,13 @@ function LocalPlayerTurn(spec){
     function onPawnDestroyed(pawn) {
         pawnSprites.destroySprite(pawn.hex);
     }
+    function onHexHovered(hex) {
+        hexTooltips.hide();
+        if (players.activePlayer.grabbedPawn) return;
+        const pawn = pawns.pawnAt(hex);
+        if (pawn) hexTooltips.showDelayed('HEX_TOOLTIP', hex, help.pawnInfo(pawn));
+    }
     function onHexSelected(hex) {
-        popovers.hide();
         let showPawnTooltip = false;
         if (players.grabbedPawn) {
             scrolling.mode="CAMERA";
@@ -85,6 +92,7 @@ function LocalPlayerTurn(spec){
         } else {
             if (pawns.pawnAt(hex) && players.activePlayer.canGrabPawn(pawns.pawnAt(hex))) {
                 scrolling.mode="PAWN";
+                hexTooltips.hide();
                 actions.schedule('UNDO_MARKER');
                 actions.schedule('GRAB_UNIT', pawns.pawnAt(hex));
                 sfx.grabPawn();
@@ -105,7 +113,7 @@ function LocalPlayerTurn(spec){
 
             if (showPawnTooltip) {
                 feedbackSymbols.showDefendedBy(hex, 99);
-                popovers.show('HEX_TOOLTIP', hex, help.pawnInfo(pawns.pawnAt(hex)));
+                //popovers.show('HEX_TOOLTIP', hex, help.pawnInfo(pawns.pawnAt(hex)));
             }
         }
     }

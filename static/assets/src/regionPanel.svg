@@ -149,6 +149,58 @@
        y1="1245.3622"
        x2="18"
        y2="1278.3622" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5746"
+       id="linearGradient3130"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1,-0.99998948)"
+       x1="180"
+       y1="179.36217"
+       x2="186"
+       y2="185.36217" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5746-1-9"
+       id="linearGradient5774-6-5"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1,-0.99998948)"
+       x1="180"
+       y1="179.36217"
+       x2="186"
+       y2="185.36217" />
+    <linearGradient
+       id="linearGradient5746-1-9">
+      <stop
+         id="stop5748-0-4"
+         offset="0"
+         style="stop-color:#5a5eff;stop-opacity:1;" />
+      <stop
+         id="stop5750-5-6"
+         offset="1"
+         style="stop-color:#9a9cff;stop-opacity:1;" />
+    </linearGradient>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient5746-1"
+       id="linearGradient5774-6"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-1,-0.99998948)"
+       x1="180"
+       y1="179.36217"
+       x2="186"
+       y2="185.36217" />
+    <linearGradient
+       id="linearGradient5746-1">
+      <stop
+         id="stop5748-0"
+         offset="0"
+         style="stop-color:#5a5eff;stop-opacity:1;" />
+      <stop
+         id="stop5750-5"
+         offset="1"
+         style="stop-color:#9a9cff;stop-opacity:1;" />
+    </linearGradient>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -157,11 +209,11 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2.8284271"
-     inkscape:cx="101.97931"
-     inkscape:cy="-154.61335"
+     inkscape:zoom="15.999999"
+     inkscape:cx="-22.334295"
+     inkscape:cy="-297.17616"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer2"
      showgrid="true"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -186,7 +238,7 @@
        id="guide5335" />
     <sodipodi:guide
        orientation="1,0"
-       position="0,-16"
+       position="0,-296"
        id="guide5337" />
   </sodipodi:namedview>
   <metadata
@@ -220,6 +272,11 @@
      inkscape:groupmode="layer"
      id="layer1"
      style="display:inline;opacity:0.98">
+    <path
+       style="opacity:0.98000003999999996;color:#000000;fill:#ffcc00;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.99999994000000003;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       d="m -14.46875,1342.8622 c -1.72405,0 -3.18786,1.1064 -3.75,2.638 l -0.28125,0 0,0.9816 0.0937,0 c -0.0138,0.1353 -0.0625,0.2598 -0.0625,0.3987 0,2.213 1.79086,4.0184 4,4.0184 2.20914,0 4,-1.8054 4,-4.0184 0,-0.1376 -0.0177,-0.2646 -0.0312,-0.3987 l 0,-0.9816 -0.21875,0 c -0.56214,-1.5316 -2.02595,-2.638 -3.75,-2.638 z"
+       id="path3113"
+       inkscape:connector-curvature="0" />
     <path
        style="color:#000000;fill:#ffffff;fill-opacity:0.79599998000000005;fill-rule:nonzero;stroke:none;stroke-width:1;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        d="m 24,996.36218 200,0 24,56.00002 -248,0 z"
@@ -305,7 +362,7 @@
        transform="translate(66,0)"
        width="744.09448"
        height="1052.3622"
-       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\spritedata\ui\btn-restart.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <use
@@ -317,7 +374,7 @@
        transform="translate(33,0)"
        width="744.09448"
        height="1052.3622"
-       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\spritedata\ui\btn-sound-on.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <g
@@ -349,7 +406,7 @@
     <g
        style="display:inline"
        id="g4979"
-       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\spritedata\ui\btn-sound-off.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90">
       <path
@@ -361,9 +418,9 @@
          sodipodi:cy="1260.3622"
          sodipodi:rx="16"
          sodipodi:ry="16"
-         d="m 24,1260.3622 a 16,16 0 1 1 -32,0 16,16 0 1 1 32,0 z" />
+         d="m 24,1260.3622 c 0,8.8365 -7.163444,16 -16,16 -8.836556,0 -16,-7.1635 -16,-16 0,-8.8366 7.163444,-16 16,-16 8.836556,0 16,7.1634 16,16 z" />
       <path
-         d="m 24,1260.3622 a 16,16 0 1 1 -32,0 16,16 0 1 1 32,0 z"
+         d="m 24,1260.3622 c 0,8.8365 -7.163444,16 -16,16 -8.836556,0 -16,-7.1635 -16,-16 0,-8.8366 7.163444,-16 16,-16 8.836556,0 16,7.1634 16,16 z"
          sodipodi:ry="16"
          sodipodi:rx="16"
          sodipodi:cy="1260.3622"
@@ -377,7 +434,7 @@
        style="display:inline"
        id="g4931"
        transform="translate(-41.5,1248.8622)"
-       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\spritedata\ui\btn-sound-off.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90">
       <g
@@ -397,7 +454,7 @@
        id="path4939"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="ccccc"
-       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\spritedata\ui\btn-sound-off.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <use
@@ -409,7 +466,7 @@
        transform="translate(33,0)"
        width="744.09448"
        height="1052.3622"
-       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\optionButton.png"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\spritedata\ui\btn-fullscreen.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <path
@@ -424,7 +481,7 @@
        style="opacity:0.98000003999999996;display:inline"
        inkscape:export-ydpi="90"
        inkscape:export-xdpi="90"
-       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\shield-symbol.png"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\symbols\shield-red.png"
        transform="translate(-246,1164)"
        id="g5752">
       <path
@@ -444,7 +501,7 @@
        style="opacity:0.98000003999999996;display:inline"
        inkscape:export-ydpi="90"
        inkscape:export-xdpi="90"
-       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\shield-symbol.png"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\symbols\shield-blue.png"
        transform="translate(-207,1165)"
        id="g5768">
       <path
@@ -461,11 +518,11 @@
          sodipodi:nodetypes="cccccccc" />
     </g>
     <path
-       style="opacity:1;fill:#ffffff;fill-opacity:0.79607843000000000;stroke:none"
+       style="opacity:1;fill:#000000;fill-opacity:1;stroke:none"
        d="m 152,1236.3622 8,16 8,-16 z"
        id="path3110"
        inkscape:connector-curvature="0"
-       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\popoverPointer.png"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\spritedata\ui\popoverPointer.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <path
@@ -477,12 +534,254 @@
        d="m 144,1180.3622 0,16 16,0 0,-16 z"
        style="fill:#ffffff;fill-opacity:0.79607843;stroke:none"
        sodipodi:nodetypes="ccccc" />
+    <path
+       sodipodi:type="arc"
+       style="opacity:0.98000004;color:#000000;fill:#ffcc00;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.70650887;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="path5005-0"
+       sodipodi:cx="1356"
+       sodipodi:cy="806.36218"
+       sodipodi:rx="4"
+       sodipodi:ry="2"
+       d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
+       transform="matrix(1,0,0,2.0033863,-1370.4688,-270.53859)" />
+    <rect
+       style="color:#000000;fill:#f9f9f9;fill-opacity:0.69105691;fill-rule:nonzero;stroke:#000000;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect3109"
+       width="288"
+       height="96"
+       x="80"
+       y="1465.8368"
+       rx="16"
+       ry="16" />
+    <text
+       xml:space="preserve"
+       style="font-size:17.37664032px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:Sans"
+       x="96"
+       y="1495.8368"
+       id="text3928"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3930"
+         x="96"
+         y="1495.8368"
+         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-family:Bookman Old Style;-inkscape-font-specification:Bookman Old Style Light">Villager</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text3932"
+       y="1515.8368"
+       x="98"
+       style="font-size:30.12700462px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:Sans"
+       xml:space="preserve"><tspan
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+         y="1515.8368"
+         x="98"
+         id="tspan3934"
+         sodipodi:role="line">Great for capturing undefended territory and </tspan><tspan
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+         y="1530.8368"
+         x="98"
+         sodipodi:role="line"
+         id="tspan3936">dealing with bandits. Protects adjacent tiles </tspan><tspan
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+         y="1545.8368"
+         x="98"
+         sodipodi:role="line"
+         id="tspan3938">from enemy villagers.</tspan></text>
+    <path
+       style="opacity:0.98000004;fill:#000000;fill-opacity:1;stroke:#1a1a1a;display:inline"
+       d="m 128,1561.8368 8,16 8,-16 z"
+       id="path3110-2"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\popoverPointer.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"
+       sodipodi:nodetypes="cccc" />
+    <g
+       style="opacity:0.98000004;display:inline"
+       inkscape:export-ydpi="90"
+       inkscape:export-xdpi="90"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\shield-symbol.png"
+       transform="translate(-3,1310.4746)"
+       id="g5768-4">
+      <path
+         sodipodi:nodetypes="cccccccc"
+         inkscape:connector-curvature="0"
+         id="path5770-4"
+         d="m 176.5,173.86218 10,0 0,10 -1,2 -4,2 -4,-1.99999 -1,-2.00001 z"
+         style="color:#000000;fill:url(#linearGradient5774-6);fill-opacity:1;fill-rule:nonzero;stroke:#000080;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+      <path
+         style="opacity:0.5;color:#000000;fill:none;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+         d="m 177.5,174.86218 8,0 0,8.57143 -0.8,1.71429 -3.2,1.71428 -3.2,-1.71427 -0.8,-1.7143 z"
+         id="path5772-5"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccccc" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:30.12700462px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:Sans"
+       x="188"
+       y="1495.8368"
+       id="text3994"
+       sodipodi:linespacing="125%"><tspan
+         id="tspan4000"
+         sodipodi:role="line"
+         x="188"
+         y="1495.8368"
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial">1</tspan></text>
+    <path
+       transform="matrix(1.0229125,0,0,1.9999965,-1178.4777,-119.38471)"
+       d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
+       sodipodi:ry="2"
+       sodipodi:rx="4"
+       sodipodi:cy="806.36218"
+       sodipodi:cx="1356"
+       id="path4029"
+       style="color:#000000;fill:#ffcc00;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.69914323;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       sodipodi:type="arc" />
+    <path
+       sodipodi:type="arc"
+       style="color:#000000;fill:#ffcc00;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.69914323;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="path5005-8"
+       sodipodi:cx="1356"
+       sodipodi:cy="806.36218"
+       sodipodi:rx="4"
+       sodipodi:ry="2"
+       d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
+       transform="matrix(1.0229125,0,0,1.9999965,-1178.4777,-121.38471)" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text4025"
+       y="1495.8368"
+       x="216"
+       style="font-size:30.12700462px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:Sans"
+       xml:space="preserve"><tspan
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+         y="1495.8368"
+         x="216"
+         sodipodi:role="line"
+         id="tspan4027">2 each turn</tspan></text>
+    <rect
+       style="color:#000000;fill:#f9f9f9;fill-opacity:0.69105691;fill-rule:nonzero;stroke:#000000;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="rect3109-5"
+       width="288"
+       height="96"
+       x="112"
+       y="1641.8368"
+       rx="16"
+       ry="16" />
+    <text
+       xml:space="preserve"
+       style="font-size:17.37664032px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:Sans"
+       x="128"
+       y="1671.8368"
+       id="text3928-3"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3930-7"
+         x="128"
+         y="1671.8368"
+         style="font-style:normal;font-variant:normal;font-weight:300;font-stretch:normal;font-family:Bookman Old Style;-inkscape-font-specification:Bookman Old Style Light">Villager</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text3932-1"
+       y="1691.8368"
+       x="130"
+       style="font-size:30.12700462px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:Sans"
+       xml:space="preserve"><tspan
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+         y="1691.8368"
+         x="130"
+         id="tspan3934-5"
+         sodipodi:role="line">Great for capturing undefended territory and </tspan><tspan
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+         y="1706.8368"
+         x="130"
+         sodipodi:role="line"
+         id="tspan3936-7">dealing with bandits. Protects adjacent tiles </tspan><tspan
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+         y="1721.8368"
+         x="130"
+         sodipodi:role="line"
+         id="tspan3938-8">from enemy villagers.</tspan></text>
+    <path
+       style="opacity:0.98000004;fill:#000000;fill-opacity:1;stroke:#1a1a1a;display:inline"
+       d="m 160,1737.8368 8,16 8,-16 z"
+       id="path3110-2-3"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\ui\popoverPointer.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90"
+       sodipodi:nodetypes="cccc" />
+    <g
+       style="opacity:0.98000004;display:inline"
+       inkscape:export-ydpi="90"
+       inkscape:export-xdpi="90"
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\shield-symbol.png"
+       transform="translate(29,1486.4746)"
+       id="g5768-4-5">
+      <path
+         sodipodi:nodetypes="cccccccc"
+         inkscape:connector-curvature="0"
+         id="path5770-4-5"
+         d="m 176.5,173.86218 10,0 0,10 -1,2 -4,2 -4,-1.99999 -1,-2.00001 z"
+         style="color:#000000;fill:url(#linearGradient5774-6-5);fill-opacity:1;fill-rule:nonzero;stroke:#000080;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
+      <path
+         style="opacity:0.5;color:#000000;fill:none;stroke:#ffffff;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+         d="m 177.5,174.86218 8,0 0,8.57143 -0.8,1.71429 -3.2,1.71428 -3.2,-1.71427 -0.8,-1.7143 z"
+         id="path5772-5-6"
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccccc" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:30.12700462px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:Sans"
+       x="220"
+       y="1671.8368"
+       id="text3994-2"
+       sodipodi:linespacing="125%"><tspan
+         id="tspan4000-8"
+         sodipodi:role="line"
+         x="220"
+         y="1671.8368"
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial">1</tspan></text>
+    <path
+       transform="matrix(1.0229125,0,0,1.9999965,-1146.4777,56.615289)"
+       d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
+       sodipodi:ry="2"
+       sodipodi:rx="4"
+       sodipodi:cy="806.36218"
+       sodipodi:cx="1356"
+       id="path4029-4"
+       style="color:#000000;fill:#ffcc00;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.69914323;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       sodipodi:type="arc" />
+    <path
+       sodipodi:type="arc"
+       style="color:#000000;fill:#ffcc00;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.69914323;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
+       id="path5005-8-6"
+       sodipodi:cx="1356"
+       sodipodi:cy="806.36218"
+       sodipodi:rx="4"
+       sodipodi:ry="2"
+       d="m 1360,806.36218 a 4,2 0 1 1 -8,0 4,2 0 1 1 8,0 z"
+       transform="matrix(1.0229125,0,0,1.9999965,-1146.4777,54.615289)" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text4025-9"
+       y="1671.8368"
+       x="248"
+       style="font-size:30.12700462px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;display:inline;font-family:Sans"
+       xml:space="preserve"><tspan
+         style="font-size:12px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Arial;-inkscape-font-specification:Arial"
+         y="1671.8368"
+         x="248"
+         sodipodi:role="line"
+         id="tspan4027-3">10 now and 2 each turn</tspan></text>
   </g>
   <g
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="Zones"
-     style="display:inline">
+     style="display:none">
     <rect
        style="opacity:0.1;color:#000000;fill:#00ff00;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate"
        id="rect3043"
@@ -756,5 +1055,15 @@
          y="1167.2194"
          style="font-size:24px;fill:#0000ff"
          id="tspan5092">paneBackground</tspan></text>
+    <rect
+       inkscape:export-filename="C:\Users\Embair\dev\www\konkr\static\assets\spritedata\symbols\coin.png"
+       inkscape:export-ydpi="90"
+       inkscape:export-xdpi="90"
+       y="1338.3622"
+       x="-20"
+       height="15"
+       width="11"
+       id="rect3132"
+       style="opacity:0.1;color:#000000;fill:#00ff00;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2;marker:none;visibility:visible;display:inline;overflow:visible;enable-background:accumulate" />
   </g>
 </svg>

@@ -2,7 +2,7 @@ import Scene from './Scene';
 
 function Debug(spec){
 
-    let { pawnSprites, landSprites, hexSelectionProxy, ui, regions, popovers, pawns } = spec;
+    let { pawnSprites, landSprites, hexSelectionProxy, ui, regions, hexTooltips, pawns } = spec;
 
     return new Scene(spec, { 
         name: 'DEBUG',
@@ -16,7 +16,8 @@ function Debug(spec){
             messages:true,
             uiRegionPanel:true,
             optionButtons:true,
-            popovers: true,
+            hexTooltips: true,
+            uiTooltips: true,
         },
         bindSignals: {
             pawns: {
@@ -49,7 +50,7 @@ function Debug(spec){
             (pawn?'♙'+pawn.id:null),
             (region?'♔'+region.id:null),
         ];
-        popovers.show('HEX_TOOLTIP', hex, str.filter(x=>x).join('\n'));
+        hexTooltips.show('HEX_TOOLTIP', hex, str.filter(x=>x).join('\n'));
     }
 
 }

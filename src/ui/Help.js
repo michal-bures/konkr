@@ -9,14 +9,11 @@ function Help(spec) {
     const pawnData = {
         'TOWN': { 
             title: "Kingdom capital", 
-            descOwn: `This kingdoms treasury is stored here. Don't let your enemies raze it!
-Also protects surrounding tiles from being captured by enemy villagers.`,
-            desc:`This kingdoms treasury is stored here. 
-Would be real shame if something happened to it!
-Also protects surrounding tiles from being captured by enemy villagers.`,
+            descOwn: `This kingdoms treasury is stored here. Don't let your enemies raze it! Also protects surrounding tiles from being captured by enemy villagers.`,
+            desc:`This kingdoms treasury is stored here. Would be real shame if something happened to it! Also protects surrounding tiles from being captured by enemy villagers.`,
         },
         'TROOP_1': { title: "Villager",
-            desc: "Great for capturing undefended territory and weeding out bandits.",
+            desc: "Great for capturing undefended territory and dealing with bandits. Protects adjacent tiles from enemy villagers.",
         },
         'TROOP_2': { title: "Pikeman",
             desc: "Stronger than towns and villagers, but can't deal with towers.",
@@ -25,14 +22,13 @@ Also protects surrounding tiles from being captured by enemy villagers.`,
             desc: `Borderline unstopabble, only other knights or heroes can stand in his way.`,
          },
         'TROOP_4': { title: "Hero",
-            desc: "Unstopabble tool of destruction, only other heroes can hope to challenge him.",
+            desc: `Unstopabble tool of destruction, only other heroes can hope to challenge him.`,
          },
         'TOWER': { title: "Tower",
             desc: "Protects surrounding hexes from enemy villagers and pikemen."
          },
         'BANDIT': { title: "Bandit",
-            desc: `Independent unit that moves to an adjacent empty tile (ignoring Kingdom borders)
-each turn and reduces income of whichever Kingdom it currently occupies.`
+            desc: `Independent unit that moves to an adjacent empty tile (ignoring Kingdom borders) each turn and reduces income of whichever Kingdom it currently occupies.`
          },
 
     };

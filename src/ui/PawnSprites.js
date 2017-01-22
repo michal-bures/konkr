@@ -53,7 +53,7 @@ function PawnSprites ({tweens, game, log, pawns, ui, regions, gameState, grid, p
 
         setFlag() {
             if (!this.flagSprite) {
-                this.flagSprite=game.make.sprite(0,0,'flag');
+                this.flagSprite=game.make.sprite(0,0,'core','flag-green');
                 this.flagSprite.anchor.set(0.5);
                 this.addChild(this.flagSprite);
             }

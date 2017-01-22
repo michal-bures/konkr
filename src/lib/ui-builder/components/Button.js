@@ -4,25 +4,25 @@ import { debounce } from 'lib/util';
 export default function Button(spec, def) {
     let self = new UIComponent(spec, def);
     let {sprite} = def;
-    let btn = spec.game.add.button(0, 0, sprite);
-    btn.frame = def.frame || 0;
-    self.onInputUp = btn.onInputUp;
-    self.onInputDown = btn.onInputDown;
+    let btn = spec.game.add.sprite(0, 0, 'core', sprite);
+    btn.inputEnabled = true;
     self.add(btn);
+    self.onInputUp = btn.events.onInputUp;
+    self.onInputDown = btn.events.onInputDown;
     if (def.onClicked) self.onInputUp.add(debounce(def.onClicked,UIComponent.INPUTEVENT_DEBOUNCE_INTERVAL,true));
 
     if (def.tooltip) {
-        let {popovers} = spec;
+        let {uiTooltips} = spec;
         btn.events.onInputOver.add(()=>{
-            popovers.showDelayed('UI_TOOLTIP', btn, def.tooltip);
+            uiTooltips.showDelayed('UI_TOOLTIP', btn, def.tooltip);
         });
         btn.events.onInputOut.add(()=>{
-            popovers.hide();
+            uiTooltips.hide();
         });    
     }
 
-    self.setFrame =(frame) => {
-        btn.frame = frame;
+    self.setFrameName =(frame) => {
+        btn.frameName = frame;
     };
 
     return self;

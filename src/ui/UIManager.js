@@ -24,12 +24,14 @@ function UIManager(spec) {
         
     let selectedRegion,
         selectedHex,
+        hoveredHex,
         scene,
         resumeActionsCallback, // stored callback for pending AWAIT_PLAYER_INPUT action
         defaultSpectatorScene = 'FAST_SPECTATING';
 
     let self = Object.freeze({
         onHexSelected: new Phaser.Signal(/* hex */),
+        onHexHovered: new Phaser.Signal(/* hex */),
         onRegionSelected: new Phaser.Signal(/* region */),
         onSelectedRegionChanged: new Phaser.Signal(/* region */),
         onResize: new Phaser.Signal(),
@@ -37,12 +39,14 @@ function UIManager(spec) {
         get scene() { return scene },
         get selectedRegion() { return selectedRegion; },
         get selectedHex() { return selectedHex; },
+        get hoveredHex() { return hoveredHex; },
         build, // (def) build a new UI hierarchy using UIBuilder
         changeScene,
         reloadScene,
         changeSceneNow,
         selectHex,
         selectRegion,
+        setHoveredHex,
         buyPawn, //(pawnType)
         undoBuy,
         endTurn,
@@ -89,7 +93,8 @@ function UIManager(spec) {
         optionButtons: spec => new OptionButtons(spec.useName('optionButtons', log.levels.INFO)),
         sfx: spec=> new SFX(spec),
         modals: spec => new ModalsManager(spec),
-        popovers: spec => new Popovers(spec.useName('popovers', log.levels.INFO)),
+        hexTooltips: spec => new Popovers(spec.useName('hexTooltips', log.levels.INFO),{ tooltipDelay: 1000, noDelaysExpiration: 0 }),
+        uiTooltips: spec => new Popovers(spec.useName('uiTooltips', log.levels.INFO),{ tooltipDelay: 750, noDelaysExpiration: 500 }),
         help: spec => new Help(spec),
         styles: spec => new Styles(spec),
         ui: () => self,
@@ -111,7 +116,8 @@ function UIManager(spec) {
         'feedbackSymbols',
         'nextTurnButton',
         'optionButtons',
-        'popovers',
+        'hexTooltips',
+        'uiTooltips',
     ];
     Z_ORDER.forEach(e => game.world.add(uiElements[e].group));
     game.world.add(uiElements.modals.group);
@@ -318,6 +324,10 @@ function UIManager(spec) {
     function selectHex(hex) {
         selectedHex = hex;
         self.onHexSelected.dispatch(hex);
+    }
+    function setHoveredHex(hex) {
+        hoveredHex = hex;
+        self.onHexHovered.dispatch(hex);
     }
 
     function selectRegion(region) {

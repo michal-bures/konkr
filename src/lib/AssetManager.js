@@ -1,6 +1,6 @@
 function AssetManager(spec, data) {
     let { game, log } = spec;
-    let { images, spritesheets, sounds } = data;
+    let { images, spritesheets, sounds, atlas } = data;
 
     let load = (id) => {
         if (images[id]) {
@@ -9,10 +9,17 @@ function AssetManager(spec, data) {
             loadSpritesheet(id);
         } else if (sounds[id]) {
             loadSound(id);
+        } else if (atlas[id]) {
+            loadAtlas(id);
         } else {
             log.error("Unknown asset requested:",id);
         }
     };
+
+    function loadAtlas(id) {
+        const [png, json] = atlas[id];
+        game.load.atlas(id, png, json);        
+    }
 
     function loadImg(id) {
         const args = [id].concat(images[id]);
@@ -42,6 +49,9 @@ function AssetManager(spec, data) {
         }
         for (const sfx in sounds) {
             loadSound(sfx);
+        }
+        for (const atl in atlas) {
+            loadAtlas(atl);
         }
     }
 }

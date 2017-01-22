@@ -183,7 +183,7 @@ function FeedbackSymbols({game, tweens, warfare, log, debug, regions}) {
 
     function showDefendersOf(hex, minMight=0) {
         warfare.defendersOf(hex, minMight).forEach(defender=> {
-            add(defender, hex, 0, 'BOUNCE_BACK');
+            add(defender, hex, 'shield-red', 'BOUNCE_BACK');
         });
     }
 
@@ -191,15 +191,14 @@ function FeedbackSymbols({game, tweens, warfare, log, debug, regions}) {
         hex.neighbours()
            .filter(hex2=>regions.regionOf(hex2) === regions.regionOf(hex) &&
                          warfare.defenseOf(hex2)<might)
-           .forEach(hex2=> add(hex, hex2, 1, 'FADE'));
+           .forEach(hex2=> add(hex, hex2, 'shield-blue', 'FADE'));
     }
 
     function add(fromHex, toHex, frame, effect) {
         const [fx,fy] = convertToWorldCoordinates(fromHex.position.x, fromHex.position.y);
         const [tx,ty] = convertToWorldCoordinates(toHex.position.x, toHex.position.y);
-        const sprite = game.add.sprite(fx,fy,'shieldSymbol');
+        const sprite = game.add.sprite(fx,fy,'core', frame);
         group.add(sprite);
-        sprite.frame = frame;
         sprite.alpha = 0;
         sprite.anchor.set(0.5);
         let t1 = tweens.add(sprite).to({x:tx, y:ty, alpha: 1}, 200, Phaser.Easing.Quadratic.Out, true);

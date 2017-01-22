@@ -1,11 +1,14 @@
 import { convertToWorldCoordinates, HEX_HEIGHT } from 'ui/Renderer';
 
 const DEFAULT_TOOLTIP_DELAY = 750;
-const NO_DELAYS_EXPIRATION_INTERVAL = 1000;
+const NO_DELAYS_EXPIRATION_INTERVAL = 500;
 
-function Popovers(spec) {
+function Popovers(spec, {
+    tooltipDelay = DEFAULT_TOOLTIP_DELAY,
+    noDelaysExpiration = NO_DELAYS_EXPIRATION_INTERVAL
+}) {
     
-    let {game, players, economy, debug, styles, ui} =spec;
+    let {game, styles, ui} =spec;
     let group = game.make.group();
     let delayedShowTimer = null,
         noDelaysExpirationTimer = null,
@@ -16,7 +19,7 @@ function Popovers(spec) {
         show,
         showDelayed,
         hide,
-        tooltipDelay: DEFAULT_TOOLTIP_DELAY,
+        get tooltipDelay() {return tooltipDelay; },
         get group() { return group; },
         toDebugString
     });
@@ -87,7 +90,7 @@ function Popovers(spec) {
             component: 'popoverPanel',
             contains: contents,
             useWorldCoords: !fixedToCamera,
-            padding: 5,
+            padding: 10,
             vOffset,
             x:x,
             y:y,
@@ -111,11 +114,15 @@ function Popovers(spec) {
     }
 
     function showDelayed(type, ...args) {
+        if (delayedShowTimer) {
+            clearTimeout(delayedShowTimer);
+            delayedShowTimer = null;
+        }
         delayedShowTimer = setTimeout(()=> {
             show(type, ...args);
             temporarilySkipDelays();
             delayedShowTimer = null;
-        }, (noDelays?0:self.tooltipDelay));
+        }, (noDelays?0:tooltipDelay));        
     }
 
     function hide() {
@@ -124,20 +131,26 @@ function Popovers(spec) {
             delayedShowTimer = null;
         }
         if (!currentPopover) return;
+        temporarilySkipDelays();
         group.remove(currentPopover);
         currentPopover.destroy();
+        currentPopover = null;
     }
 
     function toDebugString() {
-        return `current popover: ${currentPopover}`;
+        return `current popover: ${currentPopover}
+skip delays: ${noDelays}
+delay: ${tooltipDelay}
+skip delays Period: ${noDelaysExpiration}`;
     }
 
     function temporarilySkipDelays() {
+        if (!noDelaysExpiration) return;
         noDelays = true;
         if (noDelaysExpirationTimer) clearTimeout(noDelaysExpirationTimer);
         noDelaysExpirationTimer = setTimeout(()=> {
             noDelays = false;
-        }, NO_DELAYS_EXPIRATION_INTERVAL);
+        }, noDelaysExpiration);
     }
 
     return self;

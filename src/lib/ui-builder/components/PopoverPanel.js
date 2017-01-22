@@ -4,10 +4,9 @@ import UIAnimator from '../UIAnimator';
 export default function PopoverPanel(spec, def) {
     const {game,log} = spec;
     let self = new UIComponent(spec, def);
-    let pointerSprite = spec.game.add.image(0,0,'popoverPointer');
+    let pointerSprite = spec.game.add.image(0,0,'core','popoverPointer');
     pointerSprite.anchor.set(0.5,1);
-    let bgSprite = game.add.image(0,0,'paneBackground');
-    self.add(bgSprite);
+    let bgSprite = null;
     self.add(pointerSprite);
     self.animator = UIAnimator.popup(spec, self, def.x,def.y);
 
@@ -22,6 +21,7 @@ export default function PopoverPanel(spec, def) {
         pointerSprite.x = def.x;
         pointerSprite.y = def.y+(def.vOffset||0)*(inverted?1:-1);
         const rect = getPanelRect(inverted);
+        redrawRect(rect);
         bgSprite.x = rect.x;
         bgSprite.y = rect.y;
         bgSprite.width = rect.width;
@@ -33,6 +33,18 @@ export default function PopoverPanel(spec, def) {
             self.cameraOffset.y = def.y;
         }
     };
+
+    function redrawRect(rect) {
+        const graphics = game.add.graphics(rect.x, rect.y);
+        graphics.beginFill(0xFFFFFF);
+        graphics.lineStyle(2, 0x000000, 1);
+        graphics.fillAlpha=0.8;
+        graphics.drawRoundedRect(0, 0, rect.width, rect.height, 8);
+        if (bgSprite) bgSprite.destroy();
+        bgSprite = game.make.image(rect.x,rect.y,graphics.generateTexture());
+        graphics.destroy();
+        self.add(bgSprite, false, 0);
+    }
 
     function getPanelRect(inverted) {
         const comp = self.childComponents[0];

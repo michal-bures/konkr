@@ -6,7 +6,7 @@ import { debounce } from 'lib/util';
 const INPUTEVENT_DEBOUNCE_INTERVAL = 100;
 
 function HexSelectionProxy(spec) {
-    let {game,grid,debug,log,regions,pawns,ui, warfare, players, scrolling, popovers, help} = spec;
+    let {game,grid,debug,log,regions,pawns,ui, hexTooltips, players, scrolling} = spec;
 
     let active = false,
         proxy = new InputProxy(game),
@@ -66,13 +66,10 @@ ${ret.join('\n')}`;
             const hex = getHexUnderCursor();
             if (hex==latestHoveredHex) return;
             latestHoveredHex = hex;
-            const pawn = hex && pawns.pawnAt(hex);
-            popovers.hide();
-            if (pawn) {
-                popovers.showDelayed('HEX_TOOLTIP', hex, help.pawnInfo(pawn));
-            }
-
+            hexTooltips.hide();
+            if (hex) ui.setHoveredHex(hex);
             if (spec.inDebugMode) {
+                const pawn = hex && pawns.pawnAt(hex);
                 const region = hex && regions.regionOf(hex);
                 const str = [
                     `${game.input.activePointer.x},${game.input.activePointer.y} ->`,
