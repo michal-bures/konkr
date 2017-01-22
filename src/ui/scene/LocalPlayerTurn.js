@@ -3,7 +3,7 @@ import Scene from './Scene';
 function LocalPlayerTurn(spec){
 
     let { actions,  players, pawns, regions, ui, economy, log,
-          sfx, pawnSprites, landSprites, feedbackSymbols, scrolling, hexTooltips, help } = spec;
+          sfx, pawnSprites, landSprites, feedbackSymbols, scrolling, hexTooltips, uiTooltips, help } = spec;
 
     return new Scene(spec, { 
     name: 'PLAYER_TURN',
@@ -46,6 +46,8 @@ function LocalPlayerTurn(spec){
 
     function setup() {
         pawnSprites.highlightIdle = true;
+        uiTooltips.hide();
+        hexTooltips.hide();
     }
 
     function teardown() {
@@ -63,7 +65,7 @@ function LocalPlayerTurn(spec){
         hexTooltips.hide();
         if (players.activePlayer.grabbedPawn) return;
         const pawn = pawns.pawnAt(hex);
-        if (pawn) hexTooltips.showDelayed('HEX_TOOLTIP', hex, help.pawnInfo(pawn));
+        if (pawn) hexTooltips.showDelayed('HEX_PAWN_TOOLTIP', pawn);
     }
     function onHexSelected(hex) {
         let showPawnTooltip = false;

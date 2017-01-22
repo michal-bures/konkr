@@ -8,7 +8,7 @@ function Popovers(spec, {
     noDelaysExpiration = NO_DELAYS_EXPIRATION_INTERVAL
 }) {
     
-    let {game, styles, ui} =spec;
+    let {game, styles, ui, help, players, regions} =spec;
     let group = game.make.group();
     let delayedShowTimer = null,
         noDelaysExpirationTimer = null,
@@ -26,46 +26,116 @@ function Popovers(spec, {
 
     let currentPopover = null;
 
-    function buildTooltipContent({title, attributes, text}) {
-           let items = [];
-           if (title) items.push({
+    function pawnTitle(pawn) {
+        const items = [];
+        
+        items.push({
+            component: 'label',
+            align: Phaser.LEFT_CENTER,
+            text: help.getPawnTitle(pawn)+" ",
+            style: styles.get("TOOLTIP_TITLE")
+        });
+
+        let image, value;
+        if (pawn.might) {
+            image = 'might';
+            value = pawn.might;
+        } else if (pawn.defense) {
+            image = 'shield-blue';
+            value = pawn.defense;
+        }
+
+        if (image) {
+            items.push({
+                component: 'image',
+                align: Phaser.LEFT_CENTER,
+                src: image,
+            });
+        }
+        if (value) {
+            items.push({
                 component: 'label',
                 align: Phaser.LEFT_CENTER,
-                text: title,
-                style: styles.get("TOOLTIP_TITLE")
-           });
-           if (attributes) items.push({
-                component: 'label',
-                align: Phaser.LEFT_CENTER,
-                text: attributes,
-                style: styles.get("TOOLTIP_ATTRIBUTES")
-           });
-           if (text) items.push({
-                align: Phaser.LEFT_CENTER,
-                component: 'label',
-                text: text,
+                text: value,
                 style: styles.get("TOOLTIP_TEXT")
-           });
-           return items;      
+            });
+        }
+
+        return {
+            component: 'horizontalGroup',
+            align: Phaser.LEFT_CENTER,
+            spacing: 5,
+            contains: items
+        };
+    }
+
+    function pawnUpkeep(pawn) {
+        if (!pawn.upkeep) return null;
+        return {
+            component: 'label',
+            align: Phaser.LEFT_CENTER,
+            text: `Costs ${pawn.upkeep}g each turn`,
+            style: styles.get("TOOLTIP_ATTRIBUTES")
+        };
+    }
+
+    function pawnPrice(pawn) {
+        if (!pawn.price) return null;
+        const verb = (pawn.isTroop()?'Hire':'Build');
+        return {
+            component: 'label',
+            align: Phaser.LEFT_CENTER,
+            text: `${verb} for ${pawn.price}g`,
+            style: styles.get("TOOLTIP_ATTRIBUTES")
+        };
+    }    
+
+    function pawnDescription(pawn, isOwn=false) {
+        return {
+            component: 'label',
+            align: Phaser.LEFT_CENTER,
+            text: (isOwn ? help.getOwnPawnDescription(pawn) : help.getHostilePawnDescription(pawn)),
+            style: styles.get("TOOLTIP_FLAVOUR_TEXT")
+        };
     }
 
     let uiFactory = {
-        HEX_TOOLTIP(hex, opts) {
-           let [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
+        HEX_PAWN_TOOLTIP(pawn) {
+           let [x,y] = convertToWorldCoordinates(pawn.hex.position.x, pawn.hex.position.y);
+           const isOwn = players.activePlayer.controls(regions.regionOf(pawn.hex));
 
            return popoverUI({x,y}, {
                 component: 'verticalGroup',
                 spacing: 3,
-                contains: buildTooltipContent(opts),
+                contains: [
+                    pawnTitle(pawn),
+                    pawnUpkeep(pawn),
+                    pawnDescription(pawn, isOwn),
+                ].filter(x=>x)
            });
         },
-        BUY_PAWN_TOOLTIP(sprite, opts) {
+        HEX_TOOLTIP(hex, text) {
+           let [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
+
+           return popoverUI({x,y}, {
+                component: 'label',
+                align: Phaser.CENTER,
+                text: text,
+                style: styles.get("TOOLTIP_TEXT")
+           });
+        },        
+        BUY_PAWN_TOOLTIP(sprite, pawnType) {
             let x = sprite.world.x - game.camera.view.x;
             let y = sprite.world.y - game.camera.view.y;
             return popoverUI({x,y, fixedToCamera:true}, {
                 component: 'verticalGroup',
                 spacing: 3,
-                contains: buildTooltipContent(opts),
+                contains: [
+                    pawnTitle(pawnType),
+                    pawnPrice(pawnType),
+                    pawnUpkeep(pawnType),
+                    pawnDescription(pawnType, true)
+                ].filter(x=>x)
             });
         },
         UI_TOOLTIP(sprite, text) {

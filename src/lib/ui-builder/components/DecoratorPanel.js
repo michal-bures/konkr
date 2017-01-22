@@ -6,7 +6,7 @@ export default function DecoratorPanel(spec, def) {
     let { game, debug, ui } = spec;
     let { padding=UIComponent.DEFAULT_PADDING } = def;
 
-    let bgSprite = spec.game.add.image(0,0,'paneBackground');
+    let bgSprite = spec.game.add.image(0,0,'core','paneBackground');
     self.add(bgSprite);
 
     if (def.onClicked) {

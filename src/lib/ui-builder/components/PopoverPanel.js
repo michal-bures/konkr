@@ -39,7 +39,7 @@ export default function PopoverPanel(spec, def) {
         graphics.beginFill(0xFFFFFF);
         graphics.lineStyle(2, 0x000000, 1);
         graphics.fillAlpha=0.8;
-        graphics.drawRoundedRect(0, 0, rect.width, rect.height, 8);
+        graphics.drawRoundedRect(0, 0, rect.width-2, rect.height-2, 8);
         if (bgSprite) bgSprite.destroy();
         bgSprite = game.make.image(rect.x,rect.y,graphics.generateTexture());
         graphics.destroy();

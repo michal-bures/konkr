@@ -16,7 +16,7 @@ export default function PawnShop (spec, def) {
                     uiTooltips.hide();
                 });
                 sprite.events.onInputOver.add(()=>{
-                    uiTooltips.showDelayed('BUY_PAWN_TOOLTIP', sprite, help.pawnShopInfo(pawnType));
+                    uiTooltips.showDelayed('BUY_PAWN_TOOLTIP', sprite, pawnType);
                 });
                 sprite.events.onInputOut.add(()=>{
                     uiTooltips.hide();

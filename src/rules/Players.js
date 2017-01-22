@@ -194,6 +194,7 @@ function Players(spec) {
         if (pawns.pawnAt(hex)) {
             if (economy.capitalOf(regions.regionOf(hex)) === hex) {
                 actions.schedule('DESTROY_REGION_CAPITAL',regions.regionOf(hex));
+                actions.schedule('ADJUST_REGION_TREASURY',grabbedPawnRegion,economy.treasuryOf(regions.regionOf(hex)));
             } else {
                 action.schedule('DESTROY_PAWN', pawns.pawnAt(hex));
             }

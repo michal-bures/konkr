@@ -200,7 +200,7 @@ function FeedbackSymbols({game, tweens, warfare, log, debug, regions}) {
         const sprite = game.add.sprite(fx,fy,'core', frame);
         group.add(sprite);
         sprite.alpha = 0;
-        sprite.anchor.set(0.5);
+        sprite.anchor.set(0.46); // due to the icon having odd width, setting anchor to 0.5 causes bad artifact with disabled smoothing
         let t1 = tweens.add(sprite).to({x:tx, y:ty, alpha: 1}, 200, Phaser.Easing.Quadratic.Out, true);
 
         switch (effect) {

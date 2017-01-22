@@ -4,19 +4,22 @@ function Help(spec) {
     let self = Object.freeze({
         pawnInfo,
         pawnShopInfo,
+        getPawnTitle,
+        getOwnPawnDescription,
+        getHostilePawnDescription,
     });
 
     const pawnData = {
         'TOWN': { 
             title: "Kingdom capital", 
-            descOwn: `This kingdoms treasury is stored here. Don't let your enemies raze it! Also protects surrounding tiles from being captured by enemy villagers.`,
-            desc:`This kingdoms treasury is stored here. Would be real shame if something happened to it! Also protects surrounding tiles from being captured by enemy villagers.`,
+            descOwn: `The treasury of this kingdom is stored here. Don't let your enemies raze it! The town protects surrounding tiles from takeover by enemy militia.`,
+            desc:`This kingdoms treasury is stored here. Would be real shame if something happened to it! Also protects surrounding tiles from being takeover by enemy villagers.`,
         },
         'TROOP_1': { title: "Villager",
-            desc: "Great for capturing undefended territory and dealing with bandits. Protects adjacent tiles from enemy villagers.",
+            desc: "Great for capturing undefended territory and dealing with bandits. Protects adjacent tiles from enemy militia.",
         },
         'TROOP_2': { title: "Pikeman",
-            desc: "Stronger than towns and villagers, but can't deal with towers.",
+            desc: "Stronger than towns and militia, but can't deal with towers.",
          },
         'TROOP_3': { title: "Knight",
             desc: `Borderline unstopabble, only other knights or heroes can stand in his way.`,
@@ -25,33 +28,45 @@ function Help(spec) {
             desc: `Unstopabble tool of destruction, only other heroes can hope to challenge him.`,
          },
         'TOWER': { title: "Tower",
-            desc: "Protects surrounding hexes from enemy villagers and pikemen."
+            desc: "Protects surrounding tiles from hostile militia and pikemen."
          },
         'BANDIT': { title: "Bandit",
-            desc: `Independent unit that moves to an adjacent empty tile (ignoring Kingdom borders) each turn and reduces income of whichever Kingdom it currently occupies.`
+            desc: `Loyal to no one but himself, a bandit moves to a random adjacent tile every turn and plunders its income.`
          },
 
     };
 
 
-    function pawnShopInfo(pawn) {
-        return pawnInfo(pawn);
+    function getPawnTitle(pawn) {
+        return pawnData[pawn.name] && pawnData[pawn.name].title;
     }
 
-    function pawnInfo(pawn) {
+    function getOwnPawnDescription(pawn) {
+        const data = pawnData[pawn.name];
+        if (!data) return undefined;
+        return data.descOwn || data.desc;
+    }
+
+    function getHostilePawnDescription(pawn) {
+        const data = pawnData[pawn.name];
+        return data && data.desc;
+    }
+
+    function pawnShopInfo(pawn) {
+        return pawnInfo(pawn, 'price');
+    }
+
+    function pawnInfo(pawn, attributeList=['might', 'defense', 'upkeep']) {
         const type = pawn.name;
         const data = pawnData[type];
         let attrs=[];
 
         const title = (data?data.title:type);
-        if (pawn.might) {
-            attrs.push(`might: ${pawn.might}`);
-        } else if (pawn.defense) {
-            attrs.push(`defense: ${pawn.defense}`);
-        }
-        if (pawn.upkeep) {
-            attrs.push(`upkeep: ${pawn.upkeep}`);
-        }
+        attributeList.forEach(attrName=>{
+            if (pawn[attrName]!== undefined) {
+                attrs.push({id:attrName,value:pawn[attrName]});
+            }
+        });
         const attributes = attrs.join(' ');
         let text;
         if (data) {
