@@ -61,7 +61,7 @@ class DebugInfo {
         const self = this;
         return {
             set(...args) { self.set(...args); },
-            sprite(...args) { self.set(...args); },
+            sprite(...args) { self.sprite(...args); },
             addCommand(...args) { self.addCommand(name, ...args); },
             valuation(title, valuation) { self.valuation(name+'.'+title, valuation); }
         };
@@ -94,7 +94,9 @@ class DebugInfo {
             }
             y +=32;
         });
-        this.sprites.forEach(sprite=>sprite.exists && this.game.debug.spriteBounds(sprite));
+        this.sprites.forEach(sprite=>{
+            return sprite.exists && this.game.debug.spriteBounds(sprite)
+        });
     }
 }
 

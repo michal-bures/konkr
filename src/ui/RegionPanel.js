@@ -25,13 +25,14 @@ function RegionPanel(spec) {
                 component: 'horizontalGroup',
                 align: Phaser.BOTTOM_CENTER,
                 spacing: 3,
+                vOffset: -2,
                 contains: [
                     {
                         name: 'goldIcon',
                         component: 'image',
                         src: 'goldCoins',
                         align: Phaser.BOTTOM_CENTER,
-                        vOffset: -8,
+                        vOffset: -2,
                     },
                     {
                         name: 'treasuryLabel',
@@ -53,19 +54,16 @@ function RegionPanel(spec) {
     });
 
     let { 
+        stats,
         regionsPanel, 
         treasuryLabel,
         incomeLabel,
         pawnShop,
+        goldIcon,
     } = controls;
 
     assertDefined(regionsPanel, treasuryLabel, incomeLabel);
     group = regionsPanel;
-
-//    debug.sprite(stats);
-//    debug.sprite(treasuryLabel);
-//    debug.sprite(incomeLabel);
-//    debug.sprite(goldIcon);
 
     ui.onRegionSelected.add(region => {
         setRegion(region);
