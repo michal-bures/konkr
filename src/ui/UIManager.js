@@ -15,12 +15,13 @@ import SFX from './SFX';
 import OptionButtons from './OptionButtons';
 import ModalsManager from './ModalsManager';
 import Help from './Help';
+import Tutorial from './Tutorial';
 
 import UIBuilder from 'lib/ui-builder/UIBuilder';
 
 function UIManager(spec) {
     
-    const {game, regions, gameState, actions, players, grid, pawns} = spec;
+    const {game, regions, gameState, actions, players, grid, pawns, userPrefs} = spec;
         
     let selectedRegion,
         selectedHex,
@@ -34,6 +35,7 @@ function UIManager(spec) {
         onHexHovered: new Phaser.Signal(/* hex */),
         onRegionSelected: new Phaser.Signal(/* region */),
         onSelectedRegionChanged: new Phaser.Signal(/* region */),
+        onSceneChanged: new Phaser.Signal(/* sceneName */),
         onResize: new Phaser.Signal(),
         get uiSpec() { return uiElements; },
         get scene() { return scene },
@@ -83,7 +85,7 @@ function UIManager(spec) {
         pawnSprites: spec => new PawnSprites(spec.useName('pawnSprites')),
         hexSelectionProxy: spec => new HexSelectionProxy(spec),
         scrolling: spec => new Scrolling(spec),
-        uiRegionPanel: spec => new RegionPanel(spec.useName('regionPanel', log.levels.DEBUG)),
+        regionPanel: spec => new RegionPanel(spec.useName('regionPanel', log.levels.DEBUG)),
         gridOverlays: spec => new GridOverlays(spec),
         messages: spec => new Messages(spec),
         nextTurnButton: spec => new NextTurnButton(spec.useName('nextTurnButton', log.levels.INFO)),
@@ -97,9 +99,14 @@ function UIManager(spec) {
         uiTooltips: spec => new Popovers(spec.useName('uiTooltips', log.levels.INFO),{ tooltipDelay: 750, noDelaysExpiration: 500 }),
         help: spec => new Help(spec),
         styles: spec => new Styles(spec),
+        tutorial: spec => new Tutorial(spec),
         ui: () => self,
     });
 
+    //enable tutorial?
+    if (!userPrefs.get('tutorialDisabled')) {
+        uiElements.tutorial.enable();
+    }
 
     //display layers z-order
     const Z_ORDER = [
@@ -111,11 +118,12 @@ function UIManager(spec) {
         'gridOverlays',
         'hexSelectionProxy',
         'messages',
-        'uiRegionPanel',
+        'regionPanel',
         'grabbedPawn',
         'feedbackSymbols',
         'nextTurnButton',
         'optionButtons',
+        'tutorial',
         'hexTooltips',
         'uiTooltips',
     ];
@@ -171,8 +179,6 @@ function UIManager(spec) {
         if (scene!=scenes.PLAYER_TURN) changeScene('PLAYER_TURN');
         if (players.grabbedPawn) {
             selectRegion(players.grabbedPawnRegion);
-        } else if (!selectedRegion) {
-            selectRegion(players.bestRegionOf(players.localPlayer));
         }
         resumeActionsCallback = action.resolve;
     },
@@ -319,6 +325,7 @@ function UIManager(spec) {
             }
         );
         scene.setup();
+        self.onSceneChanged.dispatch(nextSceneName);
     }
 
     function selectHex(hex) {

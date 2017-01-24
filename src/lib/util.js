@@ -55,7 +55,7 @@ function debounce(func, wait, immediate) {
         timeout = setTimeout(later, wait);
         if (callNow) func.apply(context, args);
     };
-};
+}
 
 function SealedObject(parent = Object, props = {}) {
     function F() {

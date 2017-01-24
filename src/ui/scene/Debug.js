@@ -14,7 +14,7 @@ function Debug(spec){
             gridOverlays:true,
             hexSelectionProxy:true,
             messages:true,
-            uiRegionPanel:true,
+            regionPanel:true,
             optionButtons:true,
             hexTooltips: true,
             uiTooltips: true,

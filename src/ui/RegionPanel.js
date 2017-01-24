@@ -3,7 +3,7 @@ import { assertDefined } from 'lib/util';
 function RegionPanel(spec) {
     let { log, debug, game, economy, ui, styles, regions, players, pawns, uiTooltips } = spec;
 
-    let group = null,
+    let group = game.make.group(),
         currentRegion = null;
 
     let controls = ui.build({
@@ -38,8 +38,8 @@ function RegionPanel(spec) {
                         name: 'treasuryLabel',
                         style: styles.get('TREASURY_LABEL'),
                         component: 'label',
-                        onClicked: ()=>uiTooltips.show('KINGDOM_TREASURY',treasuryLabel.children[0],currentRegion),
-                        onInputOver: ()=>uiTooltips.showDelayed('KINGDOM_TREASURY',treasuryLabel.children[0],currentRegion),
+                        onClicked: showTreasuryTooltip,
+                        onInputOver: showTreasuryTooltipDelayed,
                         onInputOut: ()=>uiTooltips.hide(),
                         align: Phaser.BOTTOM_CENTER,
                     },
@@ -57,15 +57,14 @@ function RegionPanel(spec) {
     });
 
     let { 
-        stats,
         regionsPanel, 
         treasuryLabel,
         incomeLabel,
         pawnShop,
-        goldIcon,
     } = controls;
 
     assertDefined(regionsPanel, treasuryLabel, incomeLabel);
+    //group.add(regionsPanel);
     group = regionsPanel;
 
     ui.onRegionSelected.add(region => {
@@ -94,6 +93,15 @@ function RegionPanel(spec) {
         get group() { return group; },
         synchronize        
     });
+
+    function showTreasuryTooltip() {
+        uiTooltips.show('KINGDOM_TREASURY',treasuryLabel,currentRegion);
+    }
+
+    function showTreasuryTooltipDelayed() {
+        uiTooltips.showDelayed('KINGDOM_TREASURY',treasuryLabel,currentRegion);
+    }
+
 
 
     function refreshIfMatchingCurrentRegion(region) {

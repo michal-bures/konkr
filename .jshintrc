@@ -10,6 +10,7 @@
     "setTimeout",
     "setInterval",
     "clearTimeout",
-    "clearInterval"
+    "clearInterval",
+    "localStorage"
   ]
 }

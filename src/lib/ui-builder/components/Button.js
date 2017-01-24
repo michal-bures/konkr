@@ -12,8 +12,6 @@ export default function Button(spec, def) {
 
     UIComponent.bindInputEvents(def,btn);
 
-    if (def.onClicked) self.onInputUp.add(debounce(def.onClicked,UIComponent.INPUTEVENT_DEBOUNCE_INTERVAL,true));
-
     if (def.tooltip) {
         let {uiTooltips} = spec;
         btn.events.onInputOver.add(()=>{

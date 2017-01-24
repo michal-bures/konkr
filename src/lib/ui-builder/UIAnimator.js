@@ -11,7 +11,7 @@ function AnimatorBase(component, {show, hide}) {
     });
 
     function animateHide() {
-        if (hidden) return;
+        if (!component.visible) return;
         hidden = true;
         if (tween) {
             tween.stop();
@@ -23,7 +23,7 @@ function AnimatorBase(component, {show, hide}) {
     }
 
     function animateShow() {
-        if (!hidden) return;
+        if (component.visible) return;
         hidden = false;
         if (tween) {
             tween.stop();

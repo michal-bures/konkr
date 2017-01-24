@@ -3,7 +3,7 @@ import Scene from './Scene';
 function LocalPlayerTurn(spec){
 
     let { actions,  players, pawns, regions, ui, economy, log,
-          sfx, pawnSprites, landSprites, feedbackSymbols, scrolling, hexTooltips, uiTooltips, help } = spec;
+          sfx, pawnSprites, landSprites, feedbackSymbols, scrolling, hexTooltips, uiTooltips } = spec;
 
     return new Scene(spec, { 
     name: 'PLAYER_TURN',
@@ -16,13 +16,14 @@ function LocalPlayerTurn(spec){
             gridOverlays:true,
             hexSelectionProxy:true,
             messages:true,
-            uiRegionPanel:true,
+            regionPanel:true,
             nextTurnButton:true,
             grabbedPawn:true,
             feedbackSymbols:true,
             optionButtons:true,
             hexTooltips:true,
             uiTooltips:true,
+            tutorial:true,
         },
         bindSignals: {
             pawns: {

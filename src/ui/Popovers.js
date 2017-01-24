@@ -7,14 +7,15 @@ const NO_DELAYS_EXPIRATION_INTERVAL = 500;
 function Popovers(spec, {
     tooltipDelay = DEFAULT_TOOLTIP_DELAY,
     noDelaysExpiration = NO_DELAYS_EXPIRATION_INTERVAL
-}) {
+}={}) {
     
     let {game, styles, ui, help, players, regions, economy, debug} =spec;
     let group = game.make.group(null,"popovers");
     let delayedShowTimer = null,
         noDelaysExpirationTimer = null,
         noDelays = false,
-        currentPopoverCfg = null;
+        currentPopoverCfg = null,
+        currentPopover = null;
 
 
     let self = Object.freeze({
@@ -26,7 +27,94 @@ function Popovers(spec, {
         toDebugString
     });
 
-    let currentPopover = null;
+    let uiFactory = {
+        HEX_PAWN_TOOLTIP(pawn) {
+           let [x,y] = convertToWorldCoordinates(pawn.hex.position.x, pawn.hex.position.y);
+           const isOwn = players.activePlayer.controls(regions.regionOf(pawn.hex));
+
+           return popoverUI({x,y}, {
+                component: 'verticalGroup',
+                spacing: 3,
+                contains: [
+                    pawnTitle(pawn),
+                    pawnUpkeep(pawn),
+                    pawnDescription(pawn, isOwn),
+                ].filter(x=>x)
+           });
+        },
+        HEX_TOOLTIP(hex, text) {
+            let [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
+
+            return popoverUI({x,y},{
+                component: 'label',
+                align: Phaser.CENTER,
+                text: text,
+                style: styles.get("TOOLTIP_TEXT")
+            });
+        },    
+        KINGDOM_TREASURY(sprite, region) {
+            let x = sprite.world.x + sprite.width/2 - game.camera.view.x;
+            let y = sprite.world.y - game.camera.view.y;
+
+            let breakdown = {};
+            let str = [];
+            const netIncome = economy.netIncomeOf(region,breakdown);
+            const treasury = economy.treasuryOf(region);
+            for (const key in breakdown) {
+                str.push(help.getIncomeBreakdownItem(key)+": "+numberWithSign(breakdown[key])+"g");
+            }
+            const boldStyle = styles.get('TOOLTIP_TEXT');
+            boldStyle.fontWeight = "bold";
+
+            return popoverUI({x,y,fixedToCamera:true,vOffset:0}, {
+                component: 'verticalGroup',
+                spacing: 3,
+                contains: [
+                    tooltipTitle("Kingdom treasury"),
+                    { component: 'label', style: boldStyle, align: Phaser.LEFT_CENTER, text: "Current: "+treasury+"g" },
+                    tooltipText(str.join('\n')),
+                    { component: 'label', style: boldStyle, align: Phaser.LEFT_CENTER, text: "Net income: "+numberWithSign(netIncome)+"g" },
+                    { component: 'label', style: boldStyle, align: Phaser.LEFT_CENTER, text: "Next turn: "+(treasury+netIncome)+"g" }
+                ].filter(x=>x)
+            });
+        },              
+        BUY_PAWN_TOOLTIP(sprite, pawnType) {
+            let x = sprite.world.x - game.camera.view.x;
+            let y = sprite.world.y - game.camera.view.y;
+            return popoverUI({x,y, fixedToCamera:true}, {
+                component: 'verticalGroup',
+                spacing: 3,
+                contains: [
+                    pawnTitle(pawnType),
+                    pawnPrice(pawnType),
+                    pawnUpkeep(pawnType),
+                    pawnDescription(pawnType, true)
+                ].filter(x=>x)
+            });
+        },
+        UI_TOOLTIP(sprite, text) {
+            let worldX,worldY;
+            if (sprite.world) {
+                worldX = sprite.world.x;
+                worldY = sprite.world.y;
+            } else {
+                let pivot = sprite;
+                while (!pivot.world) pivot = pivot.children[0];
+                worldX = pivot.world.x;
+                worldY = pivot.world.y;
+            }
+            let x = worldX + sprite.width/2 - game.camera.view.x;
+            let y = worldY - game.camera.view.y;
+            return popoverUI({x,y, fixedToCamera:true,vOffset:0}, {
+                align: Phaser.CENTER,
+                component: 'label',
+                text: text,
+                style: styles.get("TOOLTIP_TEXT")
+            });
+        }
+    };
+
+
 
     function tooltipTitle(text) {
         return {
@@ -114,82 +202,6 @@ function Popovers(spec, {
     function pawnDescription(pawn, isOwn=false) {
         return tooltipFlavourText((isOwn ? help.getOwnPawnDescription(pawn) : help.getHostilePawnDescription(pawn)));
     }
-
-    let uiFactory = {
-        HEX_PAWN_TOOLTIP(pawn) {
-           let [x,y] = convertToWorldCoordinates(pawn.hex.position.x, pawn.hex.position.y);
-           const isOwn = players.activePlayer.controls(regions.regionOf(pawn.hex));
-
-           return popoverUI({x,y}, {
-                component: 'verticalGroup',
-                spacing: 3,
-                contains: [
-                    pawnTitle(pawn),
-                    pawnUpkeep(pawn),
-                    pawnDescription(pawn, isOwn),
-                ].filter(x=>x)
-           });
-        },
-        HEX_TOOLTIP(hex, text) {
-           let [x,y] = convertToWorldCoordinates(hex.position.x, hex.position.y);
-
-           return popoverUI({x,y}, tooltipText(text));
-        },    
-        KINGDOM_TREASURY(sprite, region) {
-            let x = sprite.world.x + sprite.width/2 - game.camera.view.x;
-            let y = sprite.world.y - game.camera.view.y;
-
-            let breakdown = {};
-            let str = [];
-            const netIncome = economy.netIncomeOf(region,breakdown);
-            const treasury = economy.treasuryOf(region);
-            for (const key in breakdown) {
-                str.push(help.getIncomeBreakdownItem(key)+": "+numberWithSign(breakdown[key])+"g");
-            }
-            const boldStyle = styles.get('TOOLTIP_TEXT');
-            boldStyle.fontWeight = "bold";
-
-            return popoverUI({x,y,fixedToCamera:true,vOffset:0}, {
-                component: 'verticalGroup',
-                spacing: 3,
-                contains: [
-                    tooltipTitle("Kingdom treasury"),
-                    { component: 'label', style: boldStyle, align: Phaser.LEFT_CENTER, text: "Current: "+treasury+"g" },
-                    tooltipText(str.join('\n')),
-                    { component: 'label', style: boldStyle, align: Phaser.LEFT_CENTER, text: "Net income: "+numberWithSign(netIncome)+"g" },
-                    { component: 'label', style: boldStyle, align: Phaser.LEFT_CENTER, text: "Next turn: "+(treasury+netIncome)+"g" }
-                ].filter(x=>x)
-            });
-        },              
-        BUY_PAWN_TOOLTIP(sprite, pawnType) {
-            let x = sprite.world.x - game.camera.view.x;
-            let y = sprite.world.y - game.camera.view.y;
-            return popoverUI({x,y, fixedToCamera:true}, {
-                component: 'verticalGroup',
-                spacing: 3,
-                contains: [
-                    pawnTitle(pawnType),
-                    pawnPrice(pawnType),
-                    pawnUpkeep(pawnType),
-                    pawnDescription(pawnType, true)
-                ].filter(x=>x)
-            });
-        },
-        UI_TOOLTIP(sprite, text) {
-            let x = sprite.world.x + sprite.width/2 - game.camera.view.x;
-            let y = sprite.world.y - game.camera.view.y;
-            return popoverUI({x,y, fixedToCamera:true,vOffset:0}, {
-                component: 'verticalGroup',
-                spacing: 3,
-                contains: [{
-                    align: Phaser.LEFT_CENTER,
-                    component: 'label',
-                    text: text,
-                    style: styles.get("TOOLTIP_TEXT")
-                }],
-            });
-        }
-    };
 
     function popoverUI({x,y,fixedToCamera,vOffset=10},...contents) {
         return {

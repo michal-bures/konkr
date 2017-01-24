@@ -14,9 +14,9 @@ function Help(spec) {
         'TOWN': { 
             title: "Kingdom capital", 
             descOwn: `The treasury of this kingdom is stored here. Don't let your enemies raze it! The town protects surrounding tiles from takeover by enemy militia.`,
-            desc:`This kingdoms treasury is stored here. Would be real shame if something happened to it! Also protects surrounding tiles from being takeover by enemy villagers.`,
+            desc:`This kingdoms treasury is stored here. Would be real shame if something happened to it! Also protects surrounding tiles from takeover by enemy militia.`,
         },
-        'TROOP_1': { title: "Villager",
+        'TROOP_1': { title: "Militia",
             desc: "Great for capturing undefended territory and dealing with bandits. Protects adjacent tiles from enemy militia.",
         },
         'TROOP_2': { title: "Pikeman",

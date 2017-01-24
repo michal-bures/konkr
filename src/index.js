@@ -3,28 +3,27 @@ import log from 'loglevel';
 import GameAssets from 'ui/assets/GameAssets';
 import Injector from 'lib/Injector';
 import DebugInfo from 'ui/DebugInfo';
+import UserPrefs from 'lib/UserPrefs';
+import { debounce } from 'lib/util';
 
 import Play from 'states/Play';
 
-//====== Global objects accessible from all modules ======
-var game;         //Phaser.Game instance
-
-/* exported nextId */
-var idCounter = 0;
-//Generate next unique ID
-function nextId() { return ++idCounter; }
+const DEFAULT_USER_PREFS = {
+    tutorialDisabled: undefined,
+};
 
 //========================================================
 // ENTRYPOINT
 
 //init globals
 
-game = new Phaser.Game(1, 1, Phaser.AUTO, 'konkr_game_container', null, false, true);
+let game = new Phaser.Game(1, 1, Phaser.AUTO, 'konkr_game_container', null, false, true);
 
 var spec = new Injector(undefined,{
     log: () => log,
     game: () => game,
     assets: spec => new GameAssets(spec),
+    userPrefs: () => new UserPrefs('konkr_user_prefs',DEFAULT_USER_PREFS),
     debug: spec => new DebugInfo(spec),
     inDebugMode: () => document.getElementById("debug")
 });
@@ -54,11 +53,13 @@ Boot.prototype= {
         game.scale.fullScreenScaleMode = Phaser.ScaleManager.RESIZE;
         game.stage.backgroundColor='#d5dfef';
         game.scale.pageAlignHorizontally = true;
+        const initialResizeHandler = debounce(() => {
+            game.state.start("Play", true, false, spec);
+        },200);
+        game.scale.onSizeChange.addOnce(initialResizeHandler);
     },
 
     update: function() {
-        //this.lblLoadingPhase.destroy();
-        game.state.start("Play", true, false, spec);
     }
 };
 
